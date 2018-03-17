@@ -446,7 +446,7 @@ class WpProQuiz_Controller_Quiz extends WpProQuiz_Controller_Controller {
 				
 				return;
 			} else {
-				WpProQuiz_View_View::admin_notices( sprintf( esc_html_x('%s title or %s description are not filled', 'Quiz title or quiz description are not filled', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN), LearnDash_Custom_Label::get_label( 'quiz' ), LearnDash_Custom_Label::label_to_lower( 'quiz' )) );
+				WpProQuiz_View_View::admin_notices( sprintf( esc_html_x('%1$s title or %2$s description are not filled', 'Quiz title or quiz description are not filled', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN), LearnDash_Custom_Label::get_label( 'quiz' ), LearnDash_Custom_Label::label_to_lower( 'quiz' )) );
 			}
 		} else if(isset($this->_post['template']) || isset($this->_post['templateLoad'])) {
 			if(isset($this->_post['template']))
@@ -518,7 +518,7 @@ class WpProQuiz_Controller_Quiz extends WpProQuiz_Controller_Controller {
 				$this->showAction();
 				return;
 			} else {
-				WpProQuiz_View_View::admin_notices( sprintf( esc_html_x('%s title or %s description are not filled', 'Quiz title or quiz description are not filled', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN), LearnDash_Custom_Label::get_label( 'quiz' ), LearnDash_Custom_Label::label_to_lower( 'quiz' )) );
+				WpProQuiz_View_View::admin_notices( sprintf( esc_html_x('%1$s title or %2$s description are not filled', 'Quiz title or quiz description are not filled', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN), LearnDash_Custom_Label::get_label( 'quiz' ), LearnDash_Custom_Label::label_to_lower( 'quiz' )) );
 			}
 		} else if(isset($this->_post['template']) || isset($this->_post['templateLoad'])) {
 			if(isset($this->_post['template']))

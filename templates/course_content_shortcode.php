@@ -109,27 +109,52 @@
 
 				</div>
 			</div>
+			<?php
+				global $course_lessons_results;
+				if ( isset( $course_lessons_results['pager'] ) ) {
+					echo SFWD_LMS::get_template( 
+						'learndash_pager.php', 
+						array(
+						'pager_results' => $course_lessons_results['pager'], 
+						'pager_context' => 'course_content'
+						) 
+					);
+				}
+			?>
 		<?php endif; ?>
+		<?php
+			if ( ( isset( $course_lessons_results['pager'] ) ) && ( !empty( $course_lessons_results['pager'] ) ) ) {
+				if ( $course_lessons_results['pager']['paged'] == $course_lessons_results['pager']['total_pages'] ) {
+					$show_course_quizzes = true;
+				} else {
+					$show_course_quizzes = false;
+				}
+			} else {
+				$show_course_quizzes = true;
+			}
+		?>
 
 
 		<?php /* Show Quiz List */ ?>	
-		<?php if ( ! empty( $quizzes ) ) : ?>
-			<div id='learndash_quizzes'>
-				<div id='quiz_heading'>
-					<span><?php echo LearnDash_Custom_Label::get_label( 'quizzes' ); ?></span><span class='right'><?php esc_html_e( 'Status', 'learndash' ); ?></span>
-				</div>
-				<div id='quiz_list'>
-				<?php foreach ( $quizzes as $quiz ) : ?>
-					<div id='post-<?php echo $quiz['post']->ID; ?>' class='<?php echo $quiz['sample']; ?>'>
-						<div class='list-count'><?php echo $quiz['sno']; ?></div>
-						<h4>
-							<a class='<?php echo $quiz['status']; ?>' href='<?php echo learndash_get_step_permalink( $quiz['post']->ID, $course_id ); ?>'><?php echo $quiz['post']->post_title; ?></a>
-						</h4>
+		<?php 
+			if ( $show_course_quizzes == true ) {
+			if ( ! empty( $quizzes ) ) : ?>
+				<div id='learndash_quizzes'>
+					<div id='quiz_heading'>
+						<span><?php echo LearnDash_Custom_Label::get_label( 'quizzes' ); ?></span><span class='right'><?php esc_html_e( 'Status', 'learndash' ); ?></span>
 					</div>
-				<?php endforeach; ?>
+					<div id='quiz_list'>
+						<?php foreach ( $quizzes as $quiz ) : ?>
+							<div id='post-<?php echo $quiz['post']->ID; ?>' class='<?php echo $quiz['sample']; ?>'>
+								<div class='list-count'><?php echo $quiz['sno']; ?></div>
+								<h4><a class='<?php echo $quiz['status']; ?>' href='<?php echo learndash_get_step_permalink( $quiz['post']->ID, $course_id ); ?>'><?php echo $quiz['post']->post_title; ?></a></h4>
+							</div>
+						<?php endforeach; ?>
+					</div>
 				</div>
-			</div>
-		<?php endif; ?>	
+			<?php endif; 
+			}
+		?>	
 
 	</div>
 <?php endif; ?>

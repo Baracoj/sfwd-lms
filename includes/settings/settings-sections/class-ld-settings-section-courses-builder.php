@@ -54,7 +54,7 @@ if ( ( class_exists( 'LearnDash_Settings_Section' ) ) && ( !class_exists( 'Learn
 				'enabled' => array(
 					'name'  		=> 	'enabled', 
 					'type'  		=> 	'checkbox',
-					'desc_before'	=>	sprintf( esc_html_x( 'Enables the %s Builder interface. This will allow you to manage %s, %s, %s within the %s editor screen.', 'placeholder: Course, Lessons, Topics, Quizzes, Course', 'learndash' ), LearnDash_Custom_Label::get_label( 'course'), LearnDash_Custom_Label::get_label( 'lessons'), LearnDash_Custom_Label::get_label( 'topics'), LearnDash_Custom_Label::get_label( 'quizzes'), LearnDash_Custom_Label::get_label( 'course') ),
+					'desc_before'	=>	sprintf( esc_html_x( 'Enables the %1$s Builder interface. This will allow you to manage %2$s, %3$s, %4$s within the %5$s editor screen.', 'placeholder: Course, Lessons, Topics, Quizzes, Course', 'learndash' ), LearnDash_Custom_Label::get_label( 'course'), LearnDash_Custom_Label::get_label( 'lessons'), LearnDash_Custom_Label::get_label( 'topics'), LearnDash_Custom_Label::get_label( 'quizzes'), LearnDash_Custom_Label::get_label( 'course') ),
 					
 					'label' 		=> 	sprintf( esc_html_x( '%s Builder Interface', 'placeholder: Course', 'learndash' ), LearnDash_Custom_Label::get_label( 'course') ),
 					'help_text'		=>	sprintf( esc_html_x( 'Enable %s Builder Interface', 'placeholder: Course', 'learndash' ), LearnDash_Custom_Label::get_label( 'course') ),
@@ -79,7 +79,7 @@ if ( ( class_exists( 'LearnDash_Settings_Section' ) ) && ( !class_exists( 'Learn
 				'shared_steps' => array(
 					'name'  		=> 	'shared_steps', 
 					'type'  		=> 	'checkbox',
-					'desc_before'	=>	sprintf( wp_kses_post(  _x( '<p>Enables using %s, %s, and %s across multiple %s. <span style="ld-important">%s Builder must be enabled. Enabling this option will also enable the <a href="%s">nested permalinks</a> setting.</span></p>', 'placeholder: Lessons, Topics, Quizzes, Courses, Course, URL to admin Permalinks', 'learndash' ) ),
+					'desc_before'	=>	sprintf( wp_kses_post(  _x( '<p>Enables using %1$s, %2$s, and %3$s across multiple %4$s. <span style="ld-important">%5$s Builder must be enabled. Enabling this option will also enable the <a href="%6$s">nested permalinks</a> setting.</span></p>', 'placeholder: Lessons, Topics, Quizzes, Courses, Course, URL to admin Permalinks', 'learndash' ) ),
 											LearnDash_Custom_Label::get_label( 'lessons'), 
 											LearnDash_Custom_Label::get_label( 'topics'), 
 											LearnDash_Custom_Label::get_label( 'quizzes'), 

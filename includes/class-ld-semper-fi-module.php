@@ -1069,7 +1069,6 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 	 * @return string
 	 */
 	function do_multi_input( $args ) {
-		//error_log('args<pre>'. print_r($args, true) .'</pre>');
 		extract( $args );
 		$buf1 = '';
 		$type = $options['type'];
@@ -1100,13 +1099,9 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 			$block = '<select '. $lazy_load_data .' name="'. $name .'" ' . $attr .'>%s\n</select>';
 			
 			$show_required = false;
-			if ( in_array( $args['name'], array( 'sfwd-lessons_course', 'sfwd-topic_course', 'sfwd-topic_lesson', 'sfwd-quiz_lesson' ) ) === true ) {
-				if ( $args['name'] == 'sfwd-quiz_lesson' ) {
-					$course_id = get_post_meta( get_the_id(), 'course_id', true );
-					if ( ( !empty( $course_id ) ) && ( ( !isset( $args['value'] ) ) || ( empty( $args['value'] ) ) ) ) {
-						$show_required = true;
-					}
-				} else if ( ( !isset( $args['value'] ) ) || ( empty( $args['value'] ) ) ) {
+			
+			if ( in_array( $args['name'], array( 'sfwd-lessons_course', 'sfwd-topic_course', 'sfwd-topic_lesson') ) === true ) {
+				if ( ( !isset( $args['value'] ) ) || ( empty( $args['value'] ) ) ) {
 					$show_required = true;
 				} 
 			}

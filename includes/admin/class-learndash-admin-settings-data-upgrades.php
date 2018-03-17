@@ -354,11 +354,13 @@ if ( !class_exists( 'Learndash_Admin_Settings_Data_Upgrades' ) ) {
 // Go ahead and inlcude out User Meta Courses upgrade class
 
 require_once( LEARNDASH_LMS_PLUGIN_DIR .'includes/admin/classes-data-uprades-actions/class-learndash-admin-data-upgrades-translations.php' );
+require_once( LEARNDASH_LMS_PLUGIN_DIR .'includes/admin/classes-data-uprades-actions/class-learndash-admin-data-upgrades-group-leader-role.php' );
 require_once( LEARNDASH_LMS_PLUGIN_DIR .'includes/admin/classes-data-uprades-actions/class-learndash-admin-data-upgrades-user-activity-db-table.php' );
 require_once( LEARNDASH_LMS_PLUGIN_DIR .'includes/admin/classes-data-uprades-actions/class-learndash-admin-data-upgrades-user-meta-courses.php' );
 require_once( LEARNDASH_LMS_PLUGIN_DIR .'includes/admin/classes-data-uprades-actions/class-learndash-admin-data-upgrades-user-meta-quizzes.php' );
 add_action('plugins_loaded', function() {
 	new Learndash_Admin_Data_Upgrades_Translations();
+	new Learndash_Admin_Data_Upgrades_Group_Leader_Role();
 	new Learndash_Admin_Data_Upgrades_User_Activity_DB_Table();
 	new Learndash_Admin_Data_Upgrades_User_Meta_Courses();
 	new Learndash_Admin_Settings_Upgrades_User_Meta_Quizzes();

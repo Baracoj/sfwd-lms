@@ -39,6 +39,10 @@ if ( ( isset( $pager_results ) ) && ( !empty( $pager_results ) ) ) {
 				$href_query_arg = 'ld-profile-page';
 			
 				break;
+			case 'course_content':
+				$href_query_arg = 'ld-courseinfo-lesson-page';
+		
+				break;
 			
 			// These are just here to show the existing different context items. 	
 			case 'course_info_registered':

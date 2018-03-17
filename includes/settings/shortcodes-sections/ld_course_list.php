@@ -45,8 +45,8 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 					'id'			=>	$this->shortcodes_section_key . '_num',
 					'name'  		=> 	'num', 
 					'type'  		=> 	'number',
-					'label' 		=> 	esc_html__('Number','learndash'),
-					'help_text'		=>	sprintf( esc_html_x( 'limits the number of %s displayed.', 'placeholders: courses', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'courses' ) ),
+					'label' 		=> 	sprintf( esc_html_x('%s Per Page', 'placeholders: courses', 'learndash' ), LearnDash_Custom_Label::get_label( 'courses' ) ),
+					'help_text'		=>	sprintf( esc_html_x( '%s per page. Default is %d. Set to zero for all.', 'placeholders: courses, default per page', 'learndash' ), LearnDash_Custom_Label::get_label( 'courses' ), LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' ) ),
 					'value' 		=> 	'',
 					'class'			=>	'small-text',
 					'attrs'			=>	array(
@@ -59,7 +59,7 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 					'id'			=>	$this->shortcodes_section_key . '_mycourses',
 					'name'  		=> 	'mycourses', 
 					'type'  		=> 	'select',
-					'label' 		=> 	sprintf( esc_html_x('My %s', 'laceholder: Courses', 'learndash'), LearnDash_Custom_Label::get_label( 'courses' ) ),
+					'label' 		=> 	sprintf( esc_html_x( 'My %s', 'placeholder: Courses', 'learndash'), LearnDash_Custom_Label::get_label( 'courses' ) ),
 					'help_text'		=>	sprintf( esc_html_x( 'show current user\'s %s.', 'placeholders: courses', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'courses' ) ),
 					'value' 		=> 	'',
 					'options'		=>	array(

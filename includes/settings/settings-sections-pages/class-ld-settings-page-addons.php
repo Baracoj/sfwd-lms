@@ -4,7 +4,8 @@ if ( ( class_exists( 'LearnDash_Settings_Page' ) ) && ( !class_exists( 'LearnDas
 
 		function __construct() {
 			//$this->settings_screen_id		= 	'admin_page_learndash_lms_addons';
-			$this->parent_menu_page_url		=	'learndash-lms';
+			//$this->parent_menu_page_url		=	'learndash-lms';
+			$this->parent_menu_page_url		=	'admin.php?page=learndash_lms_addons';
 			$this->menu_page_capability		=	LEARNDASH_ADMIN_CAPABILITY_CHECK;
 			$this->settings_page_id 		= 	'learndash_lms_addons';
 			$this->settings_page_title 		= 	esc_html__( 'LearnDash Add-ons', 'learndash' );
@@ -13,35 +14,31 @@ if ( ( class_exists( 'LearnDash_Settings_Page' ) ) && ( !class_exists( 'LearnDas
 
 			// Override action with custom plugins function for add-ons.
 			add_action( 'install_plugins_pre_plugin-information', array( $this, 'shows_addon_plugin_information' ) );
+			add_filter( 'learndash_submenu_last', array( $this, 'submenu_item' ), 200 );
 
 			add_filter( 'learndash_admin_tab_sets', array( $this, 'learndash_admin_tab_sets' ), 10, 3 );
 			
 			parent::__construct(); 
 		}
 		
-		function admin_menu( ) {
-			$license_status = get_option( 'nss_plugin_remote_license_sfwd_lms' );
-			//error_log('license_status<pre>'. print_r($license_status, true) .'</pre>');
-			
-			if ( isset( $license_status['value'] ) ) {
-				$license_status = $license_status['value'];
-				if ( empty( $license_status ) || $license_status == 'false' || $license_status == 'not_found' )
-					return;
-				
-				if ( !$this->settings_screen_id ) {
-					$this->settings_screen_id = add_submenu_page(
-						$this->parent_menu_page_url,
-						$this->settings_tab_title,
-						$this->settings_tab_title,
-						$this->menu_page_capability,
-						$this->settings_page_id,
-						array( $this, 'show_settings_page' )
-					);
+		public function submenu_item( $submenu ) {
+			if ( !isset( $submenu[$this->settings_page_id] ) ) {
+				$license_status = get_option( 'nss_plugin_remote_license_sfwd_lms' );
+				if ( isset( $license_status['value'] ) ) {
+					$license_status = $license_status['value'];
+					if ( !empty( $license_status ) && ( $license_status != 'false') && ( $license_status != 'not_found' ) ) {
+						$submenu[$this->settings_page_id] = array(
+				        	'name' => $this->settings_tab_title,
+				        	'cap'  => $this->menu_page_capability, 
+				        	'link' => $this->parent_menu_page_url,
+				    	);
+					}
 				}
-				add_action( "load-". $this->settings_screen_id, array( $this, 'load_settings_page') );
 			}
+
+		    return $submenu;
 		}
-		
+				
 		function get_admin_page_title() {
 			return apply_filters( 'learndash_admin_page_title', '<h1>'. $this->settings_page_title . '</h1>' );
 		}
@@ -58,8 +55,10 @@ if ( ( class_exists( 'LearnDash_Settings_Page' ) ) && ( !class_exists( 'LearnDas
 		
 		function learndash_admin_tab_sets( $tab_set = array(), $tab_key = '', $current_page_id = '' ) {
 			if ( ( !empty( $tab_set ) ) && ( !empty( $tab_key ) ) && ( !empty( $current_page_id ) ) ) {
-				if ( 'learndash-lms_page_learndash_lms_addons' == $current_page_id ) {
-					$tab_set = array();
+				if ( 'admin_page_learndash_lms_addons' == $current_page_id ) {
+					//$tab_set = array();
+					//add_action( 'admin_footer', 'learndash_select_menu' );
+					?><style> h1.nav-tab-wrapper { display: none; }</style><?php
 				}
 			} 
 			return $tab_set;

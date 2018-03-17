@@ -18,7 +18,7 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 		private $data = null;
 		private $bb_api = null;
 		
-		private $options_key = 'ld-repositories';
+		private $options_key = 'learndash-repositories';
 		private $_doing_install_upgrade_slug = false;
 
 		function __construct() {
@@ -333,7 +333,8 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 
 			$plugins_data_sorted = array();
 			foreach( $repos_updated_on as $repo_slug ) {
-				$plugins_data_sorted[$repo_slug] = $this->data['plugins'][$repo_slug];
+				if ( isset( $this->data['plugins'][$repo_slug] ) ) 
+					$plugins_data_sorted[$repo_slug] = $this->data['plugins'][$repo_slug];
 			}
 			$this->data['plugins'] = $plugins_data_sorted;
 		}

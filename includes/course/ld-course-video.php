@@ -422,7 +422,13 @@ if (!class_exists('Learndash_Course_Video' ) ) {
 										$this->video_data['videos_auto_start'] = 0;
 									}
 									
-									preg_match('/<iframe.*src=\"(.*)\".*><\/iframe>/isU', $this->video_content, $matches );
+									if ( strstr( $this->video_content, ' src="' ) ) {
+										$video_preg_pattern = '/<iframe.*src=\"(.*)\".*><\/iframe>/isU';
+									} else if ( strstr( $this->video_content, " src='" ) ) {
+										$video_preg_pattern = "/<iframe.*src=\'(.*)\'.*><\/iframe>/isU";
+									}
+									
+									preg_match( $video_preg_pattern, $this->video_content, $matches );
 									if ( ( is_array( $matches ) ) && ( isset( $matches[1] ) ) && ( !empty( $matches[1] ) ) ) {
 				
 										// Next we need to check if the video is YouTube, Vimeo, etc. so we check the matches[1]

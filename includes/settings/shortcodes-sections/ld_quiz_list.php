@@ -57,8 +57,8 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 					'id'			=>	$this->shortcodes_section_key . '_num',
 					'name'  		=> 	'num', 
 					'type'  		=> 	'number',
-					'label' 		=> 	esc_html__('Number','learndash'),
-					'help_text'		=>	sprintf( esc_html_x( 'limits the number of %s displayed.', 'placeholders: courses', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'courses' ) ),
+					'label' 		=> 	sprintf( esc_html_x( '%s Per Page', 'placeholders: quizzes', 'learndash'), LearnDash_Custom_Label::get_label( 'quizzes' ) ),
+					'help_text'		=>	sprintf( esc_html_x( '%s per page. Default is %d. Set to zero for all.', 'placeholders: quizzes, default per page', 'learndash' ), LearnDash_Custom_Label::get_label( 'quizzes' ), LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' ) ),
 					'value' 		=> 	'',
 					'class'			=>	'small-text',
 					'attrs'			=>	array(

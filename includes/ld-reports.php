@@ -1256,11 +1256,12 @@ function learndash_report_clear_by_activity_ids( $activity_ids = array() ) {
 function learndash_activity_clear_mismatched_users() {
 	global $wpdb;
 	
-	$sql_str = "SELECT DISTINCT ". $wpdb->prefix ."learndash_user_activity.user_id 
-	FROM ". $wpdb->prefix ."learndash_user_activity 
-	LEFT JOIN ". $wpdb->users ." ON ". $wpdb->prefix ."learndash_user_activity.user_id=". $wpdb->users .".ID
-	WHERE ". $wpdb->users .".ID is NULL";
-	//error_log('sql_str['. $sql_str .']');
+	$sql_str = "SELECT DISTINCT lua.user_id 
+	FROM {$wpdb->prefix}learndash_user_activity as lua
+	LEFT JOIN {$wpdb->usermeta} as um1 ON lua.user_id = um1.user_id AND um1.meta_key = '{$wpdb->prefix}capabilities'
+	LEFT JOIN {$wpdb->users} as users ON lua.user_id = users.ID
+	WHERE 1=1
+	AND ( um1.meta_key IS NULL OR users.ID is NULL )";
 	
 	$process_users = $wpdb->get_col( $sql_str );
 	if ( !empty( $process_users ) ) {

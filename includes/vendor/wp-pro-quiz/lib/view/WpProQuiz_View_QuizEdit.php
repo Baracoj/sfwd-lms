@@ -262,7 +262,7 @@ class WpProQuiz_View_QuizEdit extends WpProQuiz_View_View {
 											<?php esc_html_e('Activate', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN); ?>
 										</label>
 										<p class="description">
-											<?php echo sprintf( esc_html_x('If you activate this option, the user can complete the %s only once. Afterwards the %s is blocked for this user.', 'placeholders: quiz, quiz', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN), LearnDash_Custom_Label::label_to_lower( 'quiz' ), LearnDash_Custom_Label::label_to_lower( 'quiz' ) ); ?>
+											<?php echo sprintf( esc_html_x('If you activate this option, the user can complete the %1$s only once. Afterwards the %2$s is blocked for this user.', 'placeholders: quiz, quiz', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN), LearnDash_Custom_Label::label_to_lower( 'quiz' ), LearnDash_Custom_Label::label_to_lower( 'quiz' ) ); ?>
 										</p>
 										
 										<div id="wpProQuiz_quiz_run_once_type" style="margin-bottom: 5px; display: none;">
@@ -349,7 +349,7 @@ class WpProQuiz_View_QuizEdit extends WpProQuiz_View_View {
 											<?php esc_html_e('Activate', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN); ?>
 										</label>
 										<p class="description">
-											<?php echo sprintf( esc_html_x('If you enable this option, you can choose %s, which user have to finish before he can start this %s.', 'placeholders: quiz, quiz', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN), LearnDash_Custom_Label::label_to_lower( 'quiz' ), LearnDash_Custom_Label::label_to_lower( 'quiz' ) ); ?>
+											<?php echo sprintf( esc_html_x('If you enable this option, you can choose %1$s, which user have to finish before he can start this %2$s.', 'placeholders: quiz, quiz', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN), LearnDash_Custom_Label::label_to_lower( 'quiz' ), LearnDash_Custom_Label::label_to_lower( 'quiz' ) ); ?>
 										</p>
 										<p class="description">
 											<?php echo sprintf( esc_html_x('In all selected %s statistic function have to be active. If it is not it will be activated automatically.', 'placeholders: quizzes', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN), LearnDash_Custom_Label::label_to_lower( 'quizzes' ) ); ?>

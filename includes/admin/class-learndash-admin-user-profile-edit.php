@@ -166,8 +166,8 @@ if (!class_exists('Learndash_Admin_User_Profile_Edit')) {
 				'progress_orderby' => 'title',
 				'progress_order' => 'ASC',
 				'quiz_num' => LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'quiz_num' ),
-				'quiz_orderby' => 'title',
-				'quiz_order' => 'ASC'
+				'quiz_orderby' => 'taken',
+				'quiz_order' => 'DESC'
 			);
 			
 			$atts = apply_filters('learndash_profile_course_info_atts', $atts, $user );

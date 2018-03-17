@@ -148,7 +148,10 @@ if ( ! function_exists( 'post2pdf_conv_post_to_pdf' ) ) {
 		}
 
 		if ( ! empty( $_GET['lang'] ) ) {
-			$config_lang = substr( esc_html( $_GET['lang'] ), 0, 3 );
+			$config_lang_tmp = substr( esc_html( $_GET['lang'] ), 0, 3 );
+			if ( ( strlen( $config_lang_tmp ) == 3 ) && ( file_exists( dirname( __FILE__ ) . '/vendor/tcpdf/config/lang/' . $config_lang_tmp . '.php' ) ) ) {
+				$config_lang = $config_lang_tmp;
+			} 
 		}
 
 		if ( ! empty( $_GET['file'] ) ) {

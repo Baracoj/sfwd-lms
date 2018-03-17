@@ -1,4 +1,18 @@
 <?php
+/**
+ * Displays the Course Switcher displayed within the Associate Content admin widget. 
+ * Available Variables:
+ * none
+ * 
+ * @since 2.5.0
+ * 
+ * @package LearnDash\Course
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly
+}
+
 if ( ( isset( $_GET['post'] ) ) && ( !empty( $_GET['post'] ) ) ) {
 	$post = get_post( intval( $_GET['post'] ) );
 	if ( is_a( $post, 'WP_Post' ) && ( in_array( $post->post_type, array( 'sfwd-lessons', 'sfwd-topic', 'sfwd-quiz' ) ) ) ) {
@@ -12,7 +26,12 @@ if ( ( isset( $_GET['post'] ) ) && ( !empty( $_GET['post'] ) ) ) {
 		if ( isset( $cb_courses['secondary'] ) ) 
 			$count_secondary = count( $cb_courses['secondary'] );
 
-		if ( ( $count_primary > 0 ) || ( ( $count_primary == 0 ) && ( $count_secondary > 1 ) ) ) {
+		if ( ( $count_primary > 0 ) || ( $count_secondary > 0 ) ) {
+	
+			$use_select_opt_groups = false;
+			if ( ( $count_primary > 0 ) && ( $count_secondary > 0 ) ) {
+				$use_select_opt_groups = true;
+			}
 	
 			$default_course_id = learndash_get_course_id( $post->ID, true );
 
@@ -37,10 +56,6 @@ if ( ( isset( $_GET['post'] ) ) && ( !empty( $_GET['post'] ) ) ) {
 					} 
 				?>
 				<?php
-				$use_select_opt_groups = false;
-				if ( ( isset( $cb_courses['primary'] ) ) && ( !empty( $cb_courses['primary'] ) ) && ( isset( $cb_courses['secondary'] ) ) && ( !empty( $cb_courses['secondary'] ) ) ) {
-					$use_select_opt_groups = true;
-				}
 
 				foreach( $cb_courses as $course_key => $course_set ) {
 					if ( $use_select_opt_groups === true ) {

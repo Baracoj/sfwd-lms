@@ -27,7 +27,7 @@ if ( ( class_exists( 'LearnDash_Settings_Page' ) ) && ( !class_exists( 'LearnDas
 							<p  class="ld-shortcode-header">[quizinfo]</p>
 							<p>' . sprintf( esc_html_x( 'This shortcode displays information regarding %s attempts on the certificate. This shortcode can use the following parameters:', 'placeholders: quiz', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'quiz' ) ) . '</p>
 								<ul>
-								<li><b>SHOW</b>: ' . sprintf( esc_html_x( 'This parameter determines the information to be shown by the shortcode. Possible values are:
+								<li><b>SHOW</b>: ' . sprintf( wp_kses_post( _x( 'This parameter determines the information to be shown by the shortcode. Possible values are:
 									<ol class="cert_shortcode_parm_list">
 										<li>score</li>
 										<li>count</li>
@@ -40,7 +40,7 @@ if ( ( class_exists( 'LearnDash_Settings_Page' ) ) && ( !class_exists( 'LearnDas
 										<li>course_title</li>
 										<li>timespent</li>
 									</ol>
-									<br>Example: <b>[quizinfo show="percentage"]</b> shows the percentage score of the user in the %s.', 'placeholder: quiz', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'quiz' ) )  . '<br><br></li>
+									<br>Example: <b>[quizinfo show="percentage"]</b> shows the percentage score of the user in the %s.', 'placeholder: quiz', 'learndash' ) ), LearnDash_Custom_Label::label_to_lower( 'quiz' ) ) . '<br><br></li>
 								<li><b>FORMAT</b>: ' . wp_kses_post( __( 'This can be used to change the timestamp format. Default: "F j, Y, g:i a" shows as <i>March 10, 2001, 5:16 pm</i>. <br>Example: <b>[quizinfo show="timestamp" format="Y-m-d H:i:s"]</b> will show as <i>2001-03-10 17:16:18</i>', 'learndash' ) ) . '</li>
 								</ul>
 								<p>' . wp_kses_post( __( 'See <a target="_blank" href="http://php.net/manual/en/function.date.php">the full list of available date formating strings  here.</a>', 	'learndash' ) ) . '</p><br />

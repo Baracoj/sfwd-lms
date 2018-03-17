@@ -42,6 +42,10 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 			add_action( 'init', array( $this, 'trigger_actions' ), 1 );
 			add_action( 'init', array( $this, 'add_post_types' ), 2 );
 			
+			// WPMU (Multisite) actions when a new blog is added/deleted
+			add_action( 'wpmu_new_blog', array( $this, 'wpmu_new_blog' ) );
+			add_action( 'delete_blog', array( $this, 'delete_blog'), 10, 2 );
+							
 			//add_action( 'plugins_loaded', array( $this, 'add_post_types' ), 1 );
 			add_filter( 'query_vars', array( $this, 'add_query_vars' ) );
 			add_action( 'parse_request', array( $this, 'parse_ipn_request' ) );
@@ -101,6 +105,11 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 
 		function trigger_actions() {
 			if ( is_admin() ) {
+				if ( ( is_multisite() ) && ( !is_network_admin() ) ) {
+					if ( isset( $_GET['learndash_activate'] ) ) {
+						$this->activate();
+					}
+				}
 				do_action('learndash_admin_init');
 			}
 			
@@ -113,6 +122,35 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				do_action('learndash_settings_pages_init');
 			}
 		}
+
+		/**
+		 * Called when new Multisite blog is created 
+		 * this is used to trigger the activate logic 
+		 *
+		 * @since 2.5.5
+		 */
+		function wpmu_new_blog( $blog_id = 0 ) {
+			if ( !empty( $blog_id ) ) {
+				switch_to_blog( $blog_id );
+				$this->activate();
+				restore_current_blog();
+			} 
+		}
+
+		/**
+		 * Called when Multisite blog is deleted 
+		 * this is used to remove any custom DB tables. 
+		 *
+		 * @since 2.5.5
+		 */
+		function delete_blog( $blog_id = 0, $drop_tables = false ) {
+			if ( ( !empty( $blog_id ) ) && ( $drop_tables === true ) ) {
+				switch_to_blog( $blog_id );
+				learndash_delete_all_data();
+				restore_current_blog();
+			} 
+		}
+
 
 		function get_post_args_section( $section = '', $sub_section = '' ) {
 			if ( ( !empty( $section ) ) && ( isset( $this->post_args[$section] ) ) )
@@ -1340,7 +1378,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 					*/
 				),
 				'sfwd-topic' => array(
-					'plugin_name' => sprintf( esc_html_x( '%s %s', 'Lesson Topic Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ), LearnDash_Custom_Label::get_label( 'topic' ) ),
+					'plugin_name' => sprintf( esc_html_x( '%1$s %2$s', 'Lesson Topic Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ), LearnDash_Custom_Label::get_label( 'topic' ) ),
 					'slug_name' => LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Section_Permalinks', 'topics' ),
 					'post_type' => 'sfwd-topic',
 					'template_redirect' => true,
@@ -1355,7 +1393,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 						'map_meta_cap' => true,
 						//'taxonomies' => array( 'post_tag'),
 					),
-					'options_page_title' => sprintf( esc_html_x( '%s %s Options', 'Lesson Topic Options Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ), LearnDash_Custom_Label::get_label( 'topic' ) ),
+					'options_page_title' => sprintf( esc_html_x( '%1$s %2$s Options', 'Lesson Topic Options Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ), LearnDash_Custom_Label::get_label( 'topic' ) ),
 					'fields' => array(
 						'topic_materials' => array(
 							'name' => sprintf( esc_html_x( '%s Materials', 'Topic Materials Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'topic' ) ),
@@ -1382,7 +1420,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'name' => sprintf( esc_html_x( 'Associated %s', 'Associated Lesson Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ), 
 							'type' => 'select', 
 							'lazy_load'	=> true,
-							'help_text' => sprintf( esc_html_x( 'Associate this %s with a %s.', 'Associate this topic with a lesson.', 'learndash' ), LearnDash_Custom_Label::get_label('topic'), LearnDash_Custom_Label::get_label('lesson') ),
+							'help_text' => sprintf( esc_html_x( 'Associate this %1$s with a %2$s.', 'Associate this topic with a lesson.', 'learndash' ), LearnDash_Custom_Label::get_label('topic'), LearnDash_Custom_Label::get_label('lesson') ),
 							'default' => '' , 
 							//'initial_options' => $this->select_a_lesson(), // // Move to topic_display_settings
 							'show_in_rest' => false,
@@ -1524,7 +1562,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 						'repeats' => array( 
 							'name' => esc_html__( 'Repeats', 'learndash' ), 
 							'type' => 'text', 
-							'help_text' => sprintf( esc_html_x( 'Number of repeats allowed for %s. Blank = unlimited attempts. 0 = 1 attempt, 1 = 2 attemtps, etc.', 'Number of repeats allowed for quiz', 'learndash' ), LearnDash_Custom_Label::label_to_lower('quiz') ),
+							'help_text' => sprintf( esc_html_x( 'Number of repeats allowed for %s. Blank = unlimited attempts. 0 = 1 attempt, 1 = 2 attempts, etc.', 'Number of repeats allowed for quiz', 'learndash' ), LearnDash_Custom_Label::label_to_lower('quiz') ),
 							'default' => '',
 						),
 						'threshold' => array( 
@@ -1704,41 +1742,56 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 		 * @return string          		output of course information
 		 */
 		static function get_course_info( $user_id, $atts = array() ) {
+			/*
+			if (( isset( $atts['registered_orderby'] ) ) && ( empty( $atts['registered_orderby'] ) ))
+				unset( $atts['registered_orderby'] );
+			if (( isset( $atts['registered_order'] ) ) && ( empty( $atts['registered_order'] ) ))
+				unset( $atts['registered_order'] );
 
-			$atts = shortcode_atts( 
-				apply_filters( 
-					'learndash_ld_course_list_shortcode_defaults', 
-					array(
-						'return' => false, // Set to true to return the array data nstead of calling the template for output. 
-						// This function essentially produces the output of three sections. Registered Courses, 
-						// Course Progress and Quiz Attempts. This parameters lets us control which section to 
-						// return or all.  
-						'type' => array('registered','course','quiz' ), 
-						
-						// Defaults
-						'num' => false,
-						'orderby' => 'title',
-						'order' => 'ASC',
-						 
-						// Registered Courses 
-						'registered_num' => false, 
-						'registered_show_thumbnail' => 'true',
-						'registered_orderby' => 'title',
-						'registered_order' => 'ASC',
+			if (( isset( $atts['progress_orderby'] ) ) && ( empty( $atts['progress_orderby'] ) ))
+				unset( $atts['progress_orderby'] );
+			if (( isset( $atts['progress_order'] ) ) && ( empty( $atts['progress_order'] ) ))
+				unset( $atts['progress_order'] );
 
-						// Course Progress
-						'progress_num' => false, 
-						'progress_orderby' => 'title',
-						'progress_order' => 'ASC', 
-						
-						// Quizzes
-						'quiz_num' => false, 
-						'quiz_orderby' => 'title',
-						'quiz_order' => 'ASC', 
-					)
-				), 
-				$atts 
+			if (( isset( $atts['quiz_orderby'] ) ) && ( empty( $atts['quiz_orderby'] ) ))
+				unset( $atts['quiz_orderby'] );
+			if (( isset( $atts['quiz_order'] ) ) && ( empty( $atts['quiz_order'] ) ))
+				unset( $atts['quiz_order'] );
+			*/
+			
+			$atts_defaults = apply_filters( 
+				'learndash_ld_course_list_shortcode_defaults', 
+				array(
+					'return' => false, // Set to true to return the array data nstead of calling the template for output. 
+					// This function essentially produces the output of three sections. Registered Courses, 
+					// Course Progress and Quiz Attempts. This parameters lets us control which section to 
+					// return or all.  
+					'type' => array('registered','course','quiz' ), 
+				
+					// Defaults
+					'num' => LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' ),
+					'orderby' => 'title',
+					'order' => 'ASC',
+				 
+					// Registered Courses 
+					'registered_num' => false, 
+					'registered_show_thumbnail' => 'true',
+					'registered_orderby' => 'title',
+					'registered_order' => 'ASC',
+
+					// Course Progress
+					'progress_num' => false, 
+					'progress_orderby' => 'title',
+					'progress_order' => 'ASC', 
+				
+					// Quizzes
+					'quiz_num' => false, 
+					'quiz_orderby' => 'taken',
+					'quiz_order' => 'DESC', 
+				)
 			);
+
+			$atts = shortcode_atts( $atts_defaults, $atts );
 
 			if ( !empty( $atts['type'] ) ) {
 				if ( is_string( $atts['type'] ) ) {
@@ -1754,26 +1807,20 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 			if ( in_array( 'registered', $atts['type'] ) ) {
 			
 				if ( empty( $atts['registered_show_thumbnail'] ) ) {
-					$atts['registered_show_thumbnail'] = 'true';
+					$atts['registered_show_thumbnail'] = $atts_defaults['registered_show_thumbnail'];
 				}
 							
 				if ( !empty( $courses_registered_all ) ) {
-					if ( $atts['registered_num'] === false ) {
-						if ( $atts['num'] === false ) {
-							$atts['registered_num'] = LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'registered_num' );
-						} else {
-							$atts['registered_num'] = intval( $atts['num'] );
-						}
-					} else {
+					if ( $atts['registered_num'] === false )
+						$atts['registered_num'] = intval( $atts_defaults['num'] );
+					else
 						$atts['registered_num'] = intval( $atts['registered_num'] );
-					}
 				
-					if ( ( !isset( $atts['registered_orderby'] ) ) || ( empty( $atts['registered_orderby'] ) ) ) {
-						$atts['registered_orderby'] = $atts['orderby'];
-					}
-					if ( ( !isset( $atts['registered_order'] ) ) || ( empty( $atts['registered_order'] ) ) ) {
-						$atts['registered_order'] = $atts['order'];
-					}
+					if ( ( !isset( $atts['registered_orderby'] ) ) || ( empty( $atts['registered_orderby'] ) ) )
+						$atts['registered_orderby'] = $atts_defaults['registered_orderby'];
+
+					if ( ( !isset( $atts['registered_order'] ) ) || ( empty( $atts['registered_order'] ) ) )
+						$atts['registered_order'] = $atts_defaults['registered_order'];
 				
 					$courses_registered_query_args = array(
 						'post_type'			=>	'sfwd-courses',
@@ -1824,30 +1871,25 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				$course_progress = empty( $usermeta ) ? array() : $usermeta;
 				//error_log('course_progress<pre>'. print_r($course_progress, true) .'</pre>');
 
+				$course_progress_ids = array_merge( $courses_registered_all, array_keys( $course_progress ) );
+
 				// The course_info_shortcode.php template is driven be the $courses_registered array. 
 				// We want to make sure we show ALL the courses from both the $courses_registered and 
 				// the course_progress. Also we want to run through WP_Query so we can ensure they still 
 				// exist as valid posts AND we want to sort these alphs by title
 				//$courses_registered = array_merge( $courses_registered, array_keys( $course_progress ) );
-				if ( !empty( $course_progress ) ) {
-					if ( $atts['progress_num'] === false ) {
-						if ( $atts['num'] === false ) {
-							$atts['progress_num'] = LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'registered_num' );
-						} else {
-							$atts['progress_num'] = intval( $atts['num'] );
-						}
-					} else {
+				if ( !empty( $course_progress_ids ) ) {
+
+					if ( $atts['progress_num'] === false )
+						$atts['progress_num'] = intval( $atts_defaults['num'] );
+					else
 						$atts['progress_num'] = intval( $atts['progress_num'] );
-					}
 				
-					if ( ( !isset( $atts['progress_orderby'] ) ) || ( empty( $atts['progress_orderby'] ) ) ) {
-						$atts['progress_orderby'] = $atts['orderby'];
-					}
-					if ( ( !isset( $atts['progress_order'] ) ) || ( empty( $atts['progress_order'] ) ) ) {
-						$atts['progress_order'] = $atts['order'];
-					}
-				
-					$course_progress_ids = array_merge( $courses_registered_all, array_keys( $course_progress ) );
+					if ( ( !isset( $atts['progress_orderby'] ) ) || ( empty( $atts['progress_orderby'] ) ) )
+						$atts['progress_orderby'] = $atts_defaults['progress_orderby'];
+					
+					if ( ( !isset( $atts['progress_order'] ) ) || ( empty( $atts['progress_order'] ) ) )
+						$atts['progress_order'] = $atts_defaults['progress_order'];
 					
 					$course_progress_query_args = array(
 						'post_type'			=>	'sfwd-courses',
@@ -1910,48 +1952,67 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				// want to pass old or outdated quiz items to externals. 
 				if ( !empty( $quizzes ) ) {
 					
-					if ( $atts['quiz_num'] === false ) {
-						if ( $atts['num'] === false ) {
-							$atts['quiz_num'] = LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'quiz_num' );
-						} else {
-							$atts['quiz_num'] = intval( $atts['num'] );
-						}
-					} else {
+					if ( $atts['quiz_num'] === false )
+						$atts['quiz_num'] = intval( $atts_defaults['num'] );
+					else
 						$atts['quiz_num'] = intval( $atts['quiz_num'] );
-					}
 				
-					if ( ( !isset( $atts['quiz_orderby'] ) ) || ( empty( $atts['quiz_orderby'] ) ) ) {
-						$atts['quiz_orderby'] = $atts['orderby'];
-					}
-					if ( ( !isset( $atts['quiz_order'] ) ) || ( empty( $atts['quiz_order'] ) ) ) {
-						$atts['quiz_order'] = $atts['order'];
-					}					
+					if ( ( !isset( $atts['quiz_orderby'] ) ) || ( empty( $atts['quiz_orderby'] ) ) )
+						$atts['quiz_orderby'] = $atts_defaults['quiz_orderby'];
+
+					if ( ( !isset( $atts['quiz_order'] ) ) || ( empty( $atts['quiz_order'] ) ) )
+						$atts['quiz_order'] = $atts_defaults['quiz_order'];
 					
 					$quiz_ids = wp_list_pluck( $quizzes, 'quiz' );
 
 					$quiz_total_query_args = array(
 						'post_type'			=>	'sfwd-quiz',
 						'fields'			=>	'ids',
-						'orderby'			=>	$atts['quiz_orderby'],
-						'order'				=>	$atts['quiz_order'],
+						'orderby'			=>	'title', //$atts['quiz_orderby'],
+						'order'				=>	'ASC', //$atts['quiz_order'],
 						'nopaging'			=>	true,
 						'post__in'			=>	$quiz_ids
 					);
+				
+					if ( $quiz_total_query_args['orderby'] == 'taken' ) {
+						$quiz_total_query_args['orderby'] = 'title';
+					}
 				
 					$quiz_query = new WP_Query( $quiz_total_query_args );
 					if ( ( $quiz_query ) && ( !is_wp_error( $quiz_query ) ) && is_a( $quiz_query, 'WP_Query' ) ) {
 						if ( ( property_exists( $quiz_query, 'posts' ) ) && ( !empty( $quiz_query->posts ) ) ) {
 							$quizzes_tmp = array();
-							foreach( $quiz_query->posts as $quiz_id ) {
-								foreach( $quizzes as $idx => $quiz_attempt ) {
-									if ( $quiz_attempt['quiz'] == $quiz_id ) {
-										$quiz_key = $quiz_attempt['quiz'] .'-'. $quiz_attempt['time'];
-										$quizzes_tmp[$quiz_key] = $quiz_attempt;
-										unset( $quizzes[$idx] ); 
+							//if ( $atts['quiz_orderby'] == 'taken' ) {
+							//	foreach( $quizzes as $idx => $quiz_attempt ) {
+							//		if ( in_array( $quiz_attempt['quiz'], $quiz_query->posts ) ) {
+							//			$quizzes_tmp[$idx] = $quiz_attempt;
+							//		}
+							//	}
+							//} else {
+								foreach( $quiz_query->posts as $post_idx => $quiz_id ) {
+									foreach( $quizzes as $quiz_idx => $quiz_attempt ) {
+										if ( $quiz_attempt['quiz'] == $quiz_id ) {
+											if ( $atts['quiz_orderby'] == 'taken' ) {
+												$quiz_key = $quiz_attempt['time'] .'-'. $quiz_attempt['quiz']; 
+											} else if ( $atts['quiz_orderby'] == 'title' ) {
+												$quiz_key = $post_idx .'-'. $quiz_attempt['time']; 
+											} else if ( $atts['quiz_orderby'] == 'ID' ) {
+												$quiz_key = $quiz_attempt['quiz'] .'-'. $quiz_attempt['time'];
+											}
+											$quizzes_tmp[$quiz_key] = $quiz_attempt;
+											unset( $quizzes[$quiz_idx] ); 
+										}
 									}
 								}
-							}
+							//}
+							
 							$quizzes = $quizzes_tmp;
+
+							if ( $atts['quiz_order'] == 'DESC' ) 
+								krsort( $quizzes );
+							else
+								ksort( $quizzes );
+								
 
 							$quizzes_per_page = apply_filters( 'learndash_quiz_info_per_page', $atts['quiz_num'], 'quizzes', $user_id );
 							if ( $quizzes_per_page > 0 ) {
@@ -2042,10 +2103,13 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				);
 			} else {
 				
-				if ( ( !empty( $pagenow ) ) && ( $pagenow == 'profile.php' ) ) { 
-					$atts['pagenow'] = $pagenow;
-					$atts['pagenow_nonce'] = wp_create_nonce( $pagenow .'-'. $user_id );
-				}
+				if ( !empty( $pagenow ) ) {
+					if ( ( $pagenow == 'profile.php' ) || ( $pagenow == 'user-edit.php' ) ) { 
+						$atts['pagenow'] = $pagenow;
+						$atts['pagenow_nonce'] = wp_create_nonce( $pagenow .'-'. $user_id );
+					} 
+				} 
+				$atts['user_id'] = $user_id;
 				
 				return SFWD_LMS::get_template('course_info_shortcode', array(
 						'user_id' => $user_id,
@@ -4044,4 +4108,5 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 	}
 }
 
+global $sfwd_lms;
 $sfwd_lms = new SFWD_LMS();

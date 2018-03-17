@@ -383,15 +383,20 @@ if ( !class_exists( 'Learndash_Admin_Menus_Tabs' ) ) {
 					}
 				}
 			}
-
+			
+			/**
+			 * Allow add-ons and other LD core menus to be added to the bottom of the sub-menu. 
+			 *
+			 * @since 2.5.6
+			 */
+			$add_submenu = apply_filters( 'learndash_submenu_last', $add_submenu );
+			
 			$add_submenu['settings'] = array(
 				'name' 	=> esc_html_x( 'Settings', 'Settings Menu Label', 'learndash' ),
 				'cap'	=> LEARNDASH_ADMIN_CAPABILITY_CHECK,
 				'link'	=> 'admin.php?page=learndash_lms_settings'
 			);
 			
-			//$add_submenu = apply_filters( 'learndash_submenu', $add_submenu );
-
 			foreach ( $add_submenu as $key => $add_submenu_item ) {
 				if ( current_user_can( $add_submenu_item['cap'] ) ) {
 					$submenu['learndash-lms'][] = array( $add_submenu_item['name'], $add_submenu_item['cap'], $add_submenu_item['link'] );

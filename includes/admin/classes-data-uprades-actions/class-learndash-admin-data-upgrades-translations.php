@@ -30,7 +30,7 @@ if ( !class_exists( 'Learndash_Admin_Data_Upgrades_Translations' ) ) {
 					
 			if ( is_admin() ) {
 				$translations_installed = $this->get_data_settings( 'translations_installed' );
-				if ( ( defined('LEARNDASH_ACTIVATED')) || ( !$translations_installed ) ) {
+				if ( ( defined( 'LEARNDASH_ACTIVATED' ) && LEARNDASH_ACTIVATED ) || ( !$translations_installed ) ) {
 					$this->download_translations( );
 					$this->set_data_settings( 'translations_installed', time() );
 				}

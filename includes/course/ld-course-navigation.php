@@ -772,15 +772,29 @@ function learndash_get_course_lessons_list( $course = null, $user_id = null, $le
 	$order = ( empty( $course_settings['course_lesson_order'] ) ) ? @$lessons_options['order'] : $course_settings['course_lesson_order'];
 	
 	$lesson_query_pagination = 'true';
-	$posts_per_page = learndash_get_course_lessons_per_page( $course->ID );
-	if (empty( $posts_per_page ) ) {
-		$posts_per_page = -1;
-		$lesson_query_pagination = '';
+	if ( ( isset( $lessons_args['num'] ) ) && ( $lessons_args['num'] !== false ) ) {
+		if ( intval( $lessons_args['num'] ) == 0 ) {
+			$lesson_query_pagination = '';
+			$posts_per_page = -1;
+		} else {
+			$posts_per_page = intval( $lessons_args['num'] );
+		}
+	} else {
+		$posts_per_page = learndash_get_course_lessons_per_page( $course->ID );
+		if ( empty( $posts_per_page ) ) {
+			$posts_per_page = -1;
+			$lesson_query_pagination = '';
+		}
 	}
 
-	if ( isset( $_GET['ld-lesson-page'] ) ) {
+	$lesson_paged = 1;
+	if ( isset( $lessons_args['paged'] ) ) {
+		$lesson_paged = intval( $lessons_args['paged'] );
+	} else if ( isset( $_GET['ld-lesson-page'] ) ) {
 		$lesson_paged = intval( $_GET['ld-lesson-page'] );
-	} else {
+	}
+
+	if ( empty( $lesson_paged ) ) {
 		$lesson_paged = 1;
 	}
 

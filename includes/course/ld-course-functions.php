@@ -1056,9 +1056,19 @@ function learndash_course_content_shortcode( $atts ) {
 	
 	global $learndash_shortcode_used;
 	
+	$atts_defaults = array(
+		'course_id' => 0,
+		'num' => false
+	);
+	$atts = shortcode_atts( $atts_defaults, $atts );
+	
 	if ( empty( $atts['course_id'] ) ) {
 		return '';
 	}
+
+	if ( isset( $_GET['ld-courseinfo-lesson-page'] ) ) {
+		$atts['paged'] = intval( $_GET['ld-courseinfo-lesson-page'] );
+	} 
 
 	$course_id = $atts['course_id'];
 
@@ -1068,9 +1078,11 @@ function learndash_course_content_shortcode( $atts ) {
 		return '';
 	}
 
-	$current_user = wp_get_current_user();
-
-	$user_id = $current_user->ID;
+	if ( is_user_logged_in() )
+		$user_id = get_current_user_id();
+	else
+		$user_id = 0;
+	
 	$logged_in = ! empty( $user_id );
 	$lesson_progression_enabled = false;
 
@@ -1082,7 +1094,7 @@ function learndash_course_content_shortcode( $atts ) {
 	$course_status = learndash_course_status( $course_id, null );
 	$has_access = sfwd_lms_has_access( $course_id, $user_id );
 
-	$lessons = learndash_get_course_lessons_list( $course );
+	$lessons = learndash_get_course_lessons_list( $course, $user_id, $atts );
 	$quizzes = learndash_get_course_quiz_list( $course );
 	$has_course_content = ( ! empty( $lessons ) || ! empty( $quizzes ) );
 
@@ -1105,6 +1117,15 @@ function learndash_course_content_shortcode( $atts ) {
 	$user_has_access = $has_access? 'user_has_access':'user_has_no_access';
 
 	$learndash_shortcode_used = true;
+
+	// Prevent the shortcoce page from showing when used on a course (sfwd-courses) single page 
+	// as it will conflict with pager from the templates/course.php output. 
+	$queried_object = get_queried_object();
+	if ( ( is_a( $queried_object, 'WP_Post' ) ) && ( $queried_object->post_type == 'sfwd-courses' ) ) {
+		global $course_lessons_results;
+		$course_lessons_results = null;
+	}
+
 	
 	/**
 	 * Filter course content shortcode

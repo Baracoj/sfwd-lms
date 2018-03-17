@@ -25,6 +25,20 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 					'class'			=>	'small-text',
 					'required'		=>	'required'
 				),
+				'num' => array(
+					'id'			=>	$this->shortcodes_section_key . '_num',
+					'name'  		=> 	'num', 
+					'type'  		=> 	'number',
+					'label' 		=> 	sprintf( esc_html_x('%s Per Page', 'placeholders: lessons', 'learndash' ), LearnDash_Custom_Label::get_label( 'lessons' ) ),
+					'help_text'		=>	sprintf( esc_html_x( '%s per page. Default is is taken from %s. Set to zero for all.', 'placeholders: lessons, course', 'learndash' ), LearnDash_Custom_Label::get_label( 'lessons' ), LearnDash_Custom_Label::label_to_lower( 'course' ) ),
+					'value' 		=> 	'',
+					'class'			=>	'small-text',
+					'attrs'			=>	array(
+											'min' => 0,
+											'step' => 1
+										)
+				),
+				
 			);
 		
 			if ( ( !isset( $this->fields_args['post_type'] ) ) || ( $this->fields_args['post_type'] != 'sfwd-courses' ) ) {

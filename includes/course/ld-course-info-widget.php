@@ -198,7 +198,7 @@ class LearnDash_Course_Info_Widget extends WP_Widget {
 			<p>
 				<label for="<?php echo $this->get_field_id( 'registered_num' ); ?>"><?php echo esc_html__( 'Registered per page:', 'learndash' ); ?></label>
 				<input class="widefat" id="<?php echo $this->get_field_id( 'registered_num' ); ?>" name="<?php echo $this->get_field_name( 'registered_num' ); ?>" type="number" min="0" value="<?php echo $registered_num; ?>" />
-				<span class="description"><?php esc_html_e('Set to zero for all', 'learndash' ) ?></span>
+				<span class="description"><?php printf( esc_html_x( 'Default is %d. Set to zero for no pagination.', 'placeholders: default per page', 'learndash' ), LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' ) ) ?></span>
 			</p>
 
 			<p>
@@ -222,7 +222,7 @@ class LearnDash_Course_Info_Widget extends WP_Widget {
 			<p>
 				<label for="<?php echo $this->get_field_id( 'progress_num' ); ?>"><?php echo sprintf( esc_html_x( '%s progress per page:', 'placeholder: course', 'learndash' ) , LearnDash_Custom_Label::get_label( 'course' ) ); ?></label>
 				<input class="widefat" id="<?php echo $this->get_field_id( 'progress_num' ); ?>" name="<?php echo $this->get_field_name( 'progress_num' ); ?>" type="number"  min="0" value="<?php echo $progress_num; ?>" />
-				<span class="description"><?php esc_html_e('Set to zero for all', 'learndash' ) ?></span>
+				<span class="description"><?php printf( esc_html_x( 'Default is %d. Set to zero for no pagination.', 'placeholders: default per page', 'learndash' ), LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'progress_num' ) ) ?></span>
 			</p>
 			<p>
 				<label for="<?php echo $this->get_field_id( 'progress_orderby' ); ?>"><?php echo esc_html__( 'Progress order by:', 'learndash' ); ?></label>
@@ -244,12 +244,13 @@ class LearnDash_Course_Info_Widget extends WP_Widget {
 			<p>
 				<label for="<?php echo $this->get_field_id( 'quiz_num' ); ?>"><?php echo sprintf( esc_html_x( '%s per page:', 'placeholder: quizzes', 'learndash' ), LearnDash_Custom_Label::get_label( 'Quizzes' ) ); ?></label>
 				<input class="widefat" id="<?php echo $this->get_field_id( 'quiz_num' ); ?>" name="<?php echo $this->get_field_name( 'quiz_num' ); ?>" type="number"  min="0" value="<?php echo $quiz_num; ?>" />
-				<span class="description"><?php esc_html_e('Set to zero for all', 'learndash' ) ?></span>
+				<span class="description"><?php printf( esc_html_x( 'Default is %d. Set to zero for no pagination.', 'placeholders: default per page', 'learndash' ), LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'quiz_num' ) ) ?></span>
 			</p>
 			<p>
 				<label for="<?php echo $this->get_field_id( 'quiz_orderby' ); ?>"><?php echo sprintf( esc_html_x( '%s order by:', 'placeholder: quizzes', 'learndash' ), LearnDash_Custom_Label::get_label( 'Quizzes' ) ); ?></label>
 				<select class="widefat" id="<?php echo $this->get_field_id( 'quiz_orderby' ); ?>" name="<?php echo $this->get_field_name( 'quiz_orderby' ); ?>">
-					<option value="" <?php selected( $quiz_orderby, '' ); ?>><?php echo esc_html__('Title (default) - Order by post title', 'learndash') ?></option>
+					<option value="" <?php selected( $quiz_orderby, '' ); ?>><?php echo esc_html_x( 'Date Taken (default) - Order by date taken', 'learndash' ); ?></option>
+					<option value="title" <?php selected( $quiz_orderby, 'title' ); ?>><?php echo esc_html__('Title - Order by post title', 'learndash') ?></option>
 					<option value="id" <?php selected( $quiz_orderby, 'id' ); ?>><?php echo esc_html__('ID - Order by post id', 'learndash') ?></option>
 					<option value="date" <?php selected( $quiz_orderby, 'date' ); ?>><?php echo esc_html__('Date - Order by post date', 'learndash') ?></option>
 					<option value="menu_order" <?php selected( $quiz_orderby, 'menu_order' ); ?>><?php echo esc_html__('Menu - Order by Page Order Value', 'learndash') ?></option>
@@ -258,8 +259,8 @@ class LearnDash_Course_Info_Widget extends WP_Widget {
 			<p>
 				<label for="<?php echo $this->get_field_id( 'quiz_order' ); ?>"><?php echo sprintf( esc_html_x( '%s order:', 'placeholder: quizzes', 'learndash' ), LearnDash_Custom_Label::get_label( 'Quizzes' ) ); ?></label>
 				<select class="widefat" id="<?php echo $this->get_field_id( 'quiz_order' ); ?>" name="<?php echo $this->get_field_name( 'quiz_order' ); ?>">
-					<option value=""  <?php selected( $quiz_order, '' ); ?>><?php echo esc_html__('ASC (default) - lowest to highest values', 'learndash') ?></option>
-					<option value="DESC"  <?php selected( $quiz_order, 'DESC' ); ?>><?php echo esc_html__('DESC - highest to lowest values', 'learndash') ?></option>
+					<option value=""  <?php selected( $quiz_order, '' ); ?>><?php echo esc_html__('DESC (default) - highest to lowest values', 'learndash') ?></option>
+					<option value="ASC"  <?php selected( $quiz_order, 'ASC' ); ?>><?php echo esc_html__('ASC - lowest to highest values', 'learndash') ?></option>
 				</select>
 			</p>
 		<?php
@@ -343,6 +344,23 @@ class LearnDash_Course_Navigation_Widget extends WP_Widget {
 							$lesson_query_args['paged'] = $lessons_paged;
 						}
 					}
+				} else if ( in_array( $post->post_type, array( 'sfwd-quiz') ) ) {
+					// If here we have a global Quiz. So we set the pager to the max number
+					$course_lesson_ids = learndash_course_get_steps_by_type( $course_id, 'sfwd-lessons' );
+					if ( !empty( $course_lesson_ids ) ) {
+						$course_lessons_paged = array_chunk( $course_lesson_ids, $course_lessons_per_page, true );
+						$lesson_query_args['paged'] = count( $course_lessons_paged );
+					}
+				}
+			}
+		} else {
+			if ( ( is_a( $post, 'WP_Post' ) ) && ( is_user_logged_in() ) && ( in_array( $post->post_type, array( 'sfwd-lessons', 'sfwd-topic', 'sfwd-quiz' ) ) ) ) {
+
+				$instance['current_step_id'] = $post->ID;
+				if ( $post->post_type == 'sfwd-lessons' ) {
+					$instance['current_lesson_id'] = $post->ID;
+				} else if ( in_array( $post->post_type, array('sfwd-topic', 'sfwd-quiz') ) ) {
+					$instance['current_lesson_id'] = learndash_course_get_single_parent_step( $course_id, $post->ID, 'sfwd-lessons' );
 				}
 			}
 		}
@@ -408,9 +426,6 @@ class LearnDash_Course_Navigation_Widget extends WP_Widget {
 		$show_topic_quizzes 	= isset( $instance['show_topic_quizzes'] ) ? (bool) $instance['show_topic_quizzes'] : false;
 		$show_course_quizzes 	= isset( $instance['show_course_quizzes'] ) ? (bool) $instance['show_course_quizzes'] : false;
 
-		//$lessons_per_page 		= apply_filters( 'learndash_widget_per_page', isset( $instance['lessons_per_page'] ) ? intval( $instance['lessons_per_page'] ) : LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE, $instance );
-
-		//$text = format_to_edit($instance['text']);		
 		?>
 			<p>
 				<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php esc_html_e( 'Title:', 'learndash' ); ?></label>
@@ -645,34 +660,60 @@ function learndash_course_navigation_admin_box_content() {
 			//else 
 			//	$widget_instance['current_step_id'] = 0;
 			
-			$course_lessons_per_page = learndash_get_course_lessons_per_page( $course_id );
+			//$current_post_type = get_post_type( $_GET['post'] );
+			$current_post = get_post( intval( $_GET['post'] ) );
+			if ( ( is_a( $current_post, 'WP_Post' ) ) && ( is_user_logged_in() ) && ( in_array( $current_post->post_type, array( 'sfwd-courses', 'sfwd-lessons', 'sfwd-topic', 'sfwd-quiz' ) ) ) ) {
+			
+				$course_lessons_per_page = learndash_get_course_lessons_per_page( $course_id );
+				if ( $course_lessons_per_page > 0 ) {
+					if (  in_array( $current_post->post_type, array( 'sfwd-lessons', 'sfwd-topic', 'sfwd-quiz' ) ) ) {
 
-			$current_post_type = get_post_type( $_GET['post'] );
-			if ( ( !empty( $current_post_type ) ) && ( in_array( $current_post_type, array( 'sfwd-lessons', 'sfwd-topic', 'sfwd-quiz' ) ) ) ) {
-
-				$instance['current_step_id'] = $_GET['post'];
-				if ( $current_post_type == 'sfwd-lessons' ) {
-					$instance['current_lesson_id'] = $instance['current_step_id'];
-				} else if ( in_array( $current_post_type, array('sfwd-topic', 'sfwd-quiz') ) ) {
-					$instance['current_lesson_id'] = learndash_course_get_single_parent_step( $course_id, $instance['current_step_id'], 'sfwd-lessons' );
-				}
-
-				$ld_course_steps_object = LDLMS_Factory_Post::course_steps( $course_id );
-				$course_lesson_ids = $ld_course_steps_object->get_children_steps( $course_id, 'sfwd-lessons' );
-	
-				if ( !empty( $course_lesson_ids ) ) {
-					$course_lessons_paged = array_chunk( $course_lesson_ids, $course_lessons_per_page, true );
-					$lessons_paged = 0;
-					foreach( $course_lessons_paged as $paged => $paged_set ) {
-						if ( in_array( $instance['current_lesson_id'], $paged_set ) ) {
-							$lessons_paged = $paged + 1;
-							break;
+						$instance['current_step_id'] = $current_post->ID;
+						if ( $current_post->post_type == 'sfwd-lessons' ) {
+							$instance['current_lesson_id'] = $instance['current_step_id'];
+						} else if ( in_array( $current_post->post_type, array('sfwd-topic', 'sfwd-quiz') ) ) {
+							$instance['current_lesson_id'] = learndash_course_get_single_parent_step( $course_id, $instance['current_step_id'], 'sfwd-lessons' );
 						}
-					}
+
+						if ( !empty( $instance['current_lesson_id'] ) ) {
+							$ld_course_steps_object = LDLMS_Factory_Post::course_steps( $course_id );
+							$course_lesson_ids = $ld_course_steps_object->get_children_steps( $course_id, 'sfwd-lessons' );
 	
-					if ( !empty( $lessons_paged ) ) {
-						$lesson_query_args['pagination'] = 'true';
-						$lesson_query_args['paged'] = $lessons_paged;
+							if ( !empty( $course_lesson_ids ) ) {
+								$course_lessons_paged = array_chunk( $course_lesson_ids, $course_lessons_per_page, true );
+								$lessons_paged = 0;
+								foreach( $course_lessons_paged as $paged => $paged_set ) {
+									if ( in_array( $instance['current_lesson_id'], $paged_set ) ) {
+										$lessons_paged = $paged + 1;
+										break;
+									}
+								}
+	
+								if ( !empty( $lessons_paged ) ) {
+									$lesson_query_args['pagination'] = 'true';
+									$lesson_query_args['paged'] = $lessons_paged;
+								}
+							}
+						} else if ( in_array( $current_post->post_type, array( 'sfwd-quiz') ) ) {
+							// If here we have a global Quiz. So we set the pager to the max number
+							$course_lesson_ids = learndash_course_get_steps_by_type( $course_id, 'sfwd-lessons' );
+							if ( !empty( $course_lesson_ids ) ) {
+								$course_lessons_paged = array_chunk( $course_lesson_ids, $course_lessons_per_page, true );
+								$lesson_query_args['paged'] = count( $course_lessons_paged );
+							}
+						}
+							
+					}
+				} else {
+					$lesson_query_args['pagination'] = 'false';
+					
+					if ( in_array( $current_post->post_type, array( 'sfwd-lessons', 'sfwd-topic', 'sfwd-quiz' ) ) ) {
+						$instance['current_step_id'] = $current_post->ID;
+						if ( $current_post->post_type == 'sfwd-lessons' ) {
+							$instance['current_lesson_id'] = $current_post->ID;
+						} else if ( in_array( $current_post->post_type, array('sfwd-topic', 'sfwd-quiz') ) ) {
+							$instance['current_lesson_id'] = learndash_course_get_single_parent_step( $course_id, $current_post->ID, 'sfwd-lessons' );
+						}
 					}
 				}
 			}
@@ -780,7 +821,7 @@ function learndash_profile( $atts ) {
 	
 	$defaults = array(
 		'user_id'				=>	get_current_user_id(),
-		'per_page'				=>	LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE,
+		'per_page'				=>	false,
 		'order' 				=> 'DESC', 
 		'orderby' 				=> 'ID', 
 		'course_points_user' 	=> 'yes',
@@ -793,6 +834,18 @@ function learndash_profile( $atts ) {
 	else
 		$atts['expand_all'] = false;
 
+	if ( $atts['per_page'] === false ) {
+		$atts['per_page'] = $atts['quiz_num'] = LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' );
+	} else {
+		$atts['per_page'] = intval( $atts['per_page'] );
+	}
+
+	if ( $atts['per_page'] > 0 ) {
+		$atts['paged'] = 1;
+	} else {
+		unset( $atts['paged'] );
+		$atts['nopaging'] = true;
+	}
 
 	$atts = apply_filters('learndash_profile_shortcode_atts', $atts);
 
@@ -937,7 +990,6 @@ add_action( 'wp_ajax_ld_course_registered_pager', 'wp_ajax_ld_course_registered_
 
 function wp_ajax_ld_course_progress_pager() {
 	if ( !is_user_logged_in() ) return '';
-	$user_id = get_current_user_id();
 
 	add_filter('learndash_course_info_paged', function( $paged = 1, $context = '' ) {
 		if ( ( $context == 'courses' ) && ( isset( $_POST['paged'] ) ) && ( !empty( $_POST['paged'] ) ) ) {
@@ -957,7 +1009,12 @@ function wp_ajax_ld_course_progress_pager() {
 	
 	$shortcode_atts['return'] = true;
 	$shortcode_atts['type'] = 'course';
-	
+
+	if ( ( isset( $shortcode_atts['user_id'] ) ) && ( !empty( $shortcode_atts['user_id'] ) ) ) {
+		$user_id = intval( $shortcode_atts['user_id'] );
+	} else {
+		$user_id = get_current_user_id();
+	}
 
 	// The following filter is called during the template output. Normally if the admin is viewing profile.php
 	// We show the edit options. but via AJAX we don't know from where the user is viewing. It may be a front-end 
@@ -1014,7 +1071,6 @@ add_action( 'wp_ajax_ld_course_progress_pager', 'wp_ajax_ld_course_progress_page
 function wp_ajax_ld_quiz_progress_pager() {
 	
 	if ( !is_user_logged_in() ) return '';
-	$user_id = get_current_user_id();
 
 	add_filter('learndash_quiz_info_paged', function( $paged = 1 ) {
 		if ( ( isset( $_POST['paged'] ) ) && ( !empty( $_POST['paged'] ) ) ) {
@@ -1030,7 +1086,12 @@ function wp_ajax_ld_quiz_progress_pager() {
 
 	$shortcode_atts['return'] = true;
 	$shortcode_atts['type'] = 'quiz';
-	
+
+	if ( ( isset( $shortcode_atts['user_id'] ) ) && ( !empty( $shortcode_atts['user_id'] ) ) ) {
+		$user_id = intval( $shortcode_atts['user_id'] );
+	} else {
+		$user_id = get_current_user_id();
+	}
 	
 	// The following filter is called during the template output. Normally if the admin is viewing profile.php
 	// We show the edit options. but via AJAX we don't know from where the user is viewing. It may be a front-end 

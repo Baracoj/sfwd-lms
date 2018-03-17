@@ -3,7 +3,7 @@
  * Plugin Name: LearnDash LMS
  * Plugin URI: http://www.learndash.com
  * Description: LearnDash LMS Plugin - Turn your WordPress site into a learning management system.
- * Version: 2.5.5
+ * Version: 2.5.6
  * Author: LearnDash
  * Author URI: http://www.learndash.com
  * Text Domain: learndash
@@ -17,7 +17,7 @@
 /**
  * LearnDash Version Constant
  */
-define( 'LEARNDASH_VERSION', '2.5.5' );
+define( 'LEARNDASH_VERSION', '2.5.6' );
 define( 'LEARNDASH_SETTINGS_DB_VERSION', '2.5' );
 define( 'LEARNDASH_SETTINGS_TRIGGER_UPGRADE_VERSION', '2.5' );
 define( 'LEARNDASH_LMS_TEXT_DOMAIN', 'learndash' );
@@ -104,8 +104,8 @@ if ( ! defined( 'LEARNDASH_LMS_DEFAULT_LAZY_LOAD_PER_PAGE' ) ) {
 }
 
 // Define the default number of items per page.
-if ( !defined('LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE' ) ) {
-	define( 'LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE', 10 );
+if ( !defined( 'LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE' ) ) {
+	define( 'LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE', 20 );
 } 
 
 if ( ! defined( 'LEARNDASH_LMS_DEFAULT_CB_INSERT_CHUNK_SIZE' ) ) {

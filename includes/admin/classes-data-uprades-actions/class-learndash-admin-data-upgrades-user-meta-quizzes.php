@@ -81,17 +81,14 @@ if ( !class_exists( 'Learndash_Admin_Settings_Upgrades_User_Meta_Quizzes' ) ) {
 						learndash_activity_clear_mismatched_users( );
 						learndash_activity_clear_mismatched_posts( );
 			
-						$sql_str = "SELECT ID FROM ". $wpdb->users ." as users
-							LEFT JOIN ". $wpdb->usermeta ." as user_meta_quiz_progress ON users.ID=user_meta_quiz_progress.user_id 
-								AND user_meta_quiz_progress.meta_key='_sfwd-quizzes'
-							LEFT JOIN ". $wpdb->usermeta ." as user_meta_quiz_upgraded ON users.ID=user_meta_quiz_upgraded.user_id 
-								AND user_meta_quiz_upgraded.meta_key='". $this->meta_key ."'
+						$sql_str = "SELECT ID FROM {$wpdb->users} as users
+							LEFT JOIN {$wpdb->usermeta} as um1 ON users.ID = um1.user_id
+							LEFT JOIN {$wpdb->usermeta} as um2 ON users.ID=um2.user_id 
+								AND um2.meta_key='_sfwd-quizzes'
 							WHERE 1=1 
-								AND user_meta_quiz_progress.meta_key IS NOT null
-								AND (user_meta_quiz_upgraded.meta_value IS NULL OR user_meta_quiz_upgraded.meta_value != 'COMPLETE')";
-
+								AND um1.meta_key = '{$wpdb->prefix}capabilities'
+								AND um2.meta_key IS NOT null";
 						$data['process_users'] = $wpdb->get_col( $sql_str );
-						//$process_users = array(1);
 					
 						$users_count 				= 	count_users();
 						$data['total_count'] 		= 	intval( $users_count['total_users'] );

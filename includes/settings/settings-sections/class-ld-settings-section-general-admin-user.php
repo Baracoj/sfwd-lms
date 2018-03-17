@@ -55,7 +55,7 @@ if ( ( class_exists( 'LearnDash_Settings_Section' ) ) && ( !class_exists( 'Learn
 					'name'  		=> 	'bypass_course_limits_admin_users', 
 					'type'  		=> 	'checkbox',
 					'label' 		=> 	sprintf( esc_html_x( 'Bypass %s limits', 'placeholder: Course','learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
-					'help_text'  	=> 	sprintf( esc_html_x( 'Admin users will bypass restrictions like %s Progression, %s and %s Prerequisites, %s Points limits and %s/%s timers.', 'placeholder: Course, Course, Lesson, Course, Lesson, Topic', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ), LearnDash_Custom_Label::get_label( 'course' ), LearnDash_Custom_Label::get_label( 'lesson' ), LearnDash_Custom_Label::get_label( 'course' ), LearnDash_Custom_Label::get_label( 'lesson' ), LearnDash_Custom_Label::get_label( 'topic' ) ),
+					'help_text'  	=> 	sprintf( esc_html_x( 'Admin users will bypass restrictions like %1$s Progression, %2$s and %3$s Prerequisites, %4$s Points limits and %5$s/%6$s timers.', 'placeholder: Course, Course, Lesson, Course, Lesson, Topic', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ), LearnDash_Custom_Label::get_label( 'course' ), LearnDash_Custom_Label::get_label( 'lesson' ), LearnDash_Custom_Label::get_label( 'course' ), LearnDash_Custom_Label::get_label( 'lesson' ), LearnDash_Custom_Label::get_label( 'topic' ) ),
 					'value' 		=> 	isset( $this->setting_option_values['bypass_course_limits_admin_users'] ) ? $this->setting_option_values['bypass_course_limits_admin_users'] : 'yes',
 					'options'		=>	array(
 											'yes'	=>	esc_html__('Yes', 'learndash'),

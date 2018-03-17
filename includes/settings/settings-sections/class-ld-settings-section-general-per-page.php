@@ -17,29 +17,50 @@ if ( ( class_exists( 'LearnDash_Settings_Section' ) ) && ( !class_exists( 'Learn
 			// Section label/header
 			$this->settings_section_label			=	esc_html__( 'Per Page Default Settings', 'learndash' );
 		
+			//$this->settings_section_description		=	sprintf( wp_kses_post( _x( 'These settings control the per page output of %s progress and %s on the WordPress User Profile.', 'placeholder: Course, Quizzes', 'learndash' ) ), LearnDash_Custom_Label::get_label( 'course'), LearnDash_Custom_Label::get_label( 'quizzes') );
+		
 			parent::__construct(); 
 		}
+				
+		function load_settings_values() {
+			parent::load_settings_values();
+		
+			if ( !isset( $this->setting_option_values['per_page'] ) ) { 
+				$this->setting_option_values['per_page'] = LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE;
+			}
+			
+			if ( ( !isset( $this->setting_option_values['progress_num'] ) ) || ( $this->setting_option_values['progress_num'] == '' ) ) { 
+				$this->setting_option_values['progress_num'] = $this->setting_option_values['per_page'];
+			}
+
+			if ( ( !isset( $this->setting_option_values['quiz_num'] ) ) || ( $this->setting_option_values['quiz_num'] == '' ) ) { 
+				$this->setting_option_values['quiz_num'] = $this->setting_option_values['per_page'];
+			}
+			
+		}		
 				
 		function load_settings_fields() {
 
 			$this->setting_option_fields = array(
-				'registered_num' => array(
-					'name'  		=> 	'registered_num', 
+				'per_page' => array(
+					'name'  		=> 	'per_page',
 					'type'  		=> 	'number',
-					'label' 		=> 	sprintf( esc_html_x( 'Registered %s per page', 'placeholder: Courses', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'courses' ) ),
-					'help_text'  	=> 	esc_html__( 'Numer of items to show per page. 0 to display all.', 'learndash' ),
-					'value' 		=> 	isset( $this->setting_option_values['progress_num'] ) ? $this->setting_option_values['registered_num'] : LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE,
+					'label' 		=> 	esc_html__( 'Default per page', 'learndash' ),
+					//'desc_before'	=>
+					'help_text'  	=>  sprintf( esc_html_x( 'Default per page controls all shortcodes and widget. Default is %d. Set to zero for no pagination.', 'placeholder: Default per page', 'learndash' ), LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE ),
+					'value' 		=> 	$this->setting_option_values['per_page'],
 					'attrs'			=>	array(
 											'step'	=>	1,
 											'min'	=>	0
 					)
 				),
 				'progress_num' => array(
-					'name'  		=> 	'progress_num', 
+					'name'  		=> 	'progress_num',
 					'type'  		=> 	'number',
 					'label' 		=> 	sprintf( esc_html_x( '%s progress per page', 'placeholder: Course', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
-					'help_text'  	=> 	esc_html__( 'Numer of items to show per page. 0 to display all.', 'learndash' ),
-					'value' 		=> 	isset( $this->setting_option_values['progress_num'] ) ? $this->setting_option_values['progress_num'] : LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE,
+					'desc_before'	=>	sprintf( wp_kses_post( _x( 'These settings control the per page output of %s progress and %s on the WordPress User Profile.', 'placeholder: Course, Quizzes', 'learndash' ) ), LearnDash_Custom_Label::get_label( 'course'), LearnDash_Custom_Label::get_label( 'quizzes') ),
+					'help_text'  	=> 	sprintf( esc_html_x( '%1$s per page. Default is %2$d. Set to zero for no pagination.', 'placeholders: courses, default per page', 'learndash' ), LearnDash_Custom_Label::get_label( 'courses' ), $this->setting_option_values['per_page'] ),
+					'value' 		=> 	$this->setting_option_values['progress_num'],
 					'attrs'			=>	array(
 											'step'	=>	1,
 											'min'	=>	0
@@ -49,8 +70,8 @@ if ( ( class_exists( 'LearnDash_Settings_Section' ) ) && ( !class_exists( 'Learn
 					'name'  		=> 	'quiz_num', 
 					'type'  		=> 	'number',
 					'label' 		=> 	sprintf( esc_html_x( '%s per page', 'placeholder: Quizzes', 'learndash' ), LearnDash_Custom_Label::get_label( 'quizzes' ) ),
-					'help_text'  	=> 	esc_html__( 'Numer of items to show per page. 0 to display all.', 'learndash' ),
-					'value' 		=> 	isset( $this->setting_option_values['quiz_num'] ) ? $this->setting_option_values['quiz_num'] : LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE,
+					'help_text'  	=> 	sprintf( esc_html_x( '%1$s per page. Default is %2$d. Set to zero for no pagination.', 'placeholders: quizzes, default per page', 'learndash' ), LearnDash_Custom_Label::get_label( 'quizzes' ), $this->setting_option_values['per_page'] ),
+					'value' 		=> 	$this->setting_option_values['quiz_num'],
 					'attrs'			=>	array(
 											'step'	=>	1,
 											'min'	=>	0

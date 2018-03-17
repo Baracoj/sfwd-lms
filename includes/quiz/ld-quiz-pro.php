@@ -190,9 +190,9 @@ class LD_QuizPro {
 							//$correct = (strtolower( $userResponse ) == strtolower( $questionData['correct'][0] ));
 					
 							$correct = false;
-							foreach($questionData['correct'] as $questionData_correct) {
-								if (stripslashes(strtolower( $userResponse )) == stripslashes(strtolower( $questionData_correct ))) {
 							
+							foreach($questionData['correct'] as $questionData_correct) {
+								if (  stripslashes( strtolower( trim( $userResponse ) ) ) == stripslashes( strtolower( trim( $questionData_correct ) ) ) ) {
 									$correct = true;
 									break;
 								}
@@ -200,6 +200,9 @@ class LD_QuizPro {
 
 							$points  = ( $correct) ? $questionData['points'] : 0;
 
+							$points = apply_filters( 'learndash_ques_free_answer_pts', $points, $questionData, $answerIndex, $correctAnswer, $userResponse );
+							$correct = apply_filters( 'learndash_ques_free_answer_correct', $correct, $questionData, $answerIndex, $correctAnswer, $userResponse );
+								
 							$extra['r'] = $userResponse;
 							if ( ! $quiz->isDisabledAnswerMark() && empty( $questionData['disCorrect'] ) ) {
 								$extra['c'] = $questionData['correct'];

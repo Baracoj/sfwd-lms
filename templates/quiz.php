@@ -36,9 +36,9 @@
 
 if( ! empty( $lesson_progression_enabled ) && ! is_quiz_accessable( null, $post ) ) {
     if ( empty( $quiz_settings['lesson'] ) ) {
-        echo sprintf( esc_html_x( 'Please go back and complete the previous %s.<br/>', 'placeholder lesson', 'learndash' ), LearnDash_Custom_Label::label_to_lower('lesson') );
+        echo sprintf( wp_kses_post( _x( 'Please go back and complete the previous %s.<br/>', 'placeholder lesson', 'learndash' ) ), LearnDash_Custom_Label::label_to_lower('lesson') );
     } else {
-        echo sprintf( esc_html_x( 'Please go back and complete the previous %s.<br/>', 'placeholder topic', 'learndash' ), LearnDash_Custom_Label::label_to_lower('topic') );
+        echo sprintf( wp_kses_post( _x( 'Please go back and complete the previous %s.<br/>', 'placeholder topic', 'learndash' ) ), LearnDash_Custom_Label::label_to_lower('topic') );
     }
 }
 

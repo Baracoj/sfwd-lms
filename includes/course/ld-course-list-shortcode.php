@@ -26,8 +26,7 @@ function ld_course_list( $attr ) {
 		
 		'include_outer_wrapper' => 'true',
 		
-		'num' => '-1', 
-		//'per_page' => -1,
+		'num' => false, 
 		'paged' => 1,
 		
 		'post_type' => 'sfwd-courses', 
@@ -113,7 +112,7 @@ function ld_course_list( $attr ) {
 	}
 	
 	$atts = shortcode_atts( $attr_defaults, $attr );
-
+	
 	if ( is_user_logged_in() ) {
 		if ( ( $atts['mycourses'] == 'true' ) || ( $atts['mycourses'] == 'enrolled' ) ) {
 			$atts['mycourses'] = 'enrolled';
@@ -126,8 +125,20 @@ function ld_course_list( $attr ) {
 		$atts['mycourses'] = null;
 	}
 
-	if ( isset( $atts['num'] ) )
+	//if ( isset( $atts['num'] ) )
+	//	$atts['num'] = intval( $atts['num'] );
+	
+	if ( $atts['num'] === false ) {
+		$atts['num'] = LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' );
+	} else if ( $atts['num'] == '-1' ) {
+		$atts['num'] = 0;
+	} else {
 		$atts['num'] = intval( $atts['num'] );
+	}
+
+	if ( $atts['num'] == 0 ) {
+		$atts['num'] = -1;
+	}
 
 	$atts = apply_filters( 'ld_course_list_shortcode_attr_values', $atts, $attr );
 	
@@ -608,39 +619,12 @@ function ld_course_list( $attr ) {
 	$shortcode_course_id = null;
 	if ( $mycourses == 'enrolled' ) {
 		$filter['post__in'] = learndash_user_get_enrolled_courses( get_current_user_id() );
+		if ( empty( $filter['post__in'] ) ) return;
+		
 	} else if ( $mycourses == 'not-enrolled' ) {
 		$filter['post__not_in'] = learndash_user_get_enrolled_courses( get_current_user_id() );
-		/*
-		$all_courses_query_args = array( 
-			'post_type' 		=> 	'sfwd-courses', 
-			'post_status' 		=> 	'publish',  
-			'posts_per_page' 	=> 	-1,
-			'fields'			=>	'ids'
-		);
-		$all_courses_query_results = new WP_Query( $all_courses_query_args );
-		if ( !is_wp_error( $all_courses_query_results ) ) {
-			$all_course_ids = $all_courses_query_results->posts;
-		} else {
-			$all_course_ids = array();
-		}
-		$shortcode_course_id = array_diff( $all_course_ids, $enrolled_course_ids );
-		*/
-	} else {
-		/*
-		$all_courses_query_args = array( 
-			'post_type' 		=> 	'sfwd-courses', 
-			'post_status' 		=> 	'publish',  
-			'posts_per_page' 	=> 	-1,
-			'fields'			=>	'ids'
-		);
-		$all_courses_query_results = new WP_Query( $all_courses_query_args );
-		if ( !is_wp_error( $all_courses_query_results ) ) {
-			$shortcode_course_id = $all_courses_query_results->posts;
-		} else {
-			$shortcode_course_id = array();
-		}
-		*/
-	}
+		if ( empty( $filter['post__not_in'] ) ) unset( $filter['post__not_in'] );
+	} 
 	
 	$filter = apply_filters('learndash_ld_course_list_query_args', $filter, $atts );
 	
@@ -973,7 +957,9 @@ function ld_course_list( $attr ) {
 	}
 
 	$output = learndash_ob_get_clean( $level );
-	//wp_reset_query();
+	
+	/* Restore original Post Data */
+	wp_reset_postdata();
 
 	$learndash_shortcode_used = true;
 

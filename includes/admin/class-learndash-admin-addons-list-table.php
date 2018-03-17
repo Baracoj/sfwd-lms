@@ -37,7 +37,6 @@ if ( ( class_exists( 'WP_Plugin_Install_List_Table' ) ) && ( !class_exists('Lear
 				),
 			    'third-party' => array(
 					'label'	=>	__( 'Third Party', 'learndash' ),
-					//'url'	=>	admin_url('plugin-install.php?s=LearnDash&tab=search&type=term'),
 					'url'	=>	add_query_arg('tab', 'third-party' ),
 				)
 			);

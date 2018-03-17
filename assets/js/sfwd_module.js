@@ -758,7 +758,6 @@ function learndash_quiz_edit_page_javascript() {
 // Handle logic for Assignments
 function learndash_assignment_edit_page_javascript() {
 	jQuery("select[name=sfwd-assignment_course]").change(function() {
-		console.log('here #1');
 
 		if(window['sfwd-assignment_lesson'] == undefined)
 		window['sfwd-assignment_lesson'] = jQuery("select[name=sfwd-assignment_lesson]").val();
@@ -766,7 +765,6 @@ function learndash_assignment_edit_page_javascript() {
 		jQuery("select[name=sfwd-assignment_lesson]").html('<option>' + sfwd_data.loading_lang + '</option>');
 
 		var course_id = jQuery(this).val();
-		console.log('course_id[%o]', course_id );
 		
 		var data = {
 			'action': 'select_a_lesson_or_topic',
@@ -997,7 +995,6 @@ function learndash_topic_edit_page_javascript() {
 // would create a version in the theme and remove the functions. 
 if (typeof flip_expand_collapse === 'undefined') {
 	function flip_expand_collapse(what, id) {
-	    //console.log(id + ':' + document.getElementById( 'list_arrow.flippable-'+id).className);
 	    if (jQuery( what + '-' + id + ' .list_arrow.flippable' ).hasClass( 'expand' ) ) {
 	        jQuery( what + '-' + id + ' .list_arrow.flippable' ).removeClass( 'expand' );
 	        jQuery( what + '-' + id + ' .list_arrow.flippable' ).addClass( 'collapse' );
@@ -1094,40 +1091,7 @@ function learndash_element_lazy_loader(load_el, query_data) {
 	});
 }
 
-/*
-if (jQuery('#course_progress_details input[type=checkbox]').length) {
-	jQuery('#course_progress_details input[type=checkbox]').click(function() {
-		var checkbox_input = jQuery(this);
-		var checkbox_action = jQuery(this).is(':checked');
-		
-		console.log('checkbox_input[%o]', checkbox_input);
-		
-		var type = '';
-		if (checkbox_input.hasClass('learndash-mark-course-complete'))
-			type = 'course';
-		else if (checkbox_input.hasClass('learndash-mark-lesson-complete'))
-			type = 'lesson';
-		else if (checkbox_input.hasClass('learndash-mark-topic-complete'))
-			type = 'topic';
-		//else if (checkbox_input.hasClass('learndash-mark-quiz-complete'))
-		//	type = 'quiz';
-		
-		//if (type == 'quiz') return false;
-		
-		var checkbox_data = jQuery(checkbox_input).attr('data-name');
-		if (( typeof checkbox_data !== 'undefined' ) && ( checkbox_data != '' ) ) {
-			checkbox_data = JSON.parse(checkbox_data);
-			//console.log('2: checkbox_data[%o]', checkbox_data);
-			
-			update_user_course_progess_input( type, checkbox_data, checkbox_action );
-		}
-	});
-}
-*/
-
 function update_user_course_progess_input(type, user_course_data, action) {
-	//console.log('type[%o] action[%o] user_course_data[%o]', type, action, user_course_data);
-	
 	if (( typeof user_course_data === 'undefined' ) || ( user_course_data == '' ) ) 
 		return;
 	
@@ -1156,7 +1120,6 @@ function update_user_course_progess_input(type, user_course_data, action) {
 		// Must have Quiz ID
 		if (( typeof user_course_data['quiz_id'] !== 'undefined' ) && ( user_course_data['quiz_id'] != '' ) ) {
 			var quiz_id = user_course_data['quiz_id'];
-			//console.log('in quiz logic');
 
 			if ( ( typeof user_progress['quiz'][course_id] === 'undefined' ) || ( user_progress['quiz'][course_id] == null ) )
 				user_progress['quiz'][course_id] = {};
@@ -1171,15 +1134,12 @@ function update_user_course_progess_input(type, user_course_data, action) {
 	
 		if ( typeof user_progress['course'][course_id] === 'undefined' ) {
 			var course_data = get_course_data( course_id );
-			//console.log('course_data[%o]', course_data);
 			if (course_data === false) 
 				return;
 	
 			user_progress['course'][course_id] = course_data;
 		}
 	
-		//console.log('before: user_progress[%o]', user_progress);
-
 		// Are we changing a Topic
 		if (type == 'topic') {
 			if (( typeof user_course_data['topic_id'] !== 'undefined' ) && ( user_course_data['topic_id'] != '' ) ) {
@@ -1247,8 +1207,6 @@ function update_user_course_progess_input(type, user_course_data, action) {
 			}
 		}
 	}
-	//console.log('after: user_progress[%o]', user_progress);
-	
 	set_user_progress_data(user_id, user_progress);		
 }
 
@@ -1296,6 +1254,7 @@ function set_user_progress_data(user_id, user_progress) {
 //var $_suppress_notification = false;
 var _click_type = null;
 var _click_confirm = null;
+var _click_checked = null;
 
 jQuery(document).ready(function() {
 
@@ -1313,21 +1272,21 @@ jQuery(document).ready(function() {
 		});
 	} 
 
-	if (jQuery('#course_progress_details .learndash-profile-course-details-container input.learndash-mark-course-complete').length) {
-		jQuery('#course_progress_details .learndash-profile-course-details-container input.learndash-mark-course-complete').click(function() {
-
+	if (jQuery('#course_progress_details input.learndash-mark-course-complete').length) {
+		jQuery('#course_progress_details').on( 'click', 'input.learndash-mark-course-complete', function( event ) {
 			var course_checkbox = jQuery(this);
-			var course_checked 	= course_checkbox.is(':checked');
 				
 			if (_click_type === null) {
 				_click_type = 'course';
 				_click_confirm = null;
-			}
+				_click_checked = course_checkbox.is(':checked');
+			} 	
+			course_checkbox.prop('checked', _click_checked );
 
 			if ( _click_type == 'course' ) {
-				if ( course_checked == true ) {
+				if ( _click_checked == true ) {
 					_click_confirm = true;
-				} else if ( ( course_checked != true ) && ( _click_confirm == null ) ) {
+				} else if ( ( _click_checked != true ) && ( _click_confirm == null ) ) {
 					
 					var confirm_unchecked_title = course_checkbox.attr('data-title-unchecked-children');
 					if (( typeof confirm_unchecked_title !== 'undefined' ) && ( confirm_unchecked_title != '' ) ) {
@@ -1339,16 +1298,16 @@ jQuery(document).ready(function() {
 					}
 				}
 			} 
-			
-			
+						
 			if ( ( _click_type == 'course' ) && ( _click_confirm == true ) ) {
+				
 				// If the click type is Course meaning the course checkbox was clicked we 
 				// trigger the signal down to the lesson checkboxes. 
 				var course_navigation_container = course_checkbox.siblings('.course_navigation');
 				if (jQuery( 'input:checkbox', course_navigation_container ).length) {
-					jQuery( 'input:checkbox', course_navigation_container ).each( function () {
-						if ( ( jQuery( this ).hasClass( 'learndash-mark-lesson-complete' ) ) || ( jQuery(this).hasClass( 'learndash-mark-course-quiz-complete' ) ) ) {
-							jQuery( this ).prop('checked', course_checked).triggerHandler( 'click' );
+					jQuery( 'input:checkbox', course_navigation_container ).each( function ( el_idx, el ) {
+						if ( ( jQuery( el ).hasClass( 'learndash-mark-lesson-complete' ) ) || ( jQuery( el ).hasClass( 'learndash-mark-course-quiz-complete' ) ) ) {
+							jQuery( el ).trigger( 'click' );
 						}
 					});
 				}
@@ -1357,32 +1316,33 @@ jQuery(document).ready(function() {
 			if (_click_type == 'course') {
 				_click_type = null;
 				_click_confirm = null;
+				_click_checked = null;
 			}
 		});
 	}
 
-	if (jQuery('#course_progress_details .learndash-profile-course-details-container input.learndash-mark-lesson-complete').length) {
-		jQuery('#course_progress_details .learndash-profile-course-details-container input.learndash-mark-lesson-complete').click(function() {
-
-			var lesson_checkbox = jQuery(this);
-			var lesson_checked 	= lesson_checkbox.is(':checked');
+	if ( jQuery( '#course_progress_details input.learndash-mark-lesson-complete' ).length ) {
+		jQuery('#course_progress_details').on( 'click', 'input.learndash-mark-lesson-complete', function( event ) {
+			var lesson_checkbox = jQuery(this);			
 			
-			if (_click_type === null) {	
+			if ( _click_type === null ) {	
 				_click_type = 'lesson';
 				_click_confirm = null;
-			}				
+				_click_checked = jQuery( lesson_checkbox ).is(':checked');
+			} 
+			lesson_checkbox.prop('checked', _click_checked );
 
-			var checkbox_data = lesson_checkbox.attr('data-name');
+			var checkbox_data = lesson_checkbox.attr( 'data-name' );
 			if (( typeof checkbox_data !== 'undefined' ) && ( checkbox_data != '' ) ) {
 				checkbox_data = JSON.parse(checkbox_data);
-				update_user_course_progess_input( 'lesson', checkbox_data, lesson_checked );
+				update_user_course_progess_input( 'lesson', checkbox_data, _click_checked );
 			}
 		
 			if ( _click_type == 'lesson' ) {
 				
-				if ( lesson_checked == true ) {
+				if ( _click_checked == true ) {
 					_click_confirm = true;
-				} else if ( ( lesson_checked != true ) && ( _click_confirm == null ) ) {
+				} else if ( ( _click_checked != true ) && ( _click_confirm == null ) ) {
 					
 					var confirm_unchecked_title = lesson_checkbox.attr('data-title-unchecked-children');
 					if (( typeof confirm_unchecked_title !== 'undefined' ) && ( confirm_unchecked_title != '' ) ) {
@@ -1395,19 +1355,18 @@ jQuery(document).ready(function() {
 				}
 			} 
 		
-			if ( ( ( _click_type == 'lesson' ) || ( _click_type == 'topic' ) || ( _click_type == 'quiz' ) ) && ( lesson_checked != true ) ) {
-				update_parents(lesson_checkbox);
+			if ( ( ( _click_type == 'lesson' ) || ( _click_type == 'topic' ) || ( _click_type == 'quiz' ) ) && ( _click_checked != true ) ) {
+				update_parents( lesson_checkbox );
 			}				
-
 
 			if ( ( ( _click_type == 'lesson' ) || ( _click_type == 'course' ) ) && ( _click_confirm == true ) )  {
 				var lesson_id = lesson_checkbox.prop('id').replace('learndash-mark-lesson-complete-', '');
 				if (( typeof lesson_id !== 'undefined' ) && ( lesson_id != '' ) ) {
 					if (jQuery('input:checkbox', '#learndash_topic_dots-'+lesson_id).length) {
-						jQuery('input:checkbox', '#learndash_topic_dots-'+lesson_id).each(function () {
+						jQuery( 'input:checkbox', '#learndash_topic_dots-'+lesson_id ).each( function( el_idx, el ) {
 							// We only worry about children topics and quizzes
-							if ((jQuery(this).hasClass('learndash-mark-topic-complete')) || ( jQuery(this).hasClass('learndash-mark-lesson-quiz-complete') )) {
-								jQuery(this).prop('checked', lesson_checked).triggerHandler('click');
+							if ( ( jQuery( el ).hasClass('learndash-mark-topic-complete' ) ) || ( jQuery( el ).hasClass( 'learndash-mark-lesson-quiz-complete' ) ) ) {
+								jQuery( el ).trigger( 'click' );
 							}
 						});
 					}
@@ -1417,32 +1376,33 @@ jQuery(document).ready(function() {
 			if ( _click_type == 'lesson' ) {	
 				_click_type = null;
 				_click_confirm = null;
+				_click_checked = null;
 			}				
 		});
 	}
 
-	if (jQuery('#course_progress_details .learndash-profile-course-details-container input.learndash-mark-topic-complete').length) {
-		jQuery('#course_progress_details .learndash-profile-course-details-container input.learndash-mark-topic-complete').click(function() {
+	if ( jQuery( '#course_progress_details input.learndash-mark-topic-complete' ).length ) {
+		jQuery('#course_progress_details').on( 'click', 'input.learndash-mark-topic-complete', function( event ) {
 
 			var topic_checkbox 	= jQuery(this);
-			var topic_checked 	= topic_checkbox.is(':checked');
-
 			if (_click_type === null) {
 				_click_type = 'topic';
 				_click_confirm = null;
-			}				
+				_click_checked = jQuery( topic_checkbox ).is(':checked');
+			}
+			topic_checkbox.prop('checked', _click_checked );
 
 			var checkbox_data = topic_checkbox.attr('data-name');
 			if (( typeof checkbox_data !== 'undefined' ) && ( checkbox_data != '' ) ) {
 				checkbox_data = JSON.parse(checkbox_data);
-				update_user_course_progess_input( 'topic', checkbox_data, topic_checked );
+				update_user_course_progess_input( 'topic', checkbox_data, _click_checked );
 			}
 
 			if ( _click_type == 'topic' ) {
 				
-				if ( topic_checked == true ) {
+				if ( _click_checked == true ) {
 					_click_confirm = true;
-				} else if ( ( topic_checked != true ) && ( _click_confirm == null ) ) {
+				} else if ( ( _click_checked != true ) && ( _click_confirm == null ) ) {
 					
 					var confirm_unchecked_title = topic_checkbox.attr('data-title-unchecked-children');
 					if (( typeof confirm_unchecked_title !== 'undefined' ) && ( confirm_unchecked_title != '' ) ) {
@@ -1455,7 +1415,7 @@ jQuery(document).ready(function() {
 				}
 			} 
 
-			if ( ( (_click_type == 'topic') || ( _click_type == 'quiz' ) ) && ( topic_checked != true ) ) {
+			if ( ( (_click_type == 'topic') || ( _click_type == 'quiz' ) ) && ( _click_checked != true ) ) {
 				update_parents(topic_checkbox);
 			}				
 
@@ -1463,9 +1423,9 @@ jQuery(document).ready(function() {
 				var topic_id = topic_checkbox.prop('id').replace('learndash-mark-topic-complete-', '');
 
 				if (jQuery( 'input:checkbox', '#learndash-quiz-list-'+topic_id).length ) {
-					jQuery( 'input:checkbox', '#learndash-quiz-list-'+topic_id ).each(function () {
-						if ( jQuery(this).hasClass('learndash-mark-topic-quiz-complete') ) {
-							jQuery(this).prop('checked', topic_checked).triggerHandler('click');
+					jQuery( 'input:checkbox', '#learndash-quiz-list-'+topic_id ).each( function ( el_idx, el ) {
+						if ( jQuery( el ).hasClass( 'learndash-mark-topic-quiz-complete' ) ) {
+							jQuery( el ).trigger( 'click' );
 						}
 					});
 				}
@@ -1474,35 +1434,37 @@ jQuery(document).ready(function() {
 			if ( _click_type == 'topic' ) {	
 				_click_type = null;
 				_click_confirm = null;
+				_click_checked = null;
 			}				
 		
 		});
 	}
 
-	if (jQuery('#course_progress_details .learndash-profile-course-details-container input.learndash-mark-quiz-complete').length) {
-		jQuery('#course_progress_details .learndash-profile-course-details-container input.learndash-mark-quiz-complete').click(function() {
-
+	if ( jQuery( '#course_progress_details input.learndash-mark-quiz-complete' ).length ) {
+		jQuery('#course_progress_details').on('click', 'input.learndash-mark-quiz-complete', function( event ) {
 			var quiz_checkbox 	= jQuery(this);
-			var quiz_checked 	= jQuery(this).is(':checked');
 
 			if (_click_type === null) {	
 				_click_type = 'quiz';
 				_click_confirm = null;
-			}				
+				_click_checked = jQuery( quiz_checkbox ).is(':checked');
+			}
+			quiz_checkbox.prop('checked', _click_checked );
 
-			if ( ( _click_type == 'quiz' ) && ( quiz_checked != true ) ) {
-				update_parents(quiz_checkbox);
+			if ( ( _click_type == 'quiz' ) && ( _click_checked != true ) ) {
+				update_parents( quiz_checkbox );
 			}
 
 			var checkbox_data = jQuery(this).attr('data-name');
 			if ( ( typeof checkbox_data !== 'undefined' ) && ( checkbox_data != '' ) ) {
 				checkbox_data = JSON.parse(checkbox_data);
-				update_user_course_progess_input( 'quiz', checkbox_data, quiz_checked );
+				update_user_course_progess_input( 'quiz', checkbox_data, _click_checked );
 			}
 
 			if ( _click_type == 'quiz' ) {
 				_click_type = null;
 				_click_confirm = null;
+				_click_checked = null;
 			}				
 		
 		});
@@ -1525,7 +1487,8 @@ jQuery(document).ready(function() {
 						// Set parent Lesson checkbox to checked
 						lesson_checked = true;
 					} 
-					jQuery('#learndash-mark-lesson-complete-'+lesson_id).prop('checked', lesson_checked).triggerHandler('click');
+					//jQuery('#learndash-mark-lesson-complete-'+lesson_id).prop('checked', lesson_checked).triggerHandler('click');
+					jQuery('#learndash-mark-lesson-complete-'+lesson_id).trigger( 'click' );
 				}
 			}
 		} else if ( ( _click_type == 'quiz' ) && ( checkbox.hasClass('learndash-mark-topic-quiz-complete') ) ) {
@@ -1542,7 +1505,8 @@ jQuery(document).ready(function() {
 						// Set parent Lesson checkbox to checked
 						topic_checked = true;
 					} 
-					jQuery('#learndash-mark-topic-complete-'+topic_id).prop('checked', topic_checked).triggerHandler('click');
+					//jQuery('#learndash-mark-topic-complete-'+topic_id).prop('checked', topic_checked).triggerHandler('click');
+					jQuery('#learndash-mark-topic-complete-'+topic_id).trigger( 'click' );
 				}
 			}
 		} else if (( checkbox.hasClass('learndash-mark-lesson-complete') ) || ( checkbox.hasClass('learndash-mark-course-quiz-complete') )) {
@@ -1558,7 +1522,8 @@ jQuery(document).ready(function() {
 						// Set parent Lesson checkbox to checked
 						course_checked = true;
 					} 
-					jQuery('#learndash-mark-course-complete-'+course_id).prop('checked', course_checked).triggerHandler('click');
+					//jQuery('#learndash-mark-course-complete-'+course_id).prop('checked', course_checked).triggerHandler('click');
+					jQuery('#learndash-mark-course-complete-'+course_id).trigger( 'click' );
 				}
 			}
 		}
@@ -1595,12 +1560,9 @@ jQuery(document).ready(function() {
 	}
 	
 	if ( jQuery('form#posts-filter button.essay_approve_single').length ) {
-		//console.log('found essay buttons');
 		jQuery('form#posts-filter button.essay_approve_single').click(function(e) {
 			e.preventDefault();
 			var essay_id = jQuery(this).attr('id').replace('essay_approve_', '');
-			//console.log('essay_id[%o]', essay_id);
-			
 			if ( ( typeof essay_id !== 'undefined' ) && ( essay_id != '' ) ) {
 				if (jQuery('form#posts-filter input#cb-select-'+essay_id).length) {
 					jQuery('form#posts-filter input#cb-select-'+essay_id).prop('checked', true);
@@ -1793,20 +1755,7 @@ jQuery(function($) {
 
 	function is_tinyMCE_active() {
 		var is_tinymce_active = (typeof tinyMCE != "undefined") && tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden();
-		//console.log('is_tinymce_active[%o]', is_tinymce_active);
 		return is_tinymce_active;
-		
-		/*
-		var timymce_status = false;
-		if ( typeof tinymce !== 'undefined' ) {
-			//if ( tinyMCE.activeEditor == null || tinyMCE.activeEditor.isHidden() != false ) {
-			if ( tinyMCE.activeEditor.isHidden() != false ) {
-				timymce_status = true;
-			} 
-		}
-		console.log('is_tinyMCE_active[%o]', timymce_status);
-		return timymce_status;
-		*/
 	}
 });
 
@@ -1835,7 +1784,6 @@ jQuery(function($) {
 								if ( jQuery('#learndash_course_navigation_admin_meta span.ld-course-message').length ) { 
 								
 									ld_course_message = jQuery('#learndash_course_navigation_admin_meta span.ld-course-message').html();
-									console.log('ld_course_message[%o]', ld_course_message);
 								}
 								
 					

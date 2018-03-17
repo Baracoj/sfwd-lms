@@ -1928,17 +1928,29 @@ function learndash_delete_course_progress( $course_id, $user_id ) {
 		unset( $usermeta[ $course_id] );
 		update_user_meta( $user_id, '_sfwd-course_progress', $usermeta );
 	}
+	
+	delete_user_meta( $user_id, 'course_completed_'. $course_id );
+	
+	// The reason we don't use the methods above is we want to ensure all old data is removed
+	// from the quiz attempt history not just for quizzes currently associated with the course. 
+	$quizzes = array();
+	$usermeta_quizzes = get_user_meta( $user_id, '_sfwd-quizzes', true );
+	if ( !is_array( $usermeta_quizzes ) ) $usermeta_quizzes = array();
+	if ( !empty( $usermeta_quizzes ) ) {
+		foreach( $usermeta_quizzes as $quiz_item ) {
+			if ( ( isset( $quiz_item['course'] ) ) && ( intval( $course_id ) == intval( $quiz_item['course'] ) ) ) {
+				if ( isset( $quiz_item['quiz'] ) ) {
+					$quiz_id = intval( $quiz_item['quiz'] ); 
+					$quizzes[$quiz_id] = $quiz_id;
+				}
+			}
+		}
+	}
 
-	$quizzes = get_posts( 
-		array(
-			'post_type' => 'sfwd-quiz',
-			'meta_key'	=> 'course_id',
-			'meta_value' => $course_id
-		)
-	);
-
-	foreach ( $quizzes as $quiz ) {
-		learndash_delete_quiz_progress( $user_id, $quiz->ID );
+	if ( !empty( $quizzes ) ) {
+		foreach ( $quizzes as $quiz_id ) {
+			learndash_delete_quiz_progress( $user_id, $quiz_id );
+		}
 	}
 }
 
@@ -1959,6 +1971,7 @@ function learndash_delete_quiz_progress( $user_id, $quiz_id ) {
 	$usermeta = get_user_meta( $user_id, '_sfwd-quizzes', true );
 
 	if ( ! empty( $usermeta) && is_array( $usermeta ) ) {
+		$usermeta_new = array();
 		foreach ( $usermeta as $key => $quizmeta ) {
 			if ( $quizmeta['quiz'] != $quiz_id ) {
 				$usermeta_new[] = $quizmeta;

@@ -773,7 +773,7 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 					array(
 						'quiz_post_id'	=>	$this->quiz->getID(),
 						'context' 		=> 	'quiz_checkbox_questions_complete_message',
-						'message' 		=> 	'<p>'. sprintf( esc_html_x( '%1$s of %2$s questions completed', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN ), '<span>0</span>', $questionCount ) .'</p>',
+						'message' 		=> 	'<p>'. sprintf( esc_html_x( '%1$s of %2$s questions completed', 'placeholders: quiz count completed, quiz count total', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN ), '<span>0</span>', $questionCount ) .'</p>',
 						'placeholders'	=>	array( '0', $questionCount )	
 					)
 				);
@@ -1410,7 +1410,13 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 						<?php } ?>
 						<div class="wpProQuiz_question" style="margin: 10px 0px 0px 0px;">
 							<div class="wpProQuiz_question_text">
-								<?php echo do_shortcode( apply_filters( 'comment_text', $question->getQuestion(), null, null ) ); ?>
+								<?php 
+									$questionText = $question->getQuestion();
+									$questionText = wp_unslash( sanitize_post_field( 'post_content', $questionText, 0, 'db' ) );
+									$questionText = do_shortcode( $questionText );
+									
+									echo $questionText; 
+								?>
 							</div>
 							<p cass="wpProQuiz_clear" style="clear:both;"></p>
 							
@@ -1451,7 +1457,7 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 										foreach ( $answerArray as $k => $v ) {
 											?>
 											<li class="wpProQuiz_sortStringItem" data-pos="<?php echo $k; ?>">
-												<?php echo $v->isSortStringHtml() ? $v->getSortString() : esc_html( $v->getSortString() ); ?>
+												<?php echo $v->isSortStringHtml() ? do_shortcode( $v->getSortString() ) : esc_html( $v->getSortString() ); ?>
 											</li>
 										<?php } ?>
 									</ul>
@@ -1585,7 +1591,11 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 
 											// Added the wpautop in LD 2.2.1 to retain line-break formatting. 
 											$clozeData['replace'] = wpautop($clozeData['replace']);
-											$cloze = do_shortcode( apply_filters( 'comment_text', $clozeData['replace'], null, null ) );
+											//$cloze = do_shortcode( wp_kses_post( $clozeData['replace'], null, null ) );
+											
+											$clozeData['replace'] = wp_unslash( sanitize_post_field( 'post_content', $clozeData['replace'], 0, 'db' ) );
+											$clozeData['replace'] = do_shortcode( $clozeData['replace'] );
+											
 											
 											$cloze = $clozeData['replace'];
 

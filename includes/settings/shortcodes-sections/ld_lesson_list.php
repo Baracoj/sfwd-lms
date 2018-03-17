@@ -56,8 +56,8 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 					'id'			=>	$this->shortcodes_section_key . '_num',
 					'name'  		=> 	'num', 
 					'type'  		=> 	'number',
-					'label' 		=> 	esc_html__('Number','learndash'),
-					'help_text'		=>	sprintf( esc_html_x( 'limits the number of %s displayed.', 'placeholders: lessons', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'lessons' ) ),
+					'label' 		=> 	sprintf( esc_html_x( '%s Per Page', 'placeholders: lessons', 'learndash' ), LearnDash_Custom_Label::get_label( 'lessons' ) ),
+					'help_text'		=>	sprintf( esc_html_x( '%1$s per page. Default is %2$d. Set to zero for all.', 'placeholders: lessons, default per page', 'learndash' ), LearnDash_Custom_Label::get_label( 'lessons' ), LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' ) ),
 					'value' 		=> 	'',
 					'class'			=>	'small-text',
 					'attrs'			=>	array(
@@ -69,11 +69,11 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 					'id'			=>	$this->shortcodes_section_key . 'show_content',
 					'name'  		=> 	'show_content', 
 					'type'  		=> 	'select',
-					'label' 		=> 	sprintf( esc_html_x('Show %s Content', 'placeholder: Lesson', 'learndash'), LearnDash_Custom_Label::get_label( 'lesson' ) ),
+					'label' 		=> 	sprintf( esc_html_x( 'Show %s Content', 'placeholder: Lesson', 'learndash'), LearnDash_Custom_Label::get_label( 'lesson' ) ),
 					'help_text'		=>	sprintf( esc_html_x( 'show %s content.', 'placeholders: lesson', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'lesson' ) ),
 					'value' 		=> 	'true',
 					'options'		=>	array(
-											'' => esc_html__('Yes (default)', 'learndash'),
+											'' => esc_html__( 'Yes (default)', 'learndash' ),
 											'false' =>	esc_html__('No', 'learndash'),
 										)
 				),
@@ -81,12 +81,12 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 					'id'			=>	$this->shortcodes_section_key . 'show_thumbnail',
 					'name'  		=> 	'show_thumbnail', 
 					'type'  		=> 	'select',
-					'label' 		=> 	sprintf( esc_html_x('Show %s Thumbnail', 'placeholder: Lesson', 'learndash'), LearnDash_Custom_Label::get_label( 'lesson' ) ),
+					'label' 		=> 	sprintf( esc_html_x( 'Show %s Thumbnail', 'placeholder: Lesson', 'learndash'), LearnDash_Custom_Label::get_label( 'lesson' ) ),
 					'help_text'		=>	sprintf( esc_html_x( 'shows a %s thumbnail.', 'placeholders: lesson', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'lesson' ) ),
 					'value' 		=> 	'true',
 					'options'		=>	array(
-											'' => esc_html__('Yes (default)', 'learndash'),
-											'false' =>	esc_html__('No', 'learndash'),
+											'' => esc_html__( 'Yes (default)', 'learndash' ),
+											'false' =>	esc_html__( 'No', 'learndash' ),
 										)
 				),
 				

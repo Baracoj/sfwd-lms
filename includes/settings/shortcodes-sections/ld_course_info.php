@@ -43,7 +43,7 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 					'name'  		=> 	'registered_num', 
 					'type'  		=> 	'number',
 					'label' 		=> 	esc_html__( 'Registered per page', 'learndash' ), 
-					'help_text'		=>	sprintf( esc_html_x( 'Limits the number of %s displayed per page. Set to zero for all', 'placeholders: courses', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'courses' ) ),
+					'help_text'		=>	sprintf( esc_html_x( 'Registered %1$s per page. Default is %2$d. Set to zero for all.', 'placeholders: courses, default per page', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'courses' ), LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' ) ),
 					'value' 		=> 	'',
 					'class'			=>	'small-text',
 					'attrs'			=>	array(
@@ -83,7 +83,7 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 					'name'  		=> 	'progress_num', 
 					'type'  		=> 	'number',
 					'label' 		=> 	sprintf( esc_html_x( '%s per page', 'placeholder: Courses', 'learndash' ), LearnDash_Custom_Label::get_label( 'courses' ) ),
-					'help_text'		=>	sprintf( esc_html_x( 'Limits the number of %s per page. Set to zero for all', 'placeholders: courses', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'courses' ) ),
+					'help_text'		=>	sprintf( esc_html_x( '%1$s per page. Default is %2$d. Set to zero for all.', 'placeholders: courses, default per page', 'learndash' ), LearnDash_Custom_Label::get_label( 'courses' ), LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' ) ),
 					'value' 		=> 	'',
 					'class'			=>	'small-text',
 					'attrs'			=>	array(
@@ -123,7 +123,7 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 					'name'  		=> 	'quiz_num', 
 					'type'  		=> 	'number',
 					'label' 		=> 	sprintf( esc_html_x( '%s per page', 'placeholder: Quizzes', 'learndash' ), LearnDash_Custom_Label::get_label( 'quizzes' ) ),
-					'help_text'		=>	sprintf( esc_html_x( 'limits the number of %s per page. Set to zero for all', 'placeholders: quizzes', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'quizzes' ) ),
+					'help_text'		=>	sprintf( esc_html_x( '%s per page. Default is %d. Set to zero for all.', 'placeholders: quizzes, default per page', 'learndash' ), LearnDash_Custom_Label::get_label( 'quizzes' ), LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' ) ),
 					'value' 		=> 	'',
 					'class'			=>	'small-text',
 					'attrs'			=>	array(
@@ -137,10 +137,11 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 					'name'  		=> 	'quiz_orderby', 
 					'type'  		=> 	'select',
 					'label' 		=> 	sprintf( esc_html_x( '%s order by', 'placeholder: Quizzes', 'learndash' ), LearnDash_Custom_Label::get_label( 'quizzes' ) ),
-					'help_text'		=>	wp_kses_post( __( 'See <a target="_blank" href="https://codex.wordpress.org/Class_Reference/WP_Query#Order_.26_Orderby_Parameters">the full list of available orderby options here.</a>', 'learndash' ) ),
+					'help_text'		=>	wp_kses_post( __( 'See <a target="_blank" href="https://codex.wordpress.org/Class_Reference/WP_Query#Order_.26_Orderby_Parameters">the full list of available orderby options here</a>.', 'learndash' ) ),
 					'value' 		=> 	'',
 					'options'		=>	array(
-											''		 =>	esc_html__('Title (default) - Order by post title', 'learndash'),
+											''		 	=>	esc_html__('Date Taken (default) - Order by date taken', 'learndash'),
+											'title'		 =>	esc_html__('Title (default) - Order by post title', 'learndash'),
 											'ID'		 =>	esc_html__('ID - Order by post id', 'learndash'),
 											'date'		 =>	esc_html__('Date - Order by post date', 'learndash'),
 											'menu_order' =>	esc_html__('Menu - Order by Page Order Value', 'learndash'),
@@ -150,12 +151,12 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 					'id'			=>	$this->shortcodes_section_key . '_quiz_order',
 					'name'  		=> 	'quiz_order', 
 					'type'  		=> 	'select',
-					'label' 		=> 	sprintf( esc_html_x( '%s Order', 'learndash' ), LearnDash_Custom_Label::get_label( 'quizzes' ) ),
-					'help_text'		=>	sprintf( esc_html_x( 'Order of %s displayed.', 'learndash' ), LearnDash_Custom_Label::get_label( 'quizzes' ) ),
+					'label' 		=> 	sprintf( esc_html_x( '%s Order', 'placeholder: Quizzes', 'learndash' ), LearnDash_Custom_Label::get_label( 'quizzes' ) ),
+					'help_text'		=>	sprintf( esc_html_x( 'Order of %s displayed.', 'placeholder: Quizzes', 'learndash' ), LearnDash_Custom_Label::get_label( 'quizzes' ) ),
 					'value' 		=> 	'',
 					'options'		=>	array(
-											''		=>	esc_html__('ASC (default) - lowest to highest values', 'learndash'),
-											'DESC'	=>	esc_html__('DESC - highest to lowest values', 'learndash'),
+											''		=>	esc_html__( 'DESC (default) - highest to lowest values', 'learndash' ),
+											'ASC'	=>	esc_html__('ASC - lowest to highest values', 'learndash' ),
 										)
 				),
 				
