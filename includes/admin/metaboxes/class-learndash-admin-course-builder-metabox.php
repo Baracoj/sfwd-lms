@@ -762,6 +762,18 @@ if (!class_exists('Learndash_Admin_Metabox_Course_Builder' ) ) {
 				);
 				wp_update_post( $edit_post );
 				$reply_data['status'] = true;
+				
+				if ( $post_args['post_type'] == 'sfwd-quiz' ) {
+					$quiz_id = get_post_meta( $post_args['post_id'], 'quiz_pro_id', true );
+					if ( !empty( $quiz_id ) ) {
+						$quizMapper = new WpProQuiz_Model_QuizMapper();
+						$quiz = $quizMapper->fetch( $quiz_id );
+						if ( is_a( $quiz, 'WpProQuiz_Model_Quiz' ) ) { 
+							$quiz->setName( $post_title );
+							$quizMapper->save( $quiz );
+						}
+					}
+				}
 			}
 			
 			echo json_encode( $reply_data );

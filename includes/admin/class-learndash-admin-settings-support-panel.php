@@ -381,7 +381,7 @@ if (!class_exists('Learndash_Admin_Settings_Support_Panel')) {
 
 			$ld_prior_version = $element->get_data_settings( 'prior_version' );
 			if ( ( !empty( $ld_prior_version ) ) && ( $ld_prior_version != LEARNDASH_VERSION ) ) {
-				$LEARNDASH_VERSION_value .= sprintf( esc_html_x(' (upgraded from %s)', 'placeholder: prior LearnDash version', 'learndash' ), $ld_prior_version );
+				$LEARNDASH_VERSION_value .= sprintf( ' (upgraded from %s)', $ld_prior_version );
 				$LEARNDASH_VERSION_value_html .= sprintf( esc_html_x(' (upgraded from %s)', 'placeholder: prior LearnDash version', 'learndash' ), $ld_prior_version );
 			}
 			
@@ -641,11 +641,81 @@ if (!class_exists('Learndash_Admin_Settings_Support_Panel')) {
 				}
 			}
 
-			$settings_set['settings']['LEARNDASH_SCRIPT_DEBUG'] = array(
-				'label' => 'LearnDash Script Debug',
-				'label_html' => esc_html__( 'LearnDash Script Debug', 'learndash' ),
-				'value' => ( defined( 'LEARNDASH_SCRIPT_DEBUG' ) ) ? LEARNDASH_SCRIPT_DEBUG : ''
+			// LD Assignment upload path
+			$upload_dir = wp_upload_dir();
+			$upload_dir_base = str_replace( '\\', '/', $upload_dir['basedir'] );
+			$upload_url_base = $upload_dir['baseurl'];
+			
+			$assignment_upload_dir_path = $upload_dir_base . '/assignments';
+			$assignment_upload_dir_path_r = str_replace( $ABSPATH_tmp, '', $assignment_upload_dir_path );
+			$settings_set['settings']['Assignment Upload Dir'] = array(
+				'label' => 'Assignment Upload Dir',
+				'label_html' => esc_html__( 'Assignment Upload Dir', 'learndash' ),
+				'value' => $assignment_upload_dir_path_r
 			);
+			
+			$color = 'green';
+			
+			if ( ! file_exists( $assignment_upload_dir_path ) ) {
+				$color = 'red';
+				$settings_set['settings']['Assignment Upload Dir']['value_html'] = '<span style="color: '. $color .'">'. $assignment_upload_dir_path_r .'</span>'; 
+				$settings_set['settings']['Assignment Upload Dir']['value_html'] .= ' - '. esc_html__( 'Directory does not exists', 'learndash' );
+
+				$settings_set['settings']['Assignment Upload Dir']['value'] .= " - (X) ". 'Directory does not exists';
+
+			} else if ( !is_writable( $assignment_upload_dir_path ) ) {
+				$color = 'red';
+				$settings_set['settings']['Assignment Upload Dir']['value_html'] = '<span style="color: '. $color .'">'. $assignment_upload_dir_path_r .'</span>'; 
+				$settings_set['settings']['Assignment Upload Dir']['value_html'] .= ' - '. esc_html__( 'Directory not writable', 'learndash' );
+
+				$settings_set['settings']['Assignment Upload Dir']['value'] .= ' - (X) '. 'Directory not writable';
+
+			} else {
+				$settings_set['settings']['Assignment Upload Dir']['value_html'] = '<span style="color: '. $color .'">'. $assignment_upload_dir_path_r .'</span>'; 
+			}
+
+
+			$essay_upload_dir_path = $upload_dir_base . '/essays';
+			$essay_upload_dir_path_r = str_replace( $ABSPATH_tmp, '', $essay_upload_dir_path );
+			$settings_set['settings']['Essay Upload Dir'] = array(
+				'label' => 'Essay Upload Dir',
+				'label_html' => esc_html__( 'Essay Upload Dir', 'learndash' ),
+				'value' => $essay_upload_dir_path_r
+			);
+			
+			$color = 'green';
+			
+			if ( ! file_exists( $essay_upload_dir_path ) ) {
+				$color = 'red';
+				$settings_set['settings']['Essay Upload Dir']['value_html'] = '<span style="color: '. $color .'">'. $essay_upload_dir_path_r .'</span>'; 
+				$settings_set['settings']['Essay Upload Dir']['value_html'] .= ' - '. esc_html__( 'Directory does not exists', 'learndash' );
+
+				$settings_set['settings']['Essay Upload Dir']['value'] .= " - (X) ". 'Directory does not exists';
+
+			} else if ( !is_writable( $essay_upload_dir_path ) ) {
+				$color = 'red';
+				$settings_set['settings']['Essay Upload Dir']['value_html'] = '<span style="color: '. $color .'">'. $essay_upload_dir_path_r .'</span>'; 
+				$settings_set['settings']['Essay Upload Dir']['value_html'] .= ' - '. esc_html__( 'Directory not writable', 'learndash' );
+
+				$settings_set['settings']['Essay Upload Dir']['value'] .= ' - (X) '. 'Directory not writable';
+
+			} else {
+				$settings_set['settings']['Essay Upload Dir']['value_html'] = '<span style="color: '. $color .'">'. $essay_upload_dir_path_r .'</span>'; 
+			}
+
+
+			foreach( apply_filters( 'learndash_support_ld_defines', array( 'LEARNDASH_LMS_PLUGIN_DIR', 'LEARNDASH_LMS_PLUGIN_URL', 'LEARNDASH_SCRIPT_DEBUG', 'LEARNDASH_SCRIPT_VERSION_TOKEN', 'LEARNDASH_ADMIN_CAPABILITY_CHECK', 'LEARNDASH_GROUP_LEADER_CAPABILITY_CHECK', 'LEARNDASH_COURSE_BUILDER', 'LEARNDASH_LESSON_VIDEO', 'LEARNDASH_ADDONS_UPDATER', 'LEARNDASH_LMS_DEFAULT_QUESTION_POINTS', 'LEARNDASH_LMS_DEFAULT_ANSWER_POINTS', 'LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE', 'LEARNDASH_WPPROQUIZ_TEXT_DOMAIN' ) ) as $defined_item ) {
+				$defined_value = ( defined( $defined_item ) ) ? constant( $defined_item ) : '';
+				if ( $defined_item == 'LEARNDASH_LMS_PLUGIN_DIR' ) {
+					$defined_value = str_replace( $ABSPATH_tmp, '', $defined_value );
+				}
+				
+				$settings_set['settings'][$defined_item] = array(
+					'label' => $defined_item,
+					'label_html' => $defined_item,
+					'value' => $defined_value
+				);
+			}
 
 			$ld_translation_files = '';
 			if ( !empty( $this->mo_files ) ) {
@@ -670,6 +740,8 @@ if (!class_exists('Learndash_Admin_Settings_Support_Panel')) {
 				'label_html' => esc_html__( 'Translation Files', 'learndash' ),
 				'value' => $ld_translation_files
 			);
+
+
 			$this->system_info['ld_settings'] = apply_filters('learndash_support_section', $settings_set, 'ld_settings' );
 			
 			
@@ -862,49 +934,6 @@ if (!class_exists('Learndash_Admin_Settings_Support_Panel')) {
 				'value' => get_locale()
 			);
 
-			$settings_set['settings']['DISABLE_WP_CRON'] = array(
-				'label' => 'DISABLE_WP_CRON',
-				'label_html' => esc_html__( 'DISABLE_WP_CRON', 'learndash' ),
-				'value' => ( defined( 'DISABLE_WP_CRON' ) ) ? DISABLE_WP_CRON : ''
-			);
-
-			$settings_set['settings']['WP_DEBUG'] = array(
-				'label' => 'WP_DEBUG', 'learndash',
-				'label_html' => esc_html__( 'WP_DEBUG', 'learndash' ),
-				'value' => ( defined( 'WP_DEBUG' ) ) ? WP_DEBUG : ''
-			);
-
-			$settings_set['settings']['WP_DEBUG_DISPLAY'] = array(
-				'label' => 'WP_DEBUG_DISPLAY',
-				'label_html' => esc_html__( 'WP_DEBUG_DISPLAY', 'learndash' ),
-				'value' => ( defined( 'WP_DEBUG_DISPLAY' ) ) ? WP_DEBUG_DISPLAY : ''
-			);
-
-			$settings_set['settings']['SCRIPT_DEBUG'] = array(
-				'label' => 'SCRIPT_DEBUG',
-				'label_html' => esc_html__( 'SCRIPT_DEBUG', 'learndash' ),
-				'value' => ( defined( 'SCRIPT_DEBUG' ) ) ? SCRIPT_DEBUG : ''
-			);
-
-			$settings_set['settings']['WP_DEBUG_DISPLAY'] = array(
-				'label' => 'WP_DEBUG_DISPLAY',
-				'label_html' => esc_html__( 'WP_DEBUG_DISPLAY', 'learndash' ),
-				'value' => ( defined( 'WP_DEBUG_DISPLAY' ) ) ? WP_DEBUG_DISPLAY : ''
-			);
-
-			$settings_set['settings']['WP_DEBUG_LOG'] = array(
-				'label' => 'WP_DEBUG_LOG',
-				'label_html' => esc_html__( 'WP_DEBUG_LOG', 'learndash' ),
-				'value' => ( defined( 'WP_DEBUG_LOG' ) ) ? WP_DEBUG_LOG : ''
-			);
-
-			$settings_set['settings']['WP_PLUGIN_DIR'] = array(
-				'label' => 'WP_PLUGIN_DIR',
-				'label_html' => esc_html__( 'WP_PLUGIN_DIR', 'learndash' ),
-				'value' => ( defined( 'WP_PLUGIN_DIR' ) ) ? str_replace( $ABSPATH_tmp, '', WP_PLUGIN_DIR ) : ''
-			);
-
-
 			if ( $wp_rewrite->using_permalinks() ) {
 				$value_html = '<span style="color: green">'. esc_html__( 'Yes', 'learndash' ) .'</span>'; 
 				$value = 'Yes';
@@ -919,41 +948,43 @@ if (!class_exists('Learndash_Admin_Settings_Support_Panel')) {
 				'value' => $value
 			);
 
-			$settings_set['settings']['WP_AUTO_UPDATE_CORE'] = array(
-				'label' => 'WP_AUTO_UPDATE_CORE',
-				'label_html' => esc_html__( 'WP_AUTO_UPDATE_CORE', 'learndash' ),
-				'value' => ( defined( 'WP_AUTO_UPDATE_CORE' ) ) ? WP_AUTO_UPDATE_CORE : ''
-			);
-
-			$settings_set['settings']['WP_MAX_MEMORY_LIMIT'] = array(
-				'label' => 'WP_MAX_MEMORY_LIMIT',
-				'label_html' => esc_html__( 'WP_MAX_MEMORY_LIMIT', 'learndash' ),
-				'value' => ( defined( 'WP_MAX_MEMORY_LIMIT' ) ) ? WP_MAX_MEMORY_LIMIT : ''				
-			);
-
-			$settings_set['settings']['WP_MEMORY_LIMIT'] = array(
-				'label' => 'WP_MEMORY_LIMIT',
-				'label_html' => esc_html__( 'WP_MEMORY_LIMIT', 'learndash' ),
-				'value' => ( defined( 'WP_MEMORY_LIMIT' ) ) ? WP_MEMORY_LIMIT : ''
-			);
-
-			$settings_set['settings']['DB_CHARSET'] = array(
-				'label' => 'DB_CHARSET',
-				'label_html' => esc_html__( 'DB_CHARSET', 'learndash' ),
-				'value' => ( defined( 'DB_CHARSET' ) ) ? DB_CHARSET : ''
-			);
-
-			$settings_set['settings']['DB_COLLATE'] = array(
-				'label' => 'DB_COLLATE',
-				'label_html' => esc_html__( 'DB_COLLATE', 'learndash' ),
-				'value' => ( defined( 'DB_COLLATE' ) ) ? DB_COLLATE : ''
-			);
-
 			$settings_set['settings']['Object Cache'] = array(
 				'label' => 'Object Cache',
 				'label_html' => esc_html__( 'Object Cache', 'learndash' ),
 				'value' => wp_using_ext_object_cache() ? esc_html__( 'Yes', 'learndash' ) : esc_html__( 'No', 'learndash' )
 			);
+
+			foreach( apply_filters( 'learndash_support_wp_defines', array( 'DISABLE_WP_CRON', 'WP_DEBUG', 'WP_DEBUG_DISPLAY', 'SCRIPT_DEBUG', 'WP_DEBUG_DISPLAY', 'WP_DEBUG_LOG', 'WP_PLUGIN_DIR', 'WP_AUTO_UPDATE_CORE', 'WP_MAX_MEMORY_LIMIT', 'WP_MEMORY_LIMIT', 'DB_CHARSET', 'DB_COLLATE' ) ) as $defined_item ) {
+
+				$defined_value = ( defined( $defined_item ) ) ? constant( $defined_item ) : '';
+				$defined_value_html = $defined_value;
+				if ( $defined_item == 'WP_PLUGIN_DIR' ) {
+					$defined_value = str_replace( $ABSPATH_tmp, '', $defined_value );
+				} else if ( $defined_item == 'WP_MEMORY_LIMIT' ) {
+					if ( learndash_return_bytes_from_shorthand( $defined_value ) < learndash_return_bytes_from_shorthand( '100M' ) ) {
+						$defined_value .= ' - (X) Recommended at least 100M memory.';
+						$defined_value_html = '<span style="color: red;">' . $defined_value_html .'</span>' . ' - <a target="_blank" href="https://codex.wordpress.org/Editing_wp-config.php#Increasing_memory_allocated_to_PHP">'. esc_html('Recommended at least 100M memory.', 'learndash' ) .'</a>';
+					} else {
+						$defined_value_html = '<span style="color: green;">' . $defined_value_html .'</span>';
+					}
+				} else if ( $defined_item == 'WP_MAX_MEMORY_LIMIT' ) {
+					if ( learndash_return_bytes_from_shorthand( $defined_value ) < learndash_return_bytes_from_shorthand( '256M' ) ) {
+						$defined_value .= ' - (X) Recommended at least 256M memory.';
+						$defined_value_html = $defined_value_html = '<span style="color: red;">' . $defined_value_html .'</span>' . ' - <a target="_blank" href="https://codex.wordpress.org/Editing_wp-config.php#Increasing_memory_allocated_to_PHP">'. esc_html('Recommended at least 256M memory.', 'learndash' ) .'</a>';
+					} else {
+						$defined_value_html = '<span style="color: green;">' . $defined_value_html .'</span>';
+					}
+				}
+				
+				$settings_set['settings'][$defined_item] = array(
+					'label' => $defined_item,
+					'label_html' => $defined_item,
+					'value' => $defined_value,
+					'value_html' => $defined_value_html
+				);
+			}
+				
+
 			$this->system_info['wp_settings'] = apply_filters('learndash_support_section', $settings_set, 'wp_settings' );
 
 

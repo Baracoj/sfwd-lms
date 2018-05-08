@@ -21,6 +21,13 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 		private $options_key = 'learndash-repositories';
 		private $_doing_install_upgrade_slug = false;
 
+		private $repo_cache_time_limit = 8; // Minutes
+		private $readme_cache_time_limit = 8; // Minutes
+
+
+		/**
+		 * LearnDash_Addon_Updater constructor.
+		 */
 		function __construct() {
 			$this->load_repositories_options();	
 			
@@ -59,13 +66,20 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 		}
 
 
-		/* Called when the add-on plugin is installed. From the page the user is shown links at the 
+		/** 
+		 * Called when the add-on plugin is installed. From the page the user is shown links at the
 		 * bottom of the page to return to the plugin page or the WordPress updates page. If the user started
 		 * as the LearnDash Add-ons page we will add the 'ld-return-addons' query string parameter. This is 
 		 * used to return the user. 
 		 *
+		 * @param array $install_actions
+		 * @param $api
+		 * @param string $plugin_file
+		 *
+		 * @return array
+		 *
 		 * @since 2.5.5
-		 */ 
+		 */
 		function install_plugin_complete_actions( $install_actions = array(), $api, $plugin_file = '' ) {
 			if ( ( isset( $_GET['ld-return-addons'] ) ) && ( !empty( $_GET['ld-return-addons'] ) ) ) {
 				// If we have the 'ld-return-addons' element this means we need to go back there only.
@@ -96,6 +110,13 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 		   }
 		}
 
+		/**
+		 * @param $data
+		 * @param string $action
+		 * @param null $args
+		 *
+		 * @return array|mixed|object
+		 */
 		function plugins_api_filter( $data, $action = '', $args = null ) {
 			if ( ( 'plugin_information' !== $action ) || ( is_null( $args ) ) || ( ! isset( $args->slug ) ) ) {
 				return $data;
@@ -113,7 +134,14 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 
 			return $data;
 		}
-		
+
+		/**
+		 * @param $action
+		 * @param $download_url
+		 * @param $updater
+		 *
+		 * @return mixed
+		 */
 		function upgrader_pre_download_filter( $action, $download_url, $updater ) {
 			
 			$this->load_repositories_options();
@@ -135,7 +163,14 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 			
 			return $action;
 		}
-		
+
+		/**
+		 * @param $source
+		 * @param $remoteSource
+		 * @param $upgrader
+		 *
+		 * @return string|\WP_Error
+		 */
 		function upgrader_source_selection_filter( $source, $remoteSource, $upgrader ) {
 			global $wp_filesystem;
 			/** @var WP_Filesystem_Base $wp_filesystem */
@@ -172,7 +207,14 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 			return $source;
 		}
 
-		function upgrader_process_complete_action( $upgrader, $args = array() ) {			
+
+		/**
+		 * @param $upgrader
+		 * @param array $args
+		 *
+		 * @return mixed
+		 */
+		function upgrader_process_complete_action( $upgrader, $args = array() ) {
 			if ( ( isset( $args['plugins'] ) ) && ( !empty( $args['plugins'] ) ) ) {
 				$all_plugins = get_plugins();
 				$wp_installed_languages = get_available_languages();
@@ -200,7 +242,7 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 								foreach( $wp_installed_languages as $locale ) {
 									$reply = LearnDash_Translations::install_translation( $plugin_text_domain, $locale );
 									if ( ( isset( $reply['translation_set'] ) ) && ( !empty( $reply['translation_set'] ) ) ) {
-										$update_messages[$locale] = sprintf( wp_kses_post( _x( '<h2>Updating translations for %1$s (%2$s)...</h2>', 'learndash' ) ), 
+										$update_messages[$locale] = sprintf( wp_kses_post( _x( '<h2>Updating translations for %1$s (%2$s)...</h2>', 'placeholders: Translation Name, Translation Locale', 'learndash' ) ), 
 											$reply['translation_set']['english_name'], $reply['translation_set']['wp_locale'] 
 										);
 									}
@@ -224,10 +266,6 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 			$this->get_addon_plugins();
 			
 			return $upgrader;
-		}
-		
-		function upgrade_plugin_languages( $plugin_full_slug = '', $upgrader ) {
-			
 		}
 		
 		function pre_set_site_transient_update_plugins( $_transient_data ) {
@@ -270,6 +308,8 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 		function load_repositories_options() {
 			if ( is_null( $this->data ) ) {
 				$this->data = get_option( $this->options_key, array() );
+				if ( isset( $_GET['repo_reset'] ) ) $this->data = array();
+				
 				if ( empty( $this->data ) ) {
 					$this->data['last_check'] = 0;
 					$this->data['repositories'] = array();
@@ -281,21 +321,36 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 			if ( is_null( $this->bb_api ) ) {
 				$this->bb_api = new LearnDash_BitBucket_API();
 			}
+			
+			// Alternate option to define the following in wp-config.php but it MUST be greater then 5 (minutes)
+			if ( ( defined( 'LEARNDASH_REPO_CACHE_TIME_LIMIT' ) ) && ( LEARNDASH_REPO_CACHE_TIME_LIMIT > 5 ) ) {
+				$this->repo_cache_time_limit = LEARNDASH_REPO_CACHE_TIME_LIMIT;
+			}
+
+			if ( ( defined( 'LEARNDASH_README_CACHE_TIME_LIMIT' ) ) && ( LEARNDASH_README_CACHE_TIME_LIMIT > 5 ) ) {
+				$this->readme_cache_time_limit = LEARNDASH_README_CACHE_TIME_LIMIT;
+			}
 		}
 
 		function update_repositories_options() {
-			return update_option( $this->options_key, $this->data );
+			return update_option( $this->options_key, $this->data, false );
 		}
 		
 		function get_addon_plugins( $override_cache = false ) {
+			$this->load_repositories_options();
+			$time_current = time();
+			$time_diff = $time_current - $this->data['last_check'];
+			$time_cache = $this->repo_cache_time_limit * MINUTE_IN_SECONDS;
 			
-			if ( ( $override_cache == 1 ) || ( empty( $this->data['last_check'] ) ) || ( $this->data['last_check'] + ( 5 * MINUTE_IN_SECONDS ) < time() ) ) {
+			if ( ( $override_cache == 1 ) || ( empty( $this->data['last_check'] ) ) || ( $time_diff > $time_cache ) ) {
+				
 				$repositories = $this->bb_api->get_bitbucket_repositories();
 				
-				// Update our last check timestamp for later caching
-				$this->data['last_check'] = time();
-				
 				if ( !empty( $repositories ) ) {
+
+					// Update our last check timestamp for later caching
+					$this->data['last_check'] = time();
+				
 					foreach( $repositories as $bb_slug => $bb_repo ) {
 						if ( ( !isset( $this->data['repositories'][$bb_slug] ) ) || ( strtotime( $bb_repo->updated_on ) > strtotime( $this->data['repositories'][$bb_slug]->updated_on ) ) ) {
 							$this->data['repositories'][$bb_slug] = $bb_repo;
@@ -303,68 +358,75 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 						}
 					}
 				}
+				
+				$this->order_plugins();
+			
+				$this->generate_plugin_updates();
+
+				// Then commit the changes to wp_options.
+				$this->update_repositories_options();
+				
 			}
 			
-			$this->order_plugins();
-			
-			$this->generate_plugin_updates();
-
-			// Then commit the changes to wp_options.
-			$this->update_repositories_options();
-
 			return $this->data['plugins'];
 		}
-		
+
+		/**
+		 * @param string $order_field
+		 */
 		function order_plugins( $order_field = 'updated_on' ) {
 			// Before we return we reorder the items to sort by last change date.
-			$repos_updated_on = array();
-			foreach( $this->data['repositories'] as $repo_slug => $repo ) {
-				$update_on_timestamp = strtotime( $repo->updated_on );
-				$repos_updated_on[$update_on_timestamp .'-'. $repo_slug] = $repo_slug;
-			}
-			krsort( $repos_updated_on );
+			if ( ( isset( $this->data['repositories'] ) ) && ( !empty( $this->data['repositories'] ) ) 
+				&& ( isset( $this->data['plugins'] ) ) && ( !empty( $this->data['plugins'] ) ) ) {
+				$repos_updated_on = array();
+				foreach( $this->data['repositories'] as $repo_slug => $repo ) {
+					$update_on_timestamp = strtotime( $repo->updated_on );
+					$repos_updated_on[$update_on_timestamp .'-'. $repo_slug] = $repo_slug;
+				}
+				krsort( $repos_updated_on );
 			
-			$repos_data_sorted = array();
-			foreach( $repos_updated_on as $repo_slug ) {
-				$repos_data_sorted[$repo_slug] = $this->data['repositories'][$repo_slug];
-			}
-			$this->data['repositories'] = $repos_data_sorted;
+				$repos_data_sorted = array();
+				foreach( $repos_updated_on as $repo_slug ) {
+					$repos_data_sorted[$repo_slug] = $this->data['repositories'][$repo_slug];
+				}
+				$this->data['repositories'] = $repos_data_sorted;
 
-
-			$plugins_data_sorted = array();
-			foreach( $repos_updated_on as $repo_slug ) {
-				if ( isset( $this->data['plugins'][$repo_slug] ) ) 
-					$plugins_data_sorted[$repo_slug] = $this->data['plugins'][$repo_slug];
+				$plugins_data_sorted = array();
+				foreach( $repos_updated_on as $repo_slug ) {
+					if ( isset( $this->data['plugins'][$repo_slug] ) ) {
+						$plugins_data_sorted[$repo_slug] = $this->data['plugins'][$repo_slug];
+					} 
+				}
+				$this->data['plugins'] = $plugins_data_sorted;
 			}
-			$this->data['plugins'] = $plugins_data_sorted;
 		}
 		
 		
-		function update_plugin_readme( $plugin_slug = '', $couese = 'bitbucket', $override_cache = false ) {
+		function update_plugin_readme( $plugin_slug = '', $override_cache = false ) {
 			if ( !empty( $plugin_slug ) ) {
-			
-				if ( ( $override_cache == 1 ) || ( !isset( $this->data['plugins'][$plugin_slug]['last_check'] ) ) || ( $this->data['plugins'][$plugin_slug]['last_check'] + ( 1 * MINUTE_IN_SECONDS ) < time() ) ) {
-					if ( isset( $this->data['repositories'][$plugin_slug] ) ) {
-						$bb_repo = $this->data['repositories'][$plugin_slug]; 
-					} else {
-						$bb_repo = new stdClass();
-					}
+				if ( ( isset( $this->data['repositories'][$plugin_slug] ) ) && ( !empty( $this->data['repositories'][$plugin_slug] ) ) ) {
+					$bb_repo = $this->data['repositories'][$plugin_slug];
 					
-					if ( ( property_exists ( $bb_repo, 'slug' ) ) && ( !empty( $bb_repo->slug ) ) ) { 
-						$plugin_readme = $this->bb_api->get_bitbucket_repository_readme( $plugin_slug );
-					} else {
-						$plugin_readme = $this->bb_api->get_bitbucket_repository_readme_S3( $plugin_slug );
-					}
+					if ( isset( $this->data['plugins'][$plugin_slug] ) ) {
+						$plugin_item = $this->data['plugins'][$plugin_slug];
+						
+						if ( $override_cache !== true ) {
+							if ( ( isset( $plugin_item['last_check'] ) ) && ( ( $plugin_item['last_check'] - time() ) < ( $this->readme_cache_time_limit * MINUTE_IN_SECONDS ) ) ) {
+								return $plugin_item;
+							}
+						}
+					} 
 					
+					$plugin_readme = $this->bb_api->get_bitbucket_repository_readme( $plugin_slug );
 					if ( ( !empty( $plugin_readme ) ) && ( is_array( $plugin_readme ) ) ) {
 
 						$plugin_readme['last_check'] = time();
 						$plugin_readme['external'] = true;
-									
+								
 						if ( ( property_exists ( $bb_repo, 'slug' ) ) && ( !empty( $bb_repo->slug ) ) ) { 
 							$plugin_readme['bb_slug'] = $bb_repo->slug;
 						}
-						
+					
 						if ( !isset( $plugin_readme['slug'] ) ) {
 							if ( ( property_exists ( $bb_repo, 'slug' ) ) && ( !empty( $bb_repo->slug ) ) ) { 
 								$plugin_readme['slug'] = $bb_repo->slug;
@@ -376,7 +438,7 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 								$plugin_readme['plugin_uri'] = esc_url( $bb_repo->website );
 							}
 						}
-						
+					
 						if ( ( !isset( $plugin_readme['homepage'] ) ) || ( empty( $plugin_readme['homepage'] ) ) ) {
 							if ( ( isset( $plugin_readme['plugin_uri'] ) ) && ( !empty( $plugin_readme['plugin_uri'] ) ) ) {
 								$plugin_readme['homepage'] = $plugin_readme['plugin_uri'];
@@ -388,18 +450,22 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 								$plugin_readme['last_updated'] = $bb_repo->updated_on;
 							}
 						}
-			
+		
 						$readme_array = $this->convert_readme( $plugin_readme );
 						if ( ( !empty( $readme_array ) ) && ( is_array( $readme_array ) ) ) {
 							//s$this->add_readme_tags( $readme_array );
-							$this->data['plugins'][$plugin_readme['slug']] = $readme_array;
+							
+							if ( !isset( $readme_array['show-add-on'] ) ) {
+								if ( ( $plugin_slug == 'learndash-core-readme' ) || ( $plugin_slug == 'learndash-propanel-readme' ) ) {
+									$readme_array['show-add-on'] = 'no';
+								}
+							}
+							
+							$this->data['plugins'][$plugin_slug] = $readme_array;
 							return $readme_array;
 						}
 					}
-				} else {
-					if ( isset( $this->data['plugins'][$plugin_slug] ) ) 
-						return $this->data['plugins'][$plugin_slug];
-				}
+				} 
 			}							
 		}
 		
@@ -410,6 +476,10 @@ if ( !class_exists( 'LearnDash_Addon_Updater' ) ) {
 			// Then from the 'plugins' node. This lets us remove items we didn't retreive from 'repositories'.
 			if ( !empty( $this->data['plugins'] ) ) {
 				foreach( $this->data['plugins'] as $plugin_slug => &$plugin_readme ) {
+					
+					if ( ( $plugin_slug == 'learndash-core-readme' ) || ( $plugin_slug == 'learndash-propanel-readme' ) )
+						continue;
+					
 					if ( ( !isset( $plugin_readme['bb_slug'] ) ) || ( empty( $plugin_readme['bb_slug'] ) ) || ( !isset( $this->data['repositories'][$plugin_readme['bb_slug']] ) ) ) {
 						unset( $this->data['plugins'][$plugin_slug] ); 
 					} else {

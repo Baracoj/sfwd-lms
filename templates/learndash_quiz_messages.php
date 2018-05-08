@@ -78,7 +78,7 @@ switch( $context ) {
 		// Add alternate message here
 		break;
 
-	// Default Message: '<p>You have to pass the previous Module's Quiz in order to start this Quiz<span></span></p>'
+	// Default Message: '<p>You must first complete the following: <span></span></p>'
 	// Notes: The <span></span> at the end of the message is required and will be populated JavaScript with the prerequisite quizzes. 
 	case 'quiz_prerequisite_message':
 		// Add alternate message here

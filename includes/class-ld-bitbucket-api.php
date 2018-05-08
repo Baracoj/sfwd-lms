@@ -11,19 +11,41 @@
 if ( !class_exists( 'LearnDash_BitBucket_API' ) ) {
 	class LearnDash_BitBucket_API {
 
-		private $bb_OAuth = array(
-			'consumer_key' => 'fUEfEERS8FdprEzNMX',
-			'consumer_secret' => 'gnBPjny5yummKe6zGv5MMCa5w9tDGstT',
+		// Production
+		private $bb_OAuth = null;
+		//array(
+			//'consumer_key' => 'fUEfEERS8FdprEzNMX',
+			//'consumer_secret' => 'gnBPjny5yummKe6zGv5MMCa5w9tDGstT',
+			//);
+				
+		private $bb_OAuth_sets = array(
+			'fUEfEERS8FdprEzNMX' => 'gnBPjny5yummKe6zGv5MMCa5w9tDGstT',		// ld_updates
+			'32uKmTweF7WGUgXC2H' => 'qmUveCQvaZXD9LmAE8GFAd6a6H5SMk6U',		// ld_updates2
+			'P2xXBphWPZP8Cbr8Rw' => 'qFvD9zrt9RVVpEJ6j2jEWjZJEgvhpzPZ', 	// ld_updates3
+			'8tvevj3YQQnyFJE5a2' => 'C5BuSGZBanNbmaEE7hjeQEnmPLwma3JE', 	// ld_updates4
+			'2LdbzTV4u5UhfTPS8t' => 'Y5eMpRVnFAWkvb3dmZuq64jTzNU9x93c', 	// ld_updates5
+			//'Ta3kaXc77MTdGqDLmU' => '8kg3SzDSCQuvTmCQLvGYmdtWYz3tAYaY'	// ld_code (test only)                      
 		);
-
+				
 		private $request_method = 'GET';
 		private $repo_url_base = "https://api.bitbucket.org/2.0/repositories/learndash";
 		private $download_url_base = "https://bitbucket.org/learndash";
 		//private $readme_url_base = 'https://s3.amazonaws.com/learndash-assets/add-on-images';
-		private $readme_url_base = 'https://s3.us-east-2.amazonaws.com/learndash-addon-assets';
+		//private $readme_url_base = 'https://s3.us-east-2.amazonaws.com/learndash-addon-assets';
 
 		function __construct() {
-			//$this->load_repositories_options();	
+		}
+
+		function init_oauth_key_set() {
+			if ( empty( $this->bb_OAuth ) ) {
+				$set_key = array_rand( $this->bb_OAuth_sets, 1 );
+				if ( !empty( $set_key ) ) {
+					$this->bb_OAuth = array(
+						'consumer_key' => $set_key,
+						'consumer_secret' => $this->bb_OAuth_sets[$set_key],
+					);
+				}
+			}
 		}
 		
 		function get_bb_nonce() {
@@ -47,6 +69,8 @@ if ( !class_exists( 'LearnDash_BitBucket_API' ) ) {
 		
 		function setup_url_params( $request_url = '' ) {
 			if ( !empty( $request_url ) ) {
+				$this->init_oauth_key_set();
+				
 				$request_url_params = array(
 					'oauth_consumer_key' 		=> $this->bb_OAuth['consumer_key'],
 					'oauth_nonce' 				=> $this->get_bb_nonce(),
@@ -86,8 +110,8 @@ if ( !class_exists( 'LearnDash_BitBucket_API' ) ) {
 			// Clear out the existiing plugins array.
 			$repository_data = array();
 						
-			$request_url = $this->repo_url_base;
-		
+			$request_url = $this->repo_url_base .'/learndash-add-ons/src/master/repositories.txt';
+			
 			$request_url = $this->setup_url_params( $request_url );
 			if ( !empty( $request_url ) ) {
 				$options = array('timeout' => 10);
@@ -97,6 +121,30 @@ if ( !class_exists( 'LearnDash_BitBucket_API' ) ) {
 				}
 
 				$code = wp_remote_retrieve_response_code( $response );
+				
+				$body = wp_remote_retrieve_body( $response );
+				if ( ( $code === 200 ) && ( !empty( $body ) ) ) {
+					$repository_data = $this->parse_repository_txt( $body );
+				}
+			}
+			
+			return $repository_data;
+		}
+
+		function get_bitbucket_repositories_ORG() {
+			// Clear out the existiing plugins array.
+			$repository_data = array();
+						
+			$request_url = $this->repo_url_base;			
+			$request_url = $this->setup_url_params( $request_url );
+			if ( !empty( $request_url ) ) {
+				$options = array('timeout' => 10);
+				$response = wp_remote_get( $request_url, $options );
+				if ( is_wp_error( $response ) ) {
+					return $response;
+				}
+
+				$code = wp_remote_retrieve_response_code( $response );				
 				$body = wp_remote_retrieve_body( $response );
 				if ( ( $code === 200 ) && ( !empty( $body ) ) ) {
 					$repositories = json_decode( $body );
@@ -112,7 +160,7 @@ if ( !class_exists( 'LearnDash_BitBucket_API' ) ) {
 					}
 				}
 			}
-			
+
 			return $repository_data;
 		}
 
@@ -135,9 +183,10 @@ if ( !class_exists( 'LearnDash_BitBucket_API' ) ) {
 					}
 
 					$code = wp_remote_retrieve_response_code( $response );
+					
 					$body = wp_remote_retrieve_body( $response );
 					if ( ( $code === 200 ) && ( !empty( $body ) ) ) {
-						$readme_parser = new LeanDashWPReadmeParser();
+						$readme_parser = new LearnDashWPReadmeParser();
 						$body_parsed = $readme_parser->parse_readme_contents( $body );
 
 						return $body_parsed;
@@ -163,7 +212,7 @@ if ( !class_exists( 'LearnDash_BitBucket_API' ) ) {
 				$code = wp_remote_retrieve_response_code( $response );
 				$body = wp_remote_retrieve_body( $response );
 				if ( ( $code === 200 ) && ( !empty( $body ) ) ) {
-					$readme_parser = new LeanDashWPReadmeParser();
+					$readme_parser = new LearnDashWPReadmeParser();
 					$body_parsed = $readme_parser->parse_readme_contents( $body );
 
 					return $body_parsed;
@@ -177,12 +226,42 @@ if ( !class_exists( 'LearnDash_BitBucket_API' ) ) {
 				return $request_url;
 			}
 		}
+		
+		/* The calling function get_bitbucket_repositories() connects to bitbucket and retreives
+		 * a file respoitories.txt. Each line of the file represents a repository and contains 
+		 * three fields separated by '|'. 
+		 * 1. repository slug
+		 * 2. current version
+		 * 3. last update YYYY-MM-DD hh:mm:ss
+		 * 
+		 * @ since 2.5.7
+		 */
+		function parse_repository_txt( $file_contents = '' ) {
+			$repositories_array = array();
+			
+			$file_contents = str_replace(array("\r\n", "\r"), "\n", $file_contents);
+			$file_contents = trim($file_contents);
+			$file_contents_array = preg_split("/(\r\n|\n|\r)/", $file_contents );
+			if ( !empty( $file_contents_array ) ) {
+				foreach( $file_contents_array as $repo_item_string ) {
+					if ( !empty( $repo_item_string ) ) {
+						list( $tmp_array['slug'], $tmp_array['version'], $tmp_array['updated_on'] ) = explode( '|', $repo_item_string );
+						$tmp_array = array_map( 'trim', $tmp_array );
+						if ( ( isset( $tmp_array['slug'] ) ) && ( !empty( $tmp_array['slug'] ) ) ) {
+							$repositories_array[$tmp_array['slug']] = (object)$tmp_array;
+						}
+					}
+				}
+			}
+
+			return $repositories_array;
+		}
 	}
 }
 
-if ( !class_exists( 'LeanDashWPReadmeParser' ) ) {
+if ( !class_exists( 'LearnDashWPReadmeParser' ) ) {
 
-	class LeanDashWPReadmeParser {
+	class LearnDashWPReadmeParser {
 
 		function __construct() {
 				// This space intentially blank
@@ -356,11 +435,11 @@ if ( !class_exists( 'LeanDashWPReadmeParser' ) ) {
 				//	$text = Markdown($text);
 				//}
 				if ( $markdown ) { // Parse markdown.
-					if ( !class_exists('Parsedown', false) ) {
-						/** @noinspection PhpIncludeInspection */
-						require_once(dirname(__FILE__) . '/Parsedown' . (version_compare(PHP_VERSION, '5.3.0', '>=') ? '' : 'Legacy') . '.php');
-					}
-					$instance = Parsedown::instance();
+					//if ( !class_exists('LeanDashParsedown', false) ) {
+					//	/** @noinspection PhpIncludeInspection */
+					//	require_once(dirname(__FILE__) . '/Parsedown' . (version_compare(PHP_VERSION, '5.3.0', '>=') ? '' : 'Legacy') . '.php');
+					//}
+					$instance = LeanDashParsedown::instance();
 					$text = $instance->text($text);
 				}
 				
@@ -449,7 +528,7 @@ if ( !class_exists( 'LeanDashWPReadmeParser' ) ) {
 		}		
 	#
 	#
-	# Parsedown
+	# LeanDashParsedown
 	# http://parsedown.org
 	#
 	# (c) Emanuil Rusev
@@ -460,7 +539,7 @@ if ( !class_exists( 'LeanDashWPReadmeParser' ) ) {
 	#
 	#
 
-	class Parsedown
+	class LeanDashParsedown
 	{
 	    # ~
 

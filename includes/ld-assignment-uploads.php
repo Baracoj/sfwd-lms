@@ -337,7 +337,7 @@ function learndash_upload_assignment_init( $post_id, $fname ) {
 	$points_enabled = learndash_get_setting( $post, 'lesson_assignment_points_enabled' );
 
 	if ( $points_enabled == 'on' ) {
-		$assignment_meta['points'] = 'Pending';
+		$assignment_meta['points'] = esc_html_x( 'Pending', 'Assignment upload default value for points', 'learndash' );
 	}
 
 	$assignment = array(

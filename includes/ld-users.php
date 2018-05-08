@@ -799,11 +799,27 @@ function learndash_get_user_course_access_list( $user_id = 0 ) {
 	// 3. The user ID is in middle "sfwd-courses_course_access_list";*:"*,X,*";
 	// 4. The user ID is at the end "sfwd-courses_course_access_list";*:"*,X";
 
-	$is_like = " postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";i:". $user_id .";s:34:\"sfwd-courses_course_lesson_orderby\"' 
+	$is_like = " 
+		postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";i:". $user_id .";s:34:\"sfwd-courses_course_lesson_orderby\"' 
+		OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";i:". $user_id .";s:40:\"sfwd-courses_course_prerequisite_compare\"' 
+		OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";i:". $user_id .";s:35:\"sfwd-courses_course_lesson_per_page\"' 
+		
 		OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"". $user_id ."\";s:34:\"sfwd-courses_course_lesson_orderby\"' 
+		OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"". $user_id ."\";s:40:\"sfwd-courses_course_prerequisite_compare\"' 
+		OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"". $user_id ."\";s:35:\"sfwd-courses_course_lesson_per_page\"' 
+
 		OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"". $user_id .",(.*)\";s:34:\"sfwd-courses_course_lesson_orderby\"' 
+		OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"". $user_id .",(.*)\";s:40:\"sfwd-courses_course_prerequisite_compare\"' 
+		OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"". $user_id .",(.*)\";s:35:\"sfwd-courses_course_lesson_per_page\"' 
+
 		OR postmeta.meta_value REGEXP  's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*),". $user_id .",(.*)\";s:34:\"sfwd-courses_course_lesson_orderby\"' 
-		OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*),". $user_id ."\";s:34:\"sfwd-courses_course_lesson_orderby\"'";
+		OR postmeta.meta_value REGEXP  's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*),". $user_id .",(.*)\";s:40:\"sfwd-courses_course_prerequisite_compare\"' 
+		OR postmeta.meta_value REGEXP  's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*),". $user_id .",(.*)\";s:35:\"sfwd-courses_course_lesson_per_page\"' 
+
+		OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*),". $user_id ."\";s:34:\"sfwd-courses_course_lesson_orderby\"'
+		OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*),". $user_id ."\";s:40:\"sfwd-courses_course_prerequisite_compare\"'
+		OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*),". $user_id ."\";s:35:\"sfwd-courses_course_lesson_per_page\"'
+		";
 
 	$sql_str = "SELECT post_id FROM ". $wpdb->postmeta ." as postmeta INNER JOIN ". $wpdb->posts ." as posts ON posts.ID = postmeta.post_id WHERE posts.post_status='publish' AND posts.post_type='sfwd-courses' AND postmeta.meta_key='_sfwd-courses' AND ( ". $not_like ." AND (". $is_like ."))";
 	//error_log('sql_str['. $sql_str .']');

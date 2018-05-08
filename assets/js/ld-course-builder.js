@@ -178,71 +178,106 @@ jQuery(document).ready(function($) {
 			});
 		}
 
-		jQuery( '#learndash_course_builder_box_wrap' ).on( 'focus', '.learndash_selectors .learndash-selector-search input', selector_search );
-		function selector_search( e ) {
-			// Set time for .20 seconds. 1/5 of a second. 
-			//var search_timeout = 200; 
-			
-			var selector_container = jQuery(e.currentTarget).parents( '.learndash-selector-container' );
-			
-			if ( typeof selector_container !== 'undefined' ) {
-				var selector_type = jQuery(selector_container).data('ld-type');
-				if ( typeof selector_type !== 'undefined' ) {
-
-					// Hold reference to our interval loop for key press
-					var search_val = '';
+		if ( jQuery( '#learndash_course_builder_box_wrap .learndash_selectors .learndash-selector-search input' ).length) {
+		
+			// Hold reference to our interval loop for key press
+			var search_interval_ref;
 					
-					var post_data = {
-						'action': 'learndash_course_builder_selector_search',
-						'course_id': course_id,
-						'query_args': {
-							'post_type': selector_type,
-							'paged': 1,
-							's': ''
-						},
-					};
-										
-					jQuery(e.currentTarget).on('keyup touchend', function(){
-						search_val = jQuery(e.currentTarget).val();
+			// Set time for .25 seconds. 1/4 of a second. 
+			var search_timeout = 250; 
+
+			var search_el = null;
+
+			var search_value = '';
+			var search_width = null;
+
+			// Activate logic on fucus.
+			jQuery( '#learndash_course_builder_box_wrap .learndash_selectors .learndash-selector-search input' ).focus( function( e ) {
+				var selector_container = jQuery( e.currentTarget ).parents( '.learndash-selector-container' );				
+				if ( typeof selector_container !== 'undefined' ) {
+					var selector_type = jQuery(selector_container).data('ld-type');					
+					if ( typeof selector_type !== 'undefined' ) {
+				
+						search_el = jQuery( this );
+				
+						search_width = search_el.width();
+						console.log('search_width[%o]', search_width);
 						
-						if ( search_val == '' ) {
-							jQuery('.learndash-selector-pager', selector_container).show();
-							selector_pager_process( 1, selector_type, selector_container );
-							
-						} else {
-							jQuery('.learndash-selector-pager', selector_container).hide();
-							
-							if ( ( search_val.length >= 3 ) && ( search_val != post_data.query_args.s ) ) {
-								post_data.query_args.s = search_val;
+						jQuery('.learndash-selector-pager', selector_container).hide();
+						jQuery('.learndash-selector-search', selector_container).width('100%');
+						
+						search_interval_ref = setInterval( function() {
+							var search_value_tmp = search_el.val();
+
+							// If search was cleared we need to reset the display to show the regular non-search items
+							if ( ( search_value_tmp.length == 0 ) && ( search_value != search_value_tmp ) ) {
+								// Here clear the search results and show the normal lis of items. 
+								search_value = search_value_tmp;
+								selector_search( selector_container, search_value );
 								
-								jQuery.ajax({
-									type: "POST",
-									url: ajaxurl,
-									dataType: "json",
-									cache: false,
-									data: post_data,
-									error: function(jqXHR, textStatus, errorThrown ) {
-										//console.log('init: error HTTP Status['+jqXHR.status+'] '+errorThrown);
-									},
-									success: function(reply_data) {
-							
-										if ( typeof reply_data !== 'undefined') {
-											if ( typeof reply_data['selector_rows'] !== 'undefined') {
-												jQuery('ul.learndash-selector-post-listing', selector_container).html( reply_data['selector_rows'] );
-												jQuery('ul.learndash-selector-post-listing li', selector_container).draggable( draggable_objects[selector_type] );
-								
-												selector_update_disabled_items( selector_type );
-											}
-										}
-									}
-								});
+							} else {
+								if ( ( search_value_tmp.length >= 3 ) && ( search_value != search_value_tmp ) ) {
+									search_value = search_value_tmp;
+									selector_search( selector_container, search_value );
+								}
+							}
+					
+							if ( !search_el.is(':focus') ) {
+								clearInterval( search_interval_ref );
+								jQuery('.learndash-selector-pager', selector_container).show();
+								jQuery('.learndash-selector-search', selector_container).width(search_width+'px');
+								return;
+							}
+					
+						}, search_timeout );
+					}
+				}
+			});
+		}
+	}
+
+	function selector_search( selector_container, search_value ) {
+		if ( ( typeof selector_container !== 'undefined' ) && ( typeof search_value !== 'undefined' ) ) {
+			var selector_type = jQuery( selector_container ).data('ld-type');
+			if ( typeof selector_type !== 'undefined' ) {
+				var post_data = {
+					'action': 'learndash_course_builder_selector_search',
+					'course_id': course_id,
+					'query_args': {
+						'post_type': selector_type,
+						'paged': 1,
+						's': search_value
+					},
+				};
+				
+				console.log('search for [%o]', search_value );
+				
+				jQuery.ajax({
+					type: "POST",
+					url: ajaxurl,
+					dataType: "json",
+					cache: false,
+					data: post_data,
+					error: function(jqXHR, textStatus, errorThrown ) {
+						//console.log('init: error HTTP Status['+jqXHR.status+'] '+errorThrown);
+					},
+					success: function(reply_data) {
+			
+						if ( typeof reply_data !== 'undefined') {
+							if ( typeof reply_data['selector_rows'] !== 'undefined') {
+								jQuery('ul.learndash-selector-post-listing', selector_container).html( reply_data['selector_rows'] );
+								jQuery('ul.learndash-selector-post-listing li', selector_container).draggable( draggable_objects[selector_type] );
+				
+								selector_update_disabled_items( selector_type );
 							}
 						}
-					});
-				}
+					}
+				});
 			}
 		}
 	}
+
+
 
 	function build_html_element_map( ) {
 		var builder_items = new Object();
@@ -908,7 +943,7 @@ jQuery(document).ready(function($) {
 								
 									//var builder_item = jQuery( '#learndash_course_builder_box_wrap .learndash_builder_items div#ld-course-builder-lesson-item-'+step_id );
 									var builder_item = jQuery( '#learndash_course_builder_box_wrap .learndash_builder_items #ld-post-'+step_id );
-									jQuery( '.ld-course-builder-title-text', builder_item ).html( title_new );
+									jQuery( '.ld-course-builder-title-text', builder_item ).first().html( title_new );
 								}
 							}
 						});

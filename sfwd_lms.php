@@ -3,7 +3,7 @@
  * Plugin Name: LearnDash LMS
  * Plugin URI: http://www.learndash.com
  * Description: LearnDash LMS Plugin - Turn your WordPress site into a learning management system.
- * Version: 2.5.6
+ * Version: 2.5.7
  * Author: LearnDash
  * Author URI: http://www.learndash.com
  * Text Domain: learndash
@@ -17,7 +17,7 @@
 /**
  * LearnDash Version Constant
  */
-define( 'LEARNDASH_VERSION', '2.5.6' );
+define( 'LEARNDASH_VERSION', '2.5.7' );
 define( 'LEARNDASH_SETTINGS_DB_VERSION', '2.5' );
 define( 'LEARNDASH_SETTINGS_TRIGGER_UPGRADE_VERSION', '2.5' );
 define( 'LEARNDASH_LMS_TEXT_DOMAIN', 'learndash' );
@@ -56,7 +56,7 @@ if ( ! defined( 'LEARNDASH_SCRIPT_DEBUG' ) ) {
 	}
 }
 
-if ( ! defined( 'LEARNDASH_SCRIPT_DEBUG_TOKEN' ) ) {
+if ( ! defined( 'LEARNDASH_SCRIPT_VERSION_TOKEN' ) ) {
 	if ( defined( 'LEARNDASH_SCRIPT_DEBUG' ) && ( LEARNDASH_SCRIPT_DEBUG === true ) ) {
 		define( 'LEARNDASH_SCRIPT_VERSION_TOKEN', LEARNDASH_VERSION . '-' . time() );
 
@@ -64,7 +64,6 @@ if ( ! defined( 'LEARNDASH_SCRIPT_DEBUG_TOKEN' ) ) {
 		define( 'LEARNDASH_SCRIPT_VERSION_TOKEN', LEARNDASH_VERSION );
 	}
 }
-
 
 // Added to support Lesson/Topic videos
 // @since 2.4.5.
@@ -78,7 +77,7 @@ if ( ! defined( 'LEARNDASH_COURSE_BUILDER' ) ) {
 	define( 'LEARNDASH_COURSE_BUILDER', true );
 }
 
-// Added to support Lesson/Topic videos
+// Added to support Translations via GlotPress
 // @since 2.5.1.1.
 if ( ! defined( 'LEARNDASH_TRANSLATIONS' ) ) {
 	define( 'LEARNDASH_TRANSLATIONS', true );
@@ -104,7 +103,7 @@ if ( ! defined( 'LEARNDASH_LMS_DEFAULT_LAZY_LOAD_PER_PAGE' ) ) {
 }
 
 // Define the default number of items per page.
-if ( !defined( 'LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE' ) ) {
+if ( ! defined( 'LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE' ) ) {
 	define( 'LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE', 20 );
 } 
 

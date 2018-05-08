@@ -887,11 +887,14 @@ function learndash_get_course_points( $post_id = 0 ) {
 				$course_points = 0;
 		
 				$course_points = learndash_get_setting( $course_id, 'course_points' );
+				if ( !empty( $course_points ) ) {
+					$course_points = learndash_format_course_points( $course_points );
+				}
 			}
 		}
 	}
 	
-	return intval( $course_points );
+	return $course_points;
 }
 
 /**

@@ -34,7 +34,13 @@ class WpProQuiz_Model_PrerequisiteMapper extends WpProQuiz_Model_Mapper {
 	}
 	
 	public function getNoPrerequisite($prerequisiteQuizId, $userId) {
-		return $this->_wpdb->get_col(
+		if ( ( defined( 'LEARNDASH_QUIZ_PREREQUISITE_ALT' ) ) && ( LEARNDASH_QUIZ_PREREQUISITE_ALT === true ) ) {
+			$sql_str = $this->_wpdb->prepare( "SELECT p.quiz_id FROM {$this->_tablePrerequisite} AS p WHERE p.prerequisite_quiz_id = %d", $prerequisiteQuizId );
+			$prereq_quiz_ids = $this->_wpdb->get_col( $sql_str );
+			return $prereq_quiz_ids;
+			
+		} else {
+			return $this->_wpdb->get_col(
 				$this->_wpdb->prepare(
 						"SELECT 
 							p.quiz_id 
@@ -48,6 +54,7 @@ class WpProQuiz_Model_PrerequisiteMapper extends WpProQuiz_Model_Mapper {
 						GROUP BY 
 							p.quiz_id",
 						$userId, $prerequisiteQuizId)
-		);
+			);
+		}
 	}
 }

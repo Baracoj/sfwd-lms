@@ -916,7 +916,6 @@ add_shortcode( 'ld_profile', 'learndash_profile' );
 
 function wp_ajax_ld_course_registered_pager() {
 	if ( !is_user_logged_in() ) return '';
-	$user_id = get_current_user_id();
 
 	add_filter('learndash_course_info_paged', function( $paged = 1, $context = '' ) {
 		if ( ( $context == 'registered' ) && ( isset( $_POST['paged'] ) ) && ( !empty( $_POST['paged'] ) ) ) {
@@ -934,26 +933,19 @@ function wp_ajax_ld_course_registered_pager() {
 	else
 		$shortcode_atts = array();
 	
+	if ( ( isset( $shortcode_atts['user_id'] ) ) && ( !empty( $shortcode_atts['user_id'] ) ) ) {
+		$user_id = intval( $shortcode_atts['user_id'] );
+	} else {
+		$user_id = get_current_user_id();
+	}
+	
 	$shortcode_atts['return'] = true;
 	$shortcode_atts['type'] = 'registered';
 	
-
-	// The following filter is called during the template output. Normally if the admin is viewing profile.php
-	// We show the edit options. but via AJAX we don't know from where the user is viewing. It may be a front-end 
-	// page etc. So as part of the shortcode atts we store the pagenow and a nonce we then verify within the logic below.
-	add_filter( 'learndash_show_user_course_complete_options', function( $show_admin_options ) {
-		if ( isset( $_POST['shortcode_atts'] ) )
-			$shortcode_atts = $_POST['shortcode_atts'];
-		else
-			$shortcode_atts = array();
-		
-		if ( ( isset( $shortcode_atts['pagenow'] ) ) && ( $shortcode_atts['pagenow'] == 'profile.php' ) && ( isset( $shortcode_atts['pagenow_nonce'] ) ) && ( !empty( $shortcode_atts['pagenow_nonce'] ) ) ) {
-			if ( wp_verify_nonce( $shortcode_atts['pagenow_nonce'], $shortcode_atts['pagenow'] .'-'. get_current_user_id() ) ) {
-				$show_admin_options = true;
-			}
-		} 
-		return $show_admin_options;
-	});
+	// Setup the pager filter. 
+	if ( !learndash_ajax_pager_verify_atts( $user_id, $shortcode_atts ) ) {
+		return '';
+	}
 
 	$user_progress = SFWD_LMS::get_course_info( $user_id, $shortcode_atts );
 
@@ -1007,32 +999,20 @@ function wp_ajax_ld_course_progress_pager() {
 	else
 		$shortcode_atts = array();
 	
-	$shortcode_atts['return'] = true;
-	$shortcode_atts['type'] = 'course';
-
 	if ( ( isset( $shortcode_atts['user_id'] ) ) && ( !empty( $shortcode_atts['user_id'] ) ) ) {
 		$user_id = intval( $shortcode_atts['user_id'] );
 	} else {
 		$user_id = get_current_user_id();
 	}
 
-	// The following filter is called during the template output. Normally if the admin is viewing profile.php
-	// We show the edit options. but via AJAX we don't know from where the user is viewing. It may be a front-end 
-	// page etc. So as part of the shortcode atts we store the pagenow and a nonce we then verify within the logic below.
-	add_filter( 'learndash_show_user_course_complete_options', function( $show_admin_options ) {
-		if ( isset( $_POST['shortcode_atts'] ) )
-			$shortcode_atts = $_POST['shortcode_atts'];
-		else
-			$shortcode_atts = array();
-		
-		if ( ( isset( $shortcode_atts['pagenow'] ) ) && ( $shortcode_atts['pagenow'] == 'profile.php' ) && ( isset( $shortcode_atts['pagenow_nonce'] ) ) && ( !empty( $shortcode_atts['pagenow_nonce'] ) ) ) {
-			if ( wp_verify_nonce( $shortcode_atts['pagenow_nonce'], $shortcode_atts['pagenow'] .'-'. get_current_user_id() ) ) {
-				$show_admin_options = true;
-			}
-		} 
-		return $show_admin_options;
-	});
-
+	$shortcode_atts['return'] = true;
+	$shortcode_atts['type'] = 'course';
+	
+	// Setup the pager filter. 
+	if ( !learndash_ajax_pager_verify_atts( $user_id, $shortcode_atts) ) {
+		return '';
+	}
+	
 	$user_progress = SFWD_LMS::get_course_info( $user_id, $shortcode_atts );
 
 	if ( ( isset( $user_progress['course_progress'] ) ) && ( !empty( $user_progress['course_progress'] ) ) ) {
@@ -1060,7 +1040,6 @@ function wp_ajax_ld_course_progress_pager() {
 				'pager_context' => 'course_info_courses'
 			) 
 		);
-		
 	}
 	
 	echo json_encode( $reply_data );
@@ -1084,32 +1063,19 @@ function wp_ajax_ld_quiz_progress_pager() {
 	else
 		$shortcode_atts = array();
 
-	$shortcode_atts['return'] = true;
-	$shortcode_atts['type'] = 'quiz';
-
 	if ( ( isset( $shortcode_atts['user_id'] ) ) && ( !empty( $shortcode_atts['user_id'] ) ) ) {
 		$user_id = intval( $shortcode_atts['user_id'] );
 	} else {
 		$user_id = get_current_user_id();
 	}
+
+	$shortcode_atts['return'] = true;
+	$shortcode_atts['type'] = 'quiz';
 	
-	// The following filter is called during the template output. Normally if the admin is viewing profile.php
-	// We show the edit options. but via AJAX we don't know from where the user is viewing. It may be a front-end 
-	// page etc. So as part of the shortcode atts we store the pagenow and a nonce we then verify within the logic below.
-	add_filter( 'learndash_show_user_course_complete_options', function( $show_admin_options ) {
-		if ( isset( $_POST['shortcode_atts'] ) )
-			$shortcode_atts = $_POST['shortcode_atts'];
-		else
-			$shortcode_atts = array();
-		
-		if ( ( isset( $shortcode_atts['pagenow'] ) ) && ( $shortcode_atts['pagenow'] == 'profile.php' ) && ( isset( $shortcode_atts['pagenow_nonce'] ) ) && ( !empty( $shortcode_atts['pagenow_nonce'] ) ) ) {
-			if ( wp_verify_nonce( $shortcode_atts['pagenow_nonce'], $shortcode_atts['pagenow'] .'-'. get_current_user_id() ) ) {
-				$show_admin_options = true;
-			}
-		} 
-		return $show_admin_options;
-	});
-	
+	// Setup the pager filter. 
+	if ( !learndash_ajax_pager_verify_atts( $user_id, $shortcode_atts ) ) {
+		return '';
+	}
 
 	$reply_data = array();
 
@@ -1132,23 +1098,6 @@ function wp_ajax_ld_quiz_progress_pager() {
 	}
 
 	if ( isset( $user_progress['quizzes_pager'] ) ) {
-		/*
-		$quizzes_pager = $user_progress['quizzes_pager'];
-		
-		$level = ob_get_level();
-		ob_start();
-		include(
-			SFWD_LMS::get_template(
-				'quiz_progress_pager',
-				null,
-				null, 
-				true 
-			)
-		); 
-		
-		$reply_data['pager'] = learndash_ob_get_clean( $level );
-		*/
-		
 		$reply_data['pager'] = SFWD_LMS::get_template( 
 			'learndash_pager.php', 
 			array(
@@ -1171,13 +1120,6 @@ add_action( 'wp_ajax_ld_quiz_progress_pager', 'wp_ajax_ld_quiz_progress_pager' )
  * @since 2.5.4
  */
 function wp_ajax_ld_course_navigation_pager() {
-	//error_log('_POST<pre>'. print_r($_POST, true) .'</pre>');
-
-//	if ( is_user_logged_in() ) 
-//		$user_id = get_current_user_id();
-//	else
-//		$user_id = 0;
-
 	$reply_data = array();
 	
 	if ( ( isset( $_POST['paged'] ) ) && ( !empty( $_POST['paged'] ) ) ) {
@@ -1268,3 +1210,45 @@ function wp_ajax_ld_course_navigation_admin_pager() {
 }
 	
 add_action( 'wp_ajax_ld_course_navigation_admin_pager', 'wp_ajax_ld_course_navigation_admin_pager' );
+
+
+function learndash_ajax_pager_verify_atts( $user_id, $shortcode_atts ) {
+	$use_filter = false;
+	
+	if ( ( !empty( $user_id ) ) && ( isset( $shortcode_atts['pagenow'] ) ) ) {
+		if ( ( isset( $shortcode_atts['pagenow_nonce'] ) ) && ( !empty( $shortcode_atts['pagenow_nonce'] ) ) ) {
+			if ( ( $shortcode_atts['pagenow'] == 'profile.php' ) || ( $shortcode_atts['pagenow'] == 'user-edit.php' ) ) {
+				if ( wp_verify_nonce( $shortcode_atts['pagenow_nonce'], $shortcode_atts['pagenow'] .'-'. $user_id ) ) {
+					$use_filter = true;
+				}
+			} else if ( $shortcode_atts['pagenow'] == 'group_admin_page' ) {
+				if ( ( isset( $shortcode_atts['group_id'] ) ) && ( intval( $shortcode_atts['group_id'] ) ) ) {
+					if ( wp_verify_nonce( $shortcode_atts['pagenow_nonce'], $shortcode_atts['pagenow'] .'-'. intval( $shortcode_atts['group_id'] ).'-'. $user_id ) ) {
+						$use_filter = true;
+					}
+				} 
+			} else if ( $shortcode_atts['pagenow'] == 'learndash' ) {
+				if ( wp_verify_nonce( $shortcode_atts['pagenow_nonce'], $shortcode_atts['pagenow'] .'-'. $user_id ) ) {
+					// Hard return here because we don't want to set $user_filter to true as that will trigger the 
+					// logic below to show the admin only details link. 
+					return true;
+				}
+			}
+		}
+	
+		if ( $use_filter == true ) {
+			// The following filter is called during the template output. Normally if the admin is viewing profile.php
+			// We show the edit options. but via AJAX we don't know from where the user is viewing. It may be a front-end 
+			// page etc. So as part of the shortcode atts we store the pagenow and a nonce we then verify within the logic below.
+			add_filter( 'learndash_show_user_course_complete_options', function( $show_admin_options, $user_id = 0 ) {
+				if ( current_user_can( 'edit_users' ) )  {
+					$show_admin_options = true;
+				} 
+
+				return $show_admin_options;
+			}, 1, 2 );
+		}
+	}
+		
+	return $use_filter;
+}

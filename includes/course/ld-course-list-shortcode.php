@@ -113,13 +113,17 @@ function ld_course_list( $attr ) {
 	
 	$atts = shortcode_atts( $attr_defaults, $attr );
 	
-	if ( is_user_logged_in() ) {
-		if ( ( $atts['mycourses'] == 'true' ) || ( $atts['mycourses'] == 'enrolled' ) ) {
+	if ( ( $atts['mycourses'] == 'true' ) || ( $atts['mycourses'] == 'enrolled' ) ) {
+		if ( is_user_logged_in() ) {
 			$atts['mycourses'] = 'enrolled';
-		} else if ( $atts['mycourses'] == 'not-enrolled' ) {
+		} else {
+			return '';
+		}
+	} else if ( $atts['mycourses'] == 'not-enrolled' ) {
+		if ( is_user_logged_in() ) {
 			$atts['mycourses'] = 'not-enrolled';
 		} else {
-			$atts['mycourses'] = null;
+			return '';
 		}
 	} else {
 		$atts['mycourses'] = null;
@@ -129,7 +133,11 @@ function ld_course_list( $attr ) {
 	//	$atts['num'] = intval( $atts['num'] );
 	
 	if ( $atts['num'] === false ) {
-		$atts['num'] = LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' );
+		if ( ( isset( $atts['course_id'] ) ) && ( !empty( $atts['course_id'] ) ) ) {
+			$atts['num'] = learndash_get_course_lessons_per_page( intval( $atts['course_id'] ) );
+		} else {
+			$atts['num'] = LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' );
+		}
 	} else if ( $atts['num'] == '-1' ) {
 		$atts['num'] = 0;
 	} else {
@@ -202,7 +210,7 @@ function ld_course_list( $attr ) {
 		}
 	}	
 	
-	if ( !empty( $course_id ) ) {
+	if ( ( !empty( $course_id ) ) && ( is_null( $post__in ) ) ) {
 		if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'enabled' ) == 'yes' ) {
 			$filter['post__in'] = learndash_course_get_steps_by_type( $course_id, $atts['post_type']);
 		} else {
@@ -214,9 +222,7 @@ function ld_course_list( $attr ) {
 		}
 		
 		$filter['meta_query'][] = $meta_query;
-	}
-		
-	if ( ! empty( $post__in ) ) {
+	} else if ( ! empty( $post__in ) ) {
 		$filter['post__in'] = $post__in;
 	}	
 	

@@ -32,11 +32,11 @@ if ( ( class_exists( 'WP_Plugin_Install_List_Table' ) ) && ( !class_exists('Lear
 			
 			$this->tabs = array(
 				'learndash' 	=> array(
-					'label' => 	__( 'LearnDash', 'learndash' ),
+					'label' => 	esc_html__( 'LearnDash', 'learndash' ),
 					'url'	=>	add_query_arg('tab', 'learndash' )
 				),
 			    'third-party' => array(
-					'label'	=>	__( 'Third Party', 'learndash' ),
+					'label'	=>	esc_html__( 'Third Party', 'learndash' ),
 					'url'	=>	add_query_arg('tab', 'third-party' ),
 				)
 			);
@@ -61,6 +61,13 @@ if ( ( class_exists( 'WP_Plugin_Install_List_Table' ) ) && ( !class_exists('Lear
 		public function prepare_items_learndash() {
 			$this->addon_updater = new LearnDash_Addon_Updater();
 			$this->items = $this->addon_updater->get_addon_plugins();
+			if ( !empty( $this->items ) ) {
+				foreach( $this->items as $item_slug => $item ) {
+					if ( ( isset( $item['show-add-on'] ) ) && ( $item['show-add-on'] == 'no' ) ) {
+						unset( $this->items[$item_slug] );
+					}
+				}
+			}
 		}
 
 		public function prepare_items_third_party() {
@@ -241,6 +248,11 @@ if ( ( class_exists( 'WP_Plugin_Install_List_Table' ) ) && ( !class_exists('Lear
 					$plugin_icon_url = $plugin['icons']['default'];
 				}
 				
+				if ( ( !empty( $plugin_icon_url ) ) && ( substr( $plugin_icon_url, 0, 2 ) != '//' ) ) {
+					$plugin_icon_url = LEARNDASH_LMS_PLUGIN_URL .$plugin_icon_url;
+				}
+				
+				
 				$last_updated_timestamp = strtotime( $plugin['last_updated'] );
 			?>
 			<div class="plugin-card plugin-card-<?php echo sanitize_html_class( $plugin['slug'] ); ?>">
@@ -273,29 +285,9 @@ if ( ( class_exists( 'WP_Plugin_Install_List_Table' ) ) && ( !class_exists('Lear
 				}
 				?>
 				<div class="plugin-card-bottom">
-					<?php /* ?>
-					<div class="vers column-rating">
-						<?php wp_star_rating( array( 'rating' => $plugin['rating'], 'type' => 'percent', 'number' => $plugin['num_ratings'] ) ); ?>
-						<span class="num-ratings" aria-hidden="true">(<?php echo number_format_i18n( $plugin['num_ratings'] ); ?>)</span>
-					</div>
-					<?php */ ?>
 					<div class="column-updated">
-						<strong><?php _e( 'Last Updated:' ); ?></strong> <?php printf( __( '%s ago' ), human_time_diff( $last_updated_timestamp ) ); ?>
+						<strong><?php _e( 'Last Updated:' ); ?></strong> <?php printf( esc_html_x( '%s ago', 'placeholder: human relative date time', 'learndash' ), human_time_diff( $last_updated_timestamp ) ); ?>
 					</div>
-					<?php /* ?>
-					<div class="column-downloaded">
-						<?php
-						if ( $plugin['active_installs'] >= 1000000 ) {
-							$active_installs_text = _x( '1+ Million', 'Active plugin installations' );
-						} elseif ( 0 == $plugin['active_installs'] ) {
-							$active_installs_text = _x( 'Less Than 10', 'Active plugin installations' );
-						} else {
-							$active_installs_text = number_format_i18n( $plugin['active_installs'] ) . '+';
-						}
-						printf( __( '%s Active Installations' ), $active_installs_text );
-						?>
-					</div>
-					<?php */ ?>
 					<div class="column-compatibility">
 						<?php
 						$wp_version = get_bloginfo( 'version' );

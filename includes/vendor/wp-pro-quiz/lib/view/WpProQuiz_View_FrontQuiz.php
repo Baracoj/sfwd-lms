@@ -740,7 +740,7 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 					array(
 						'quiz_post_id'	=>	$this->quiz->getID(),
 						'context' 		=> 	'quiz_prerequisite_message',
-						'message' 		=> 	'<p>'. sprintf( esc_html_x( "You have to pass the previous Module's %s in order to start this %s:", "You have to pass the previous Module's Quiz in order to start this Quiz:", LEARNDASH_WPPROQUIZ_TEXT_DOMAIN ), LearnDash_Custom_Label::label_to_lower( 'quiz' ), LearnDash_Custom_Label::label_to_lower( 'quiz' ) ) .' <span></span></p>'
+						'message' 		=> 	'<p>'. esc_html__( "You must first complete the following:", LEARNDASH_WPPROQUIZ_TEXT_DOMAIN ) .' <span></span></p>'
 					)
 				);
 			?>
@@ -1104,7 +1104,7 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 							array(
 								'quiz_post_id'	=>	$this->quiz->getID(),
 								'context' 		=> 	'quiz_have_reached_points_message',
-								'message' 		=> 	sprintf( esc_html_x( 'You have reached %1$s of %2$s point(s), (%s)', 'placeholder: points earned, points total', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN ), '<span>0</span>', '<span>0</span>', '<span>0</span>' ),
+								'message' 		=> 	sprintf( esc_html_x( 'You have reached %1$s of %2$s point(s), (%3$s)', 'placeholder: points earned, points total', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN ), '<span>0</span>', '<span>0</span>', '<span>0</span>' ),
 								'placeholders'	=>	array( '0', '0', '0' )
 							)
 						);
@@ -1412,7 +1412,9 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 							<div class="wpProQuiz_question_text">
 								<?php 
 									$questionText = $question->getQuestion();
-									$questionText = wp_unslash( sanitize_post_field( 'post_content', $questionText, 0, 'db' ) );
+									$questionText =	sanitize_post_field( 'post_content', $questionText, 0, 'display' );
+									//$questionText = wp_unslash( $questionText );
+									$questionText = wpautop( $questionText );
 									$questionText = do_shortcode( $questionText );
 									
 									echo $questionText; 
@@ -1457,7 +1459,7 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 										foreach ( $answerArray as $k => $v ) {
 											?>
 											<li class="wpProQuiz_sortStringItem" data-pos="<?php echo $k; ?>">
-												<?php echo $v->isSortStringHtml() ? do_shortcode( $v->getSortString() ) : esc_html( $v->getSortString() ); ?>
+												<?php echo $v->isSortStringHtml() ? do_shortcode( nl2br( $v->getSortString() ) ) : esc_html( $v->getSortString() ); ?>
 											</li>
 										<?php } ?>
 									</ul>
@@ -1477,7 +1479,7 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 								$answer_index = 0;
 
 								foreach ( $answerArray as $v ) {
-									$answer_text = $v->isHtml() ? do_shortcode( $v->getAnswer() ) : esc_html( $v->getAnswer() );
+									$answer_text = $v->isHtml() ? do_shortcode( nl2br( $v->getAnswer() ) ) : esc_html( $v->getAnswer() );
 
 									if ( $answer_text == '' && ! $v->isGraded() ) {
 										continue;
@@ -1593,7 +1595,7 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 											$clozeData['replace'] = wpautop($clozeData['replace']);
 											//$cloze = do_shortcode( wp_kses_post( $clozeData['replace'], null, null ) );
 											
-											$clozeData['replace'] = wp_unslash( sanitize_post_field( 'post_content', $clozeData['replace'], 0, 'db' ) );
+											$clozeData['replace'] = sanitize_post_field( 'post_content', $clozeData['replace'], 0, 'display' );
 											$clozeData['replace'] = do_shortcode( $clozeData['replace'] );
 											
 											
@@ -1610,7 +1612,10 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 										 */
 										} else if ( $question->getAnswerType() === 'assessment_answer' ) {
 											$assessmentData = $this->fetchAssessment( $v->getAnswer(), $this->quiz->getId(), $question->getId() );
-											$assessment     = do_shortcode( apply_filters( 'comment_text', $assessmentData['replace'], null, null ) );
+											//$assessment     = do_shortcode( apply_filters( 'comment_text', $assessmentData['replace'], null, null ) );
+											$assessment 	= sanitize_post_field( 'post_content', $assessmentData['replace'], 0, 'display' );
+											$assessment		= wpautop( $assessment );
+											$assessment     = do_shortcode( $assessment );
 											echo preg_replace_callback( '#@@wpProQuizAssessment@@#im', array(
 												$this,
 												'assessmentCallback'

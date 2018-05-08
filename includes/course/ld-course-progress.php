@@ -680,7 +680,7 @@ function learndash_process_mark_complete( $user_id = null, $postid = null, $only
 		return false;
 	}
 
-	$lessons = learndash_get_lesson_list( $course_id );
+	$lessons = learndash_get_lesson_list( $course_id, array( 'num' => 0 ) );
 
 
 	if ( has_global_quizzes( $postid ) ) {
@@ -1104,7 +1104,6 @@ function learndash_get_course_progress( $user_id = null, $postid = null, $course
 	if ( is_null( $course_id ) )
 		$course_id = learndash_get_course_id( $postid );
 	
-	$lessons = learndash_get_lesson_list( $course_id );
 	$course_progress = get_user_meta( $user_id, '_sfwd-course_progress', true );
 	$this_post = get_post( $postid );
 
@@ -1115,7 +1114,7 @@ function learndash_get_course_progress( $user_id = null, $postid = null, $course
 	}
 
 	if ( $this_post->post_type == 'sfwd-lessons' ) {
-		$posts = learndash_get_lesson_list( $postid );
+		$posts = learndash_get_lesson_list( $postid, array( 'num' => 0 ) );
 
 		if ( empty( $course_progress ) || empty( $course_progress[ $course_id ]['lessons'] ) ) {
 			$completed_posts = array();
@@ -1420,7 +1419,7 @@ function learndash_course_progress( $atts ) {
 
 		$percentage = intVal( $completed * 100 / $total );
 		$percentage = ( $percentage > 100 ) ? 100 : $percentage;
-		$message = sprintf( esc_html_x('%1$d out of %1$d steps completed', 'placeholders: completed count, total count', 'learndash' ), $completed, $total );
+		$message = sprintf( esc_html_x('%1$d out of %2$d steps completed', 'placeholder: completed steps, total steps', 'learndash' ), $completed, $total );
 	}
 
 	if ( $array ) {
@@ -1499,7 +1498,7 @@ function is_quiz_accessable( $user_id = null, $post = null ) {
 				}
 			}
 
-			$lessons = learndash_get_lesson_list( $course_id );
+			$lessons = learndash_get_lesson_list( $course_id, array( 'num' => 0 ) );
 
 			if ( empty( $lessons ) ) {
 				return 1;
@@ -1552,7 +1551,7 @@ function is_quiz_accessable_NEW1( $user_id = null, $post = null ) {
 				}
 			}
 
-			$lessons = learndash_get_lesson_list( $course_id );
+			$lessons = learndash_get_lesson_list( $course_id, array( 'num' => 0 ) );
 
 			if ( empty( $lessons ) ) {
 				return 1;

@@ -491,9 +491,11 @@ class WpProQuiz_Controller_Question extends WpProQuiz_Controller_Controller {
 			}
 
 			$answerType = new WpProQuiz_Model_AnswerTypes( $v );
-			$points += $answerType->getPoints();
-
-			$maxPoints = max( $maxPoints, $answerType->getPoints() );
+			
+			if ( $answerType->isCorrect() ) {
+				$points += $answerType->getPoints();
+				$maxPoints = max( $maxPoints, $answerType->getPoints() );
+			}
 
 			$answerData[] = $answerType;
 		}

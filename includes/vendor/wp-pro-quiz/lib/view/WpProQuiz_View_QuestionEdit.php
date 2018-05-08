@@ -545,7 +545,7 @@ class WpProQuiz_View_QuestionEdit extends WpProQuiz_View_View {
 		<h3 class="hndle"><?php esc_html_e('Single choice options', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN); ?></h3>
 		<div class="inside">
 			<p class="description">
-				<?php esc_html_e('If "Different points for each answer" is activated, you can activate a special mode.<br> This changes the calculation of the points', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN); ?>
+				<?php echo wp_kses_post( __('If "Different points for each answer" is activated, you can activate a special mode.<br> This changes the calculation of the points', LEARNDASH_WPPROQUIZ_TEXT_DOMAIN) ); ?>
 			</p>
 			<label>
 				<input type="checkbox" name="answerPointsDiffModusActivated" value="1" <?php $this->checked($this->question->isAnswerPointsDiffModusActivated()); ?>>

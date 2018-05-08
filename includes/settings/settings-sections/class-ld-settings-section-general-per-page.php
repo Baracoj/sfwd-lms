@@ -29,15 +29,47 @@ if ( ( class_exists( 'LearnDash_Settings_Section' ) ) && ( !class_exists( 'Learn
 				$this->setting_option_values['per_page'] = LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE;
 			}
 			
-			if ( ( !isset( $this->setting_option_values['progress_num'] ) ) || ( $this->setting_option_values['progress_num'] == '' ) ) { 
+			if ( !isset( $this->setting_option_values['progress_num'] ) ) { 
 				$this->setting_option_values['progress_num'] = $this->setting_option_values['per_page'];
 			}
 
-			if ( ( !isset( $this->setting_option_values['quiz_num'] ) ) || ( $this->setting_option_values['quiz_num'] == '' ) ) { 
+			if ( !isset( $this->setting_option_values['quiz_num'] ) ) { 
 				$this->setting_option_values['quiz_num'] = $this->setting_option_values['per_page'];
 			}
 			
 		}		
+				
+		function validate_section_field( $val, $key, $args = array() ) {
+			// Get the digits only
+			$val = preg_replace("/[^0-9]/", '', $val);
+			
+			if ( $val == '' ) {
+				switch( $key  ) {
+					case 'per_page':
+						$val = LEARNDASH_LMS_DEFAULT_WIDGET_PER_PAGE;
+						break;
+					
+					case 'progress_num':
+						if ( ( isset( $args['post_fields']['per_page'] ) ) && ( $args['post_fields']['per_page'] != '' ) ) {
+							$val = $args['post_fields']['per_page'];
+						} else {
+							$val = $this->setting_option_values['per_page'];
+						}
+						break;
+
+					case 'quiz_num':
+						if ( ( isset( $args['post_fields']['per_page'] ) ) && ( $args['post_fields']['per_page'] != '' ) ) {
+							$val = $args['post_fields']['per_page'];
+						} else {
+							$val = $this->setting_option_values['per_page'];
+						}
+						break;
+				}
+			}
+			
+			return intval( $val );
+		}
+		
 				
 		function load_settings_fields() {
 
@@ -52,7 +84,8 @@ if ( ( class_exists( 'LearnDash_Settings_Section' ) ) && ( !class_exists( 'Learn
 					'attrs'			=>	array(
 											'step'	=>	1,
 											'min'	=>	0
-					)
+					),
+					'validate_callback'	=>	array( $this, 'validate_section_field' )
 				),
 				'progress_num' => array(
 					'name'  		=> 	'progress_num',
@@ -64,7 +97,8 @@ if ( ( class_exists( 'LearnDash_Settings_Section' ) ) && ( !class_exists( 'Learn
 					'attrs'			=>	array(
 											'step'	=>	1,
 											'min'	=>	0
-					)
+					),
+					'validate_callback'	=>	array( $this, 'validate_section_field' )
 				),
 				'quiz_num' => array(
 					'name'  		=> 	'quiz_num', 
@@ -75,7 +109,8 @@ if ( ( class_exists( 'LearnDash_Settings_Section' ) ) && ( !class_exists( 'Learn
 					'attrs'			=>	array(
 											'step'	=>	1,
 											'min'	=>	0
-					)
+					),
+					'validate_callback'	=>	array( $this, 'validate_section_field' )
 				),
 			);
 		

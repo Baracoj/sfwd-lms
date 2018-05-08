@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WP-Pro-Quiz 0.28\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/wp-pro-quiz\n"
-"POT-Creation-Date: 2018-03-05 17:40-0600\n"
+"POT-Creation-Date: 2018-03-29 06:39-0500\n"
 "PO-Revision-Date: 2018-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -170,7 +170,7 @@ msgstr ""
 #: lib/controller/WpProQuiz_Controller_Question.php:279
 #: lib/controller/WpProQuiz_Controller_Question.php:294
 #: lib/controller/WpProQuiz_Controller_Question.php:367
-#: lib/controller/WpProQuiz_Controller_Question.php:528
+#: lib/controller/WpProQuiz_Controller_Question.php:530
 #: lib/controller/WpProQuiz_Controller_Quiz.php:48
 #: lib/controller/WpProQuiz_Controller_Quiz.php:52
 #: lib/controller/WpProQuiz_Controller_Quiz.php:382
@@ -506,8 +506,8 @@ msgid "Entered on"
 msgstr ""
 
 #: lib/view/WpProQuiz_View_AdminToplist.php:59
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1732
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1785
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1737
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1790
 #: lib/view/WpProQuiz_View_FrontToplist.php:17
 #: lib/view/WpProQuiz_View_QuestionEdit.php:49
 #: lib/view/WpProQuiz_View_QuestionEdit.php:56
@@ -578,7 +578,7 @@ msgstr ""
 #: lib/view/WpProQuiz_View_FrontQuiz.php:323
 #: lib/view/WpProQuiz_View_FrontQuiz.php:761
 #: lib/view/WpProQuiz_View_FrontQuiz.php:1014
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1935
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1940
 #: lib/view/WpProQuiz_View_QuizEdit.php:425
 #: lib/view/WpProQuiz_View_QuizEdit.php:435
 #: lib/view/WpProQuiz_View_QuizEdit.php:440
@@ -591,7 +591,7 @@ msgstr ""
 #: lib/view/WpProQuiz_View_FrontQuiz.php:330
 #: lib/view/WpProQuiz_View_FrontQuiz.php:812
 #: lib/view/WpProQuiz_View_FrontQuiz.php:841
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1947
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1952
 #, php-format
 msgctxt "Finish Quiz Button Label"
 msgid "Finish %s"
@@ -663,10 +663,7 @@ msgid "You must sign in or sign up to start the %s."
 msgstr ""
 
 #: lib/view/WpProQuiz_View_FrontQuiz.php:743
-#, php-format
-msgctxt ""
-"You have to pass the previous Module's Quiz in order to start this Quiz:"
-msgid "You have to pass the previous Module's %s in order to start this %s:"
+msgid "You must first complete the following:"
 msgstr ""
 
 #: lib/view/WpProQuiz_View_FrontQuiz.php:776
@@ -741,7 +738,7 @@ msgstr ""
 #: lib/view/WpProQuiz_View_FrontQuiz.php:1107
 #, php-format
 msgctxt "placeholder: points earned, points total"
-msgid "You have reached %1$s of %2$s point(s), (%s)"
+msgid "You have reached %1$s of %2$s point(s), (%3$s)"
 msgstr ""
 
 #: lib/view/WpProQuiz_View_FrontQuiz.php:1120
@@ -803,46 +800,46 @@ msgctxt "placeholder: Quiz Category"
 msgid "Category: %s"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1436
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1438
 #: lib/view/WpProQuiz_View_QuestionEdit.php:354
 msgid "Sort elements"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1636
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1641
 msgid "Type your response here"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1648
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1653
 msgid "Upload your answer to this question."
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1655
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1660
 #: lib/view/WpProQuiz_View_QuestionEdit.php:522
 msgid "Upload"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1661
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1666
 msgid "Essay type not found"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1672
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1677
 msgid ""
 "This response will be awarded full points automatically, but it can be "
 "reviewed and adjusted after submission."
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1683
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1688
 msgid ""
 "This response will be awarded full points automatically, but it will be "
 "reviewed and possibly adjusted after submission."
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1694
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1699
 msgid "This response will be reviewed and graded after submission."
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1722
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1756
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1727
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1761
 #: lib/view/WpProQuiz_View_QuestionEdit.php:312
 #: lib/view/WpProQuiz_View_Statistics.php:106
 #: lib/view/WpProQuiz_View_Statistics.php:241
@@ -853,13 +850,13 @@ msgstr ""
 msgid "Correct"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1745
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1799
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1750
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1804
 msgid "Grading can be reviewed and adjusted."
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1774
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1811
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1779
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1816
 #: lib/view/WpProQuiz_View_Statistics.php:107
 #: lib/view/WpProQuiz_View_Statistics.php:242
 #: lib/view/WpProQuiz_View_StatisticsAjax.php:29
@@ -868,37 +865,37 @@ msgstr ""
 msgid "Incorrect"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1832
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1877
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1837
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1882
 #: lib/view/WpProQuiz_View_QuestionEdit.php:154
 msgid "Hint"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1849
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1854
 #: lib/view/WpProQuiz_View_QuizEdit.php:454
 #: lib/view/WpProQuiz_View_QuizEdit.php:459
 msgid "Skip question"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1863
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1868
 msgid "Back"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1891
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1896
 msgid "Check"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1904
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1909
 msgid "Next"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1922
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1925
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1927
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1930
 #, php-format
 msgid "Page %d"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_FrontQuiz.php:1966
+#: lib/view/WpProQuiz_View_FrontQuiz.php:1971
 #, php-format
 msgctxt "quiz is loading... Label"
 msgid "%s is loading..."

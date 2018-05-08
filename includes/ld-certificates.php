@@ -281,14 +281,6 @@ add_action( 'add_meta_boxes', 	'learndash_certificates_add_meta_box' );
 
 function learndash_certificate_options_metabox( $certificate ) {
 
-	$config_lang = 'eng';
-	if ( ! empty( $_GET['lang'] ) ) {
-		$config_lang = substr( esc_html( $_GET['lang'] ), 0, 3 );
-	}
-
-	require_once LEARNDASH_LMS_PLUGIN_DIR . '/includes/vendor/tcpdf/config/lang/' . $config_lang . '.php';
-	require_once LEARNDASH_LMS_PLUGIN_DIR . '/includes/vendor/tcpdf/tcpdf.php';
-
 	$learndash_certificate_options_selected = get_post_meta( $certificate->ID, 'learndash_certificate_options', true);
 
 	if ( !is_array( $learndash_certificate_options_selected ) ) {
@@ -370,14 +362,6 @@ function learndash_certificates_save_meta_box( $post_id ) {
 	if ( ! current_user_can( 'edit_post', $post_id ) ) {
 		return;
 	}
-
-	$config_lang = 'eng';
-	if ( ! empty( $_GET['lang'] ) ) {
-		$config_lang = substr( esc_html( $_GET['lang'] ), 0, 3 );
-	}
-
-	require_once LEARNDASH_LMS_PLUGIN_DIR . '/includes/vendor/tcpdf/config/lang/' . $config_lang . '.php';
-	require_once LEARNDASH_LMS_PLUGIN_DIR . '/includes/vendor/tcpdf/tcpdf.php';
 
 	$learndash_certificate_options = array();
 

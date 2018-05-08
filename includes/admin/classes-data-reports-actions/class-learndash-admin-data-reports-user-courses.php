@@ -186,11 +186,14 @@ if ( !class_exists( 'Learndash_Admin_Data_Reports_Courses' ) ) {
 							
 								$report_user = get_user_by('id', $user_id);
 								if ( $report_user !== false ) {
-								
-									if ( ( !isset( $this->transient_data['posts_ids'] ) ) || ( empty( $this->transient_data['posts_ids'] ) ) ) {
-										$post_ids = learndash_user_get_enrolled_courses( intval( $user_id ), $course_query_args, true );
-									} else {
+									if ( ( isset( $this->transient_data['course_ids'] ) ) && ( !empty( $this->transient_data['course_ids'] ) ) ) {
+										$post_ids = $this->transient_data['course_ids'];
+										
+									} else if ( ( isset( $this->transient_data['posts_ids'] ) ) && ( !empty( $this->transient_data['posts_ids'] ) ) ) {
 										$post_ids = $this->transient_data['posts_ids'];
+
+									} else {
+										$post_ids = learndash_user_get_enrolled_courses( intval( $user_id ), $course_query_args, true );
 									}
 
 									if ( !empty( $post_ids ) ) {

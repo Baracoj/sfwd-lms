@@ -293,26 +293,6 @@ if ( !class_exists( 'Learndash_Admin_Menus_Tabs' ) ) {
 				}
 			}
 
-/*
-			if ( learndash_is_admin_user() ) {
-				$user_group_ids = learndash_get_administrators_group_ids( get_current_user_id(), true );
-				if ( !empty( $user_group_ids ) ) {
-			
-					$add_submenu['group_administration'] = array(
-						'name' 	=> esc_html_x( 'Group Administration', 'Group Administration Menu Label', 'learndash' ),
-						'cap'	=> LEARNDASH_ADMIN_CAPABILITY_CHECK,
-						'link'	=> 'admin.php?page=group_admin_page',
-					);
-				}
-			} else if ( learndash_is_group_leader_user() ) {
-				$add_submenu['group_administration'] = array(
-					'name' 	=> esc_html_x( 'Group Administration', 'Group Administration Menu Label', 'learndash' ),
-					'cap'	=> LEARNDASH_GROUP_LEADER_CAPABILITY_CHECK,
-					'link'	=> 'admin.php?page=group_admin_page',
-				);
-			}
-*/
-
 			if ( learndash_is_group_leader_user() ) {
 				$add_submenu['sfwd-essays'] = array(
 					'name' 	=> esc_html_x( 'Submitted Essays', 'Submitted Essays Menu Label', 'learndash' ),

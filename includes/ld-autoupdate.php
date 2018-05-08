@@ -255,6 +255,9 @@ class nss_plugin_updater_sfwd_lms {
 			if ( is_null( $this->ld_updater ) ) {
 				$this->ld_updater = new LearnDash_Addon_Updater();
 			}
+			//$this->ld_updater->load_repositories_options();
+			$this->ld_updater->get_addon_plugins();
+			
 			$plugin_readme = $this->ld_updater->update_plugin_readme( 'learndash-core-readme' );
 			
 			if ( !empty( $plugin_readme ) ) {

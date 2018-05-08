@@ -200,8 +200,8 @@ class LD_QuizPro {
 
 							$points  = ( $correct) ? $questionData['points'] : 0;
 
-							$points = apply_filters( 'learndash_ques_free_answer_pts', $points, $questionData, $answerIndex, $correctAnswer, $userResponse );
-							$correct = apply_filters( 'learndash_ques_free_answer_correct', $correct, $questionData, $answerIndex, $correctAnswer, $userResponse );
+							$points = apply_filters( 'learndash_ques_free_answer_pts', $points, $questionData, $userResponse );
+							$correct = apply_filters( 'learndash_ques_free_answer_correct', $correct, $questionData, $userResponse );
 								
 							$extra['r'] = $userResponse;
 							if ( ! $quiz->isDisabledAnswerMark() && empty( $questionData['disCorrect'] ) ) {
@@ -216,14 +216,16 @@ class LD_QuizPro {
 
 							foreach ( $questionData['correct'] as $answerIndex => $correctAnswer ) {
 
-								$checked = $questionData['correct'][ $userResponse[ $answerIndex ] ];
+								//$checked = $questionData['correct'][ $userResponse[ $answerIndex ] ];
 
 
 								if ( $answer_pointed_activated ){
-
+									
 									/**
 									 * Points are calculated per answer, add up all the points the user marked correctly
 									 */
+									
+									/*
 									if ( ! empty( $correctAnswer ) && ! empty( $userResponse[ $answerIndex ] ) ) {
 										$r[ $answerIndex ] = true;
 										$correct = true;
@@ -239,6 +241,53 @@ class LD_QuizPro {
 
 									$points = apply_filters( 'learndash_ques_multiple_answer_pts_each', $points, $questionData, $answerIndex, $correctAnswer, $userResponse );
 									$correct = apply_filters( 'learndash_ques_multiple_answer_correct_each', $correct, $questionData, $answerIndex, $correctAnswer, $userResponse );
+									*/
+									
+									
+									
+									if ( ( isset( $userResponse[ $answerIndex ] ) ) && ( $userResponse[ $answerIndex ] == $correctAnswer ) ) { 
+										$r[ $answerIndex ] = $userResponse[ $answerIndex ];
+										$correct_this_item = true;
+										
+										if ( $userResponse[ $answerIndex ] == true )
+											$points += $questionData['points'][ $answerIndex ];
+										
+									} else {
+										$r[ $answerIndex ] = false;
+										$correct_this_item = false;
+									}
+
+									if ( has_filter( 'learndash_ques_multiple_answer_pts_each' ) ) {
+										$points = apply_filters( 'learndash_ques_multiple_answer_pts_each', $points, $questionData, $answerIndex, $correctAnswer, $userResponse );
+									} else {
+										/**
+										 * Added logic to subtract points on selected incorrect answers. 
+										 *
+										 * @since 2.5.7
+										 */
+										if ( $questionData['correct'][ $answerIndex ] == 0 ) {
+											if ( $correct_this_item == false ) {
+												if ( intval( $questionData['points'][ $answerIndex ] ) > 0 ) {
+													$points -= intval( $questionData['points'][ $answerIndex ] );
+												} //else {
+												//	$points -= 1;
+												//}
+											}
+
+											end( $questionData['correct'] );
+											$last_key = key( $questionData['correct'] );
+
+											// If we are at the last index and the points is less than zero we keep it from being negative.
+											if ( ( $last_key == $answerIndex ) && ( $points < 0 ) ) {
+												$points = 0;
+											}
+										}
+									}
+									
+									$correct_this_item = apply_filters( 'learndash_ques_multiple_answer_correct_each', $correct_this_item, $questionData, $answerIndex, $correctAnswer, $userResponse );
+									if ( ( $correct_this_item != true ) && ( $correct == true ) )
+										$correct = false;
+									 
 
 								} else {
 

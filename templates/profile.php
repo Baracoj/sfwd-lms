@@ -112,12 +112,12 @@
 							<div class="learndash_profile_heading course_overview_heading"><?php printf( esc_html_x( '%s Progress Overview', 'Course Progress Overview Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></div>
 
 							<div>
-								<dd class="course_progress" title='<?php echo sprintf( esc_html_x( '%1$s out of %2$s steps completed', 'learndash' ), $progress['completed'], $progress['total'] ); ?>'>
+								<dd class="course_progress" title='<?php echo sprintf( esc_html_x( '%1$d out of %2$d steps completed', 'placeholder: completed steps, total steps', 'learndash' ), $progress['completed'], $progress['total'] ); ?>'>
 									<div class="course_progress_blue" style='width: <?php echo esc_attr( $progress['percentage'] ); ?>%;'>
 								</dd>
 
 								<div class="right">
-									<?php echo sprintf( esc_html_x( '%1$s%% Complete', 'learndash' ), $progress['percentage'] ); ?>
+									<?php echo sprintf( esc_html_x( '%1$s%% Complete', 'placeholder: percent complete', 'learndash' ), $progress['percentage'] ); ?>
 								</div>
 							</div>
 

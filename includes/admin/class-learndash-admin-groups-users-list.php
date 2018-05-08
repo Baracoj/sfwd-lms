@@ -11,127 +11,9 @@ if (!class_exists('Learndash_Admin_Groups_Users_List')) {
 		var $user_id 		= 	0;
 		
 		function __construct() {
-			//add_action( 'load-edit.php', array( $this, 'on_load_groups') );
-			
 			add_action( 'admin_menu', array( $this, 'learndash_group_admin_menu' ) );
 		}
-		
-		/*
-		function on_load_groups() {
-			
-			if ( ( isset( $_GET['post_type'] ) ) && ( $_GET['post_type'] == 'groups' ) ) {
-
-				add_filter( 'manage_groups_posts_columns', array( $this, 'set_groups_columns' ) );
-				add_action( 'manage_groups_posts_custom_column' , array( $this, 'display_groups_columns' ), 10, 2 );
-
-			}			
-		}
-		*/
-
-		/*
-		function set_groups_columns($columns) {
-
-			$columns_new = array();
-			
-			foreach( $columns as $col_key => $col_label ) {
-				if ($col_key == 'date') {
-					$columns_new['groups_group_leaders'] = esc_html__('Group Leaders', 'learndash');
-					$columns_new['groups_group_courses'] = sprintf( esc_html__('Group %s', 'Group Courses', 'learndash'), LearnDash_Custom_Label::get_label( 'courses' ));
-					$columns_new['groups_group_users'] = esc_html__('Group Users', 'learndash');
-				}
-				$columns_new[$col_key] = $col_label;
-			}
-			return $columns_new;
-			
-		}
-		*/
-		/*
-		function display_groups_columns( $column_name, $group_id ) {
-		    switch ( $column_name ) {
-
-		        case 'groups_group_leaders':
-					$group_leaders = learndash_get_groups_administrator_ids( $group_id );
-					if ( ( empty( $group_leaders ) ) || ( !is_array( $group_leaders ) ) ) {
-						$group_leaders = array();
-					}
-					
-					echo  sprintf(__('Total %s', 'learndash'), count( $group_leaders ) );
-					
-					if ( !empty( $group_leaders ) ) {
-						$user_names = '';
-						
-						if ( count( $group_leaders ) > 5 ) {
-							$group_leaders = array_slice( $group_leaders, 0, 5);
-						}
-						
-						foreach( $group_leaders as $user_id ) {
-							$user = get_user_by( 'id', $user_id );
-							if ( !empty( $user_names ) ) $user_names .= ', ';
-							$user_names .= '<a href="'. get_edit_user_link( $user_id ) .'">'. $user->display_name .' ('.$user->user_login.')' .'</a>';
-						}
-						
-						if ( !empty( $user_names ) )
-							echo '<br />' . $user_names;
-					} 
-		            break;
-
-		        case 'groups_group_users':
-					$group_users = learndash_get_groups_user_ids( $group_id );
-					if ( ( empty( $group_users ) ) || ( !is_array( $group_users ) ) ) {
-						$group_users = array();
-					}
-					
-					echo sprintf(__('Total %s', 'learndash'), count( $group_users ) );
 				
-					if ( !empty( $group_users ) ) {
-						$user_names = '';
-
-						if ( count( $group_users ) > 5 ) {
-							$group_users = array_slice( $group_users, 0, 5 );
-						}
-					
-						foreach( $group_users as $user_id ) {
-							$user = get_user_by( 'id', $user_id );
-							if ( !empty( $user_names ) ) $user_names .= ', ';
-							$user_names .= '<a href="'. get_edit_user_link( $user_id ) .'">'. $user->display_name .' ('.$user->user_login.')' .'</a>';
-						}
-						
-						if ( !empty( $user_names ) )
-							echo '<br />'. $user_names;
-					}
-		            break;
-
-		        case 'groups_group_courses':
-					$group_courses = learndash_group_enrolled_courses( $group_id );
-					if ( ( empty( $group_courses ) ) || ( !is_array( $group_courses ) ) ) {
-						$group_courses = array();
-					}
-					
-					echo sprintf(__('Total %s', 'learndash'), count( $group_courses ) );
-					
-					if ( !empty( $group_courses ) ) {
-
-						$course_names = '';
-						if ( count( $group_courses ) > 5 ) {
-							$group_courses = array_slice( $group_courses, 0, 5 );
-						}
-				
-						foreach( $group_courses as $course_id ) {
-							
-							if ( !empty( $course_names ) ) $course_names .= ', ';
-							$course_names .= '<a href="'. get_edit_post_link( $course_id ) .'">'. get_the_title( $course_id ) .'</a>';
-						}
-
-						if ( !empty( $course_names ) )
-							echo '<br />'. $course_names;
-					}
-		            break;
-
-
-		    }
-		}
-		*/
-		
 		/**
 		 * Register Group Administration submenu page
 		 * 
@@ -165,7 +47,8 @@ if (!class_exists('Learndash_Admin_Groups_Users_List')) {
 		}
 
 		function on_load() {
-
+			global $learndash_assets_loaded;
+			
 			if ( ( isset( $_GET['action'] ) ) && ( !empty( $_GET['action'] ) ) ) {
 				$this->current_action = esc_attr( $_GET['action'] );
 				//$this->current_action = $this->list_table->current_action();
@@ -195,9 +78,26 @@ if (!class_exists('Learndash_Admin_Groups_Users_List')) {
 				true 
 			);
 			$learndash_assets_loaded['scripts']['sfwd-module-script'] = __FUNCTION__;
+		
+			// Because we need the ajaxurl for the pagination AJAX
+			$data = array();
+			if ( !isset( $data['ajaxurl'] ) )
+				$data['ajaxurl'] = admin_url('admin-ajax.php' );
 
-			wp_localize_script( 'sfwd-module-script', 'sfwd_data', array() );
+			$data = array( 'json' => json_encode( $data ) );
+			wp_localize_script( 'sfwd-module-script', 'sfwd_data', $data );
+		
+			$filepath = SFWD_LMS::get_template( 'learndash_pager.css', null, null, true );
+			if ( !empty( $filepath ) ) {
+				wp_enqueue_style( 'learndash_pager_css', learndash_template_url_from_path( $filepath ), array(), LEARNDASH_SCRIPT_VERSION_TOKEN );
+				$learndash_assets_loaded['styles']['learndash_pager_css'] = __FUNCTION__;
+			} 
 
+			$filepath = SFWD_LMS::get_template( 'learndash_pager.js', null, null, true );
+			if ( !empty( $filepath ) ) {
+				wp_enqueue_script( 'learndash_pager_js', learndash_template_url_from_path( $filepath ), array( 'jquery' ), LEARNDASH_SCRIPT_VERSION_TOKEN, true );
+				$learndash_assets_loaded['scripts']['learndash_pager_js'] = __FUNCTION__;
+			}
 
 			if ( empty( $this->current_action ) ) {
 
@@ -239,7 +139,7 @@ if (!class_exists('Learndash_Admin_Groups_Users_List')) {
 				
 					$this->form_method = 'post';
 				
-					$user           = get_user_by( 'id', $this->user_id );
+					$user = get_user_by( 'id', $this->user_id );
 			
 					$this->title = esc_html__( 'Group Administration', 'learndash' ) . ': ';
 				
@@ -374,8 +274,27 @@ if (!class_exists('Learndash_Admin_Groups_Users_List')) {
 									$group_user_ids = learndash_get_groups_user_ids( $this->group_id );
 									if ( !empty( $group_user_ids ) ) {
 										if ( in_array( $this->user_id, $group_user_ids ) ) {
-										
-											echo learndash_course_info_shortcode( array( 'user_id' => $this->user_id ) );
+											$atts = array(
+												'user_id' => $this->user_id,
+												'group_id' => $this->group_id,
+												//'course_ids' => learndash_group_enrolled_courses( $this->group_id ),
+												//'quiz_ids' => learndash_get_group_course_quiz_ids( $this->group_id ),
+												'progress_num' => LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'progress_num' ),
+												'progress_orderby' => 'title',
+												'progress_order' => 'ASC',
+												'quiz_num' => LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'quiz_num' ),
+												'quiz_orderby' => 'taken',
+												'quiz_order' => 'DESC'
+											);
+			
+											/**
+											 * Allow filtering of group admininstration output 
+											 *
+											 * @since 2.5.7
+											 */
+											$atts = apply_filters('learndash_group_administration_course_info_atts', $atts, get_user_by('id', $this->user_id ) );
+
+											echo learndash_course_info_shortcode( $atts );
 										
 											if ( learndash_show_user_course_complete( $this->user_id ) ) {
 												echo submit_button( esc_html__('Update User') );

@@ -104,6 +104,8 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 		}
 
 		function trigger_actions() {
+			$this->upgrade_plugin();
+			
 			if ( is_admin() ) {
 				if ( ( is_multisite() ) && ( !is_network_admin() ) ) {
 					if ( isset( $_GET['learndash_activate'] ) ) {
@@ -430,7 +432,60 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 			return $content;
 		}
 
+		function upgrade_plugin( ) {
+			require_once( LEARNDASH_LMS_PLUGIN_DIR .'includes/admin/class-learndash-admin-settings-data-upgrades.php' );
+			$this->ld_admin_settings_data_upgrades = Learndash_Admin_Settings_Data_Upgrades::get_instance();
+			
+			$ld_current_version = $this->ld_admin_settings_data_upgrades->get_data_settings( 'current_version' );
+			$ld_prior_version = $this->ld_admin_settings_data_upgrades->get_data_settings( 'prior_version' );
+			$db_version = $this->ld_admin_settings_data_upgrades->get_data_settings( 'db_version' );
 
+			if ( empty( $ld_prior_version ) ) {
+				// If we have a prior 'db_version' then we know there was a prior LD install.
+				if ( !empty( $db_version ) ) {
+					if ( !empty( $ld_current_version ) ) 
+						$ld_prior_version = $ld_current_version;
+					else
+						$ld_prior_version = '0.0.0.0';
+				} 
+				// Else we have a new install
+				else {
+					$ld_prior_version = 'new';
+				}
+				
+				$this->ld_admin_settings_data_upgrades->set_data_settings( 'prior_version', $ld_prior_version );
+
+				// As this is a new install we want to set the prior data run on the Courses and Quizzes
+				$data_upgrade_courses = new Learndash_Admin_Data_Upgrades_User_Meta_Courses();
+				$data_upgrade_courses->set_last_run_info();
+				
+				$data_upgrade_quizzes = new Learndash_Admin_Settings_Upgrades_User_Meta_Quizzes();
+				$data_upgrade_quizzes->set_last_run_info();
+			}
+
+			$_TRIGGER_ACTIVATE = false;
+			if ( ( empty( $ld_current_version ) ) || ( version_compare( LEARNDASH_VERSION, $ld_current_version, '>' ) ) ) {
+				$_TRIGGER_ACTIVATE = true;
+				
+				/**
+				 * Remove legacy option item
+				 *
+				 * @since 2.5.7
+				 */
+				delete_option( 'ld-repositories' );
+				
+								
+				// Before we update the current version we use it to set the prior version
+				if ( !empty( $ld_current_version ) ) {
+					$this->ld_admin_settings_data_upgrades->set_data_settings( 'prior_version', $ld_current_version );
+				}
+					
+				$this->ld_admin_settings_data_upgrades->set_data_settings( 'current_version', LEARNDASH_VERSION );
+			}
+			
+			if ( $_TRIGGER_ACTIVATE == true )
+				$this->activate();
+		}
 
 		/**
 		 * Fire on plugin activation
@@ -493,6 +548,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 
 			$this->ld_admin_settings_data_upgrades->set_data_settings( 'translations_installed', false );
 			
+			delete_option( 'ld-repositories' );
 			
 			/**
 			 * Ensure we call WPProQuiz activate functions
@@ -1742,22 +1798,6 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 		 * @return string          		output of course information
 		 */
 		static function get_course_info( $user_id, $atts = array() ) {
-			/*
-			if (( isset( $atts['registered_orderby'] ) ) && ( empty( $atts['registered_orderby'] ) ))
-				unset( $atts['registered_orderby'] );
-			if (( isset( $atts['registered_order'] ) ) && ( empty( $atts['registered_order'] ) ))
-				unset( $atts['registered_order'] );
-
-			if (( isset( $atts['progress_orderby'] ) ) && ( empty( $atts['progress_orderby'] ) ))
-				unset( $atts['progress_orderby'] );
-			if (( isset( $atts['progress_order'] ) ) && ( empty( $atts['progress_order'] ) ))
-				unset( $atts['progress_order'] );
-
-			if (( isset( $atts['quiz_orderby'] ) ) && ( empty( $atts['quiz_orderby'] ) ))
-				unset( $atts['quiz_orderby'] );
-			if (( isset( $atts['quiz_order'] ) ) && ( empty( $atts['quiz_order'] ) ))
-				unset( $atts['quiz_order'] );
-			*/
 			
 			$atts_defaults = apply_filters( 
 				'learndash_ld_course_list_shortcode_defaults', 
@@ -1772,7 +1812,10 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 					'num' => LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' ),
 					'orderby' => 'title',
 					'order' => 'ASC',
-				 
+					//'course_ids' => null,
+					//'quiz_ids' => null,
+					'group_id' => null,
+					
 					// Registered Courses 
 					'registered_num' => false, 
 					'registered_show_thumbnail' => 'true',
@@ -1800,8 +1843,35 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				$atts['type'] = array_map( 'trim', $atts['type'] );
 			}
 			
+			if ( !empty( $atts['group_id'] ) ) {
+				$atts['course_ids'] = learndash_group_enrolled_courses( $atts['group_id'] );
+				$atts['quiz_ids'] = learndash_get_group_course_quiz_ids( $atts['group_id'] );
+			} else {
+				$atts['course_ids'] = null;
+				$atts['quiz_ids'] = null;
+			}
+			
+			if ( !is_null( $atts['course_ids'] ) ) {
+				if ( is_string( $atts['course_ids'] ) ) {
+					$atts['course_ids'] = explode(',', $atts['course_ids'] );
+				}
+				$atts['course_ids'] = array_map( 'trim', $atts['course_ids'] );
+			}
 
-			$courses_registered_all = ld_get_mycourses( $user_id );
+			if ( !is_null( $atts['quiz_ids'] ) ) {
+				if ( is_string( $atts['quiz_ids'] ) ) {
+					$atts['quiz_ids'] = explode(',', $atts['quiz_ids'] );
+				}
+				$atts['quiz_ids'] = array_map( 'trim', $atts['quiz_ids'] );
+			}
+			
+			
+			if ( !is_null( $atts['course_ids'] ) ) {
+				$courses_registered_all = $atts['course_ids'];
+			} else {
+				$courses_registered_all = ld_get_mycourses( $user_id );
+			}
+			
 			$courses_registered = array();
 			$courses_registered_pager = array();
 			if ( in_array( 'registered', $atts['type'] ) ) {
@@ -1849,7 +1919,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							if ( isset( $course_registered_query->query_vars['paged'] ) )
 								$courses_registered_pager['paged'] = $course_registered_query->query_vars['paged'];
 							else 
-								$courses_registered_pager['paged'] = $course_registered_query_args['paged'];
+								$courses_registered_pager['paged'] = $courses_registered_query_args['paged'];
 						
 							$courses_registered_pager['total_items'] = $course_registered_query->found_posts;
 							$courses_registered_pager['total_pages'] = $course_registered_query->max_num_pages;
@@ -1867,12 +1937,14 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 			
 			if ( in_array( 'course', $atts['type'] ) ) {
 
-				$usermeta = get_user_meta( $user_id, '_sfwd-course_progress', true );
-				$course_progress = empty( $usermeta ) ? array() : $usermeta;
-				//error_log('course_progress<pre>'. print_r($course_progress, true) .'</pre>');
-
-				$course_progress_ids = array_merge( $courses_registered_all, array_keys( $course_progress ) );
-
+				if ( !is_null( $atts['course_ids'] ) ) {
+					$course_progress_ids = $atts['course_ids'];
+				} else {
+					$usermeta = get_user_meta( $user_id, '_sfwd-course_progress', true );
+					$course_progress = empty( $usermeta ) ? array() : $usermeta;
+					$course_progress_ids = array_merge( $courses_registered_all, array_keys( $course_progress ) );
+				}
+				
 				// The course_info_shortcode.php template is driven be the $courses_registered array. 
 				// We want to make sure we show ALL the courses from both the $courses_registered and 
 				// the course_progress. Also we want to run through WP_Query so we can ensure they still 
@@ -1946,7 +2018,6 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 			
 				$usermeta = get_user_meta( $user_id, '_sfwd-quizzes', true );
 				$quizzes = empty( $usermeta ) ? false : $usermeta;
-
 			
 				// We need to re-query the quiz (posts). This is partly to validate the listing. We don't
 				// want to pass old or outdated quiz items to externals. 
@@ -1962,8 +2033,12 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 
 					if ( ( !isset( $atts['quiz_order'] ) ) || ( empty( $atts['quiz_order'] ) ) )
 						$atts['quiz_order'] = $atts_defaults['quiz_order'];
-					
-					$quiz_ids = wp_list_pluck( $quizzes, 'quiz' );
+
+					if ( !is_null( $atts['quiz_ids'] ) ) {
+						$quiz_ids = $atts['quiz_ids'];
+					} else {
+						$quiz_ids = wp_list_pluck( $quizzes, 'quiz' );
+					}
 
 					$quiz_total_query_args = array(
 						'post_type'			=>	'sfwd-quiz',
@@ -1982,29 +2057,21 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 					if ( ( $quiz_query ) && ( !is_wp_error( $quiz_query ) ) && is_a( $quiz_query, 'WP_Query' ) ) {
 						if ( ( property_exists( $quiz_query, 'posts' ) ) && ( !empty( $quiz_query->posts ) ) ) {
 							$quizzes_tmp = array();
-							//if ( $atts['quiz_orderby'] == 'taken' ) {
-							//	foreach( $quizzes as $idx => $quiz_attempt ) {
-							//		if ( in_array( $quiz_attempt['quiz'], $quiz_query->posts ) ) {
-							//			$quizzes_tmp[$idx] = $quiz_attempt;
-							//		}
-							//	}
-							//} else {
-								foreach( $quiz_query->posts as $post_idx => $quiz_id ) {
-									foreach( $quizzes as $quiz_idx => $quiz_attempt ) {
-										if ( $quiz_attempt['quiz'] == $quiz_id ) {
-											if ( $atts['quiz_orderby'] == 'taken' ) {
-												$quiz_key = $quiz_attempt['time'] .'-'. $quiz_attempt['quiz']; 
-											} else if ( $atts['quiz_orderby'] == 'title' ) {
-												$quiz_key = $post_idx .'-'. $quiz_attempt['time']; 
-											} else if ( $atts['quiz_orderby'] == 'ID' ) {
-												$quiz_key = $quiz_attempt['quiz'] .'-'. $quiz_attempt['time'];
-											}
-											$quizzes_tmp[$quiz_key] = $quiz_attempt;
-											unset( $quizzes[$quiz_idx] ); 
+							foreach( $quiz_query->posts as $post_idx => $quiz_id ) {
+								foreach( $quizzes as $quiz_idx => $quiz_attempt ) {
+									if ( $quiz_attempt['quiz'] == $quiz_id ) {
+										if ( $atts['quiz_orderby'] == 'taken' ) {
+											$quiz_key = $quiz_attempt['time'] .'-'. $quiz_attempt['quiz']; 
+										} else if ( $atts['quiz_orderby'] == 'title' ) {
+											$quiz_key = $post_idx .'-'. $quiz_attempt['time']; 
+										} else if ( $atts['quiz_orderby'] == 'ID' ) {
+											$quiz_key = $quiz_attempt['quiz'] .'-'. $quiz_attempt['time'];
 										}
+										$quizzes_tmp[$quiz_key] = $quiz_attempt;
+										unset( $quizzes[$quiz_idx] ); 
 									}
 								}
-							//}
+							}
 							
 							$quizzes = $quizzes_tmp;
 
@@ -2017,11 +2084,9 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							$quizzes_per_page = apply_filters( 'learndash_quiz_info_per_page', $atts['quiz_num'], 'quizzes', $user_id );
 							if ( $quizzes_per_page > 0 ) {
 							
-								//$quizzes_pager = array();
 								$quizzes_pager['paged'] = apply_filters('learndash_quiz_info_paged', 1 );
 								$quizzes_pager['total_items'] = count( $quizzes );
 								$quizzes_pager['total_pages'] = ceil( count( $quizzes ) / $quizzes_per_page );
-								//error_log('quizzes_pager<pre>'. print_r($quizzes_pager, true) .'</pre>');
 							
 								$quizzes = array_slice ( $quizzes, ( $quizzes_pager['paged'] * $quizzes_per_page ) - $quizzes_per_page, $quizzes_per_page, false );
 							}
@@ -2042,7 +2107,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				if ( ( isset( $_GET['page'] ) ) && ( $_GET['page'] == 'group_admin_page' ) ) {
 					if ( ( isset( $_GET['group_id'] ) ) && ( !empty( $_GET['group_id'] ) ) ) {
 						$group_id = intval( $_GET['group_id'] );
-
+						/*
 						$group_courses = learndash_group_enrolled_courses( $group_id );
 						if ( empty( $group_courses ) ) {
 							$group_courses = array();
@@ -2074,7 +2139,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							if ( !in_array( $quiz_details['quiz'], $group_quizzes ) ) 
 								unset( $quizzes[$quiz_idx] );
 						}
-						
+						*/
 						if ( ( isset( $_GET['user_id'] ) ) && ( !empty( $_GET['user_id'] ) ) ) {
 							$user_id = intval( $_GET['user_id'] );
 							
@@ -2103,13 +2168,33 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				);
 			} else {
 				
-				if ( !empty( $pagenow ) ) {
-					if ( ( $pagenow == 'profile.php' ) || ( $pagenow == 'user-edit.php' ) ) { 
-						$atts['pagenow'] = $pagenow;
-						$atts['pagenow_nonce'] = wp_create_nonce( $pagenow .'-'. $user_id );
+				if ( is_admin() ) {
+					if ( !empty( $pagenow ) ) {
+						if ( ( $pagenow == 'profile.php' ) || ( $pagenow == 'user-edit.php' ) ) { 
+							$atts['pagenow'] = $pagenow;
+							$atts['pagenow_nonce'] = wp_create_nonce( $pagenow .'-'. $user_id );
+						} else if ( ( $pagenow == 'admin.php' ) && ( isset( $_GET['page'] ) ) && ( $_GET['page'] == 'group_admin_page' ) ) {
+							$atts['pagenow'] = esc_attr( $_GET['page'] );
+						
+							if ( ( isset( $_GET['group_id'] ) ) && ( !empty( $_GET['group_id'] ) ) ) {
+								$atts['group_id'] = intval( $_GET['group_id'] );
+							} else {
+								$atts['group_id'] = 0;
+							}
+							$atts['pagenow_nonce'] = wp_create_nonce( esc_attr( $_GET['page'] ) .'-'. $atts['group_id'] .'-'. $user_id );
+						} else {
+							$atts['pagenow'] = 'learndash';
+							$atts['pagenow_nonce'] = wp_create_nonce( $atts['pagenow'] .'-'. $user_id );
+						}
 					} 
+				} else {
+					$atts['pagenow'] = 'learndash';
+					$atts['pagenow_nonce'] = wp_create_nonce( $atts['pagenow'] .'-'. $user_id );
 				} 
 				$atts['user_id'] = $user_id;
+				
+				unset( $atts['course_ids'] );
+				unset( $atts['quiz_ids'] );
 				
 				return SFWD_LMS::get_template('course_info_shortcode', array(
 						'user_id' => $user_id,

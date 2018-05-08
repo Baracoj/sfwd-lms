@@ -26,7 +26,7 @@ function learndash_previous_post_link( $prevlink='', $url = false ) {
 
 	if ( $post->post_type == 'sfwd-lessons' ) {
 		$link_name = sprintf( esc_html_x( 'Previous %s', 'Previous Lesson Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) );
-		$posts = learndash_get_lesson_list();
+		$posts = learndash_get_lesson_list( null, array( 'num' => 0 ) );
 	} else if ( $post->post_type == 'sfwd-topic' ) {
 		$link_name = sprintf( esc_html_x( 'Previous %s', 'Previous Topic Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'topic' ) );
 		
@@ -103,7 +103,7 @@ function learndash_next_post_link( $prevlink='', $url = false, $post = null ) {
 	if ( $post->post_type == 'sfwd-lessons' ) {
 		$link_name = sprintf( esc_html_x( 'Next %s', 'Next Lesson Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) );
 		$course_id = learndash_get_course_id( $post );
-		$posts = learndash_get_lesson_list( $course_id );
+		$posts = learndash_get_lesson_list( $course_id, array( 'num' => 0 ) );
 	} else if ( $post->post_type == 'sfwd-topic' ) {
 		$link_name = sprintf( esc_html_x( 'Next %s', 'Next Topic Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'topic' ) );
 
@@ -432,7 +432,7 @@ function learndash_topic_dots( $lesson_id, $show_text = false, $type = 'dots', $
  * @param  int 	 $id 	id of resource
  * @return array 		list of lessons
  */
-function learndash_get_lesson_list( $id = null ){
+function learndash_get_lesson_list( $id = null, $atts = array() ) {
 	global $post;
 
 	if ( empty( $id ) ) {
@@ -472,6 +472,8 @@ function learndash_get_lesson_list( $id = null ){
 		'order' => $order,
 	);
 	
+	$lessons_args = array_merge( $lessons_args, $atts );
+	
 	if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'enabled' ) == 'yes' ) {	
 		$ld_course_steps_object = LDLMS_Factory_Post::course_steps( $course_id );
 		$ld_course_steps_object->load_steps();
@@ -489,9 +491,15 @@ function learndash_get_lesson_list( $id = null ){
  		}
 	}
 	
-	$lessons = ld_lesson_list( $lessons_args );
-
-	return $lessons;
+	/**
+	 * Filter for lessons list args
+	 *
+	 * @since 2.5.7
+	 */
+	$lessons_args = apply_filters( 'learndash_get_lesson_list_args', $lessons_args, $id, $course_id );
+	if ( !empty( $lessons_args ) ) {
+		return ld_lesson_list( $lessons_args );
+	}
 }
 
 
@@ -869,7 +877,8 @@ function learndash_get_course_quiz_list( $course = null, $user_id = null ) {
 		'meta_value' => $course->ID,
 		'order' => $order,
 		'orderby' => $orderby,
-		'posts_per_page' => empty( $lessons_options['posts_per_page'] ) ? -1 : $lessons_options['posts_per_page'],
+		//'posts_per_page' => empty( $lessons_options['posts_per_page'] ) ? -1 : $lessons_options['posts_per_page'],
+		'posts_per_page' => -1,
 		'user_id' => $user_id,
 		'return' => 'array',
 		'user_id' => $user_id
@@ -930,7 +939,8 @@ function learndash_get_lesson_quiz_list( $lesson, $user_id = null, $course_id = 
 		'meta_value' => $lesson->ID,
 		'order' => $order,
 		'orderby' => $orderby,
-		'posts_per_page' => empty( $lessons_options['posts_per_page'] ) ? -1 : $lessons_options['posts_per_page'],
+		//'posts_per_page' => empty( $lessons_options['posts_per_page'] ) ? -1 : $lessons_options['posts_per_page'],
+		'posts_per_page' => -1,
 		'user_id' => $user_id,
 		'return' => 'array',
 		'user_id' => $user_id,
