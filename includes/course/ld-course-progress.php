@@ -1465,24 +1465,28 @@ function learndash_course_progress( $atts ) {
 		$total                  = $ld_course_steps_object->get_steps_count();
 	}
 
-	$percentage = intVal( $completed * 100 / $total );
-	$percentage = ( $percentage > 100 ) ? 100 : $percentage;
+	if ( $total > 0 ) {
+		$percentage = intval( $completed * 100 / $total );
+		$percentage = ( $percentage > 100 ) ? 100 : $percentage;
+	} else {
+		$percentage = 0;
+	}
 	$message    = sprintf( esc_html_x( '%1$d out of %2$d steps completed', 'placeholder: completed steps, total steps', 'learndash' ), $completed, $total );
 
 	if ( $array ) {
 		return array(
-			'percentage' => @$percentage,
-			'completed'  => @$completed,
-			'total'      => @$total,
+			'percentage' => isset( $percentage ) ? $percentage : 0,
+			'completed'  => isset( $completed ) ? $completed : 0,
+			'total'      => isset( $total ) ? $total : 0,
 		);
 	}
 
 	return SFWD_LMS::get_template(
 		'course_progress_widget', array(
-			'message'    => @$message,
-			'percentage' => @$percentage,
-			'completed'  => @$completed,
-			'total'      => @$total,
+			'message'    => $message,
+			'percentage' => isset( $percentage ) ? $percentage : 0,
+			'completed'  => isset( $completed ) ? $completed : 0,
+			'total'      => isset( $total ) ? $total : 0,
 		)
 	);
 }
@@ -2346,5 +2350,3 @@ function learndash_remove_user_quiz_attempt( $user_id = 0, $args = array() ) {
 		return $user_quizzes;
 	}
 }
-
-

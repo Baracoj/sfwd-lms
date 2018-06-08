@@ -768,7 +768,7 @@ if ( ! class_exists( 'SFWD_CPT_Instance' ) ) {
 								// Bug: Why are we comparing a string value for Complete.
 								if ( esc_html__( 'Completed', 'learndash' ) === $course_status ) {
 
-									if ( ( ( learndash_is_admin_user() ) || ( learndash_is_group_leader_user() ) ) && ( $cert_user_id !== $view_user_id ) ) {
+									if ( ( ( learndash_is_admin_user() ) || ( learndash_is_group_leader_user() ) ) && ( intval( $cert_user_id ) !== intval( $view_user_id ) ) ) {
 										wp_set_current_user( $cert_user_id );
 									}
 
@@ -818,7 +818,7 @@ if ( ! class_exists( 'SFWD_CPT_Instance' ) ) {
 
 					$view_user_id = get_current_user_id();
 
-					if ( ! empty( $cert_post ) && ( $cert_post === $post->ID ) ) {
+					if ( ! empty( $cert_post ) && ( intval( $cert_post ) == intval( $post->ID ) ) ) {
 
 						if ( ( isset( $_GET['cert-nonce'] ) ) && ( ! empty( $_GET['cert-nonce'] ) ) && ( wp_verify_nonce( $_GET['cert-nonce'], $quiz_id . $cert_user_id . $view_user_id ) ) ) {
 							$time              = isset( $_GET['time'] ) ? intval( $_GET['time'] ) : -1;
@@ -828,12 +828,14 @@ if ( ! class_exists( 'SFWD_CPT_Instance' ) ) {
 							if ( ! empty( $quizinfo ) ) {
 								foreach ( $quizinfo as $quiz_i ) {
 
-									if ( isset( $quiz_i['time'] ) && $quiz_i['time'] === $time && $quiz_i['quiz'] === $quiz_id ) {
+									if ( 
+										( ( isset( $quiz_i['time'] ) ) && intval( $quiz_i['time'] ) == intval( $time ) ) 
+										&& ( intval( $quiz_i['quiz'] ) === intval( $quiz_id ) ) ) {
 										$selected_quizinfo = $quiz_i;
 										break;
 									}
 
-									if ( $quiz_i['quiz'] === $quiz_id ) {
+									if ( intval( $quiz_i['quiz'] ) === intval( $quiz_id ) ) {
 										$selected_quizinfo2 = $quiz_i;
 									}
 								}
