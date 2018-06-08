@@ -670,8 +670,6 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 			}
 		}
 
-
-
 		/**
 		 * Sets up CPT's and creates a 'new SFWD_CPT_Instance()' of each
 		 * 
@@ -712,7 +710,13 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				$this->quiz_json = '{"info":{"name":"","main":"","results":"","level1":"' . $level1 . '","level2":"' . $level2 . '","level3":"' . $level3 . '","level4":"' . $level4 . '","level5":"' . $level5 . '"}}';
 			}
 			
-			$posts_per_page = get_option( 'posts_per_page' );
+			$posts_per_page = LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' );
+			if ( empty( $posts_per_page ) ) { 
+				$posts_per_page = get_option( 'posts_per_page' );
+				if ( empty( $posts_per_page ) ) { 
+					$posts_per_page = 5;
+				}
+			}
 
 			$course_capabilities = array(
 				'read_post' => 'read_course',
@@ -820,7 +824,6 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 
 
 			$course_taxonomies = array();
-			
 			if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Taxonomies', 'wp_post_category' ) == 'yes') {
 				$course_taxonomies['category'] = 'category';
 			}
@@ -843,7 +846,25 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				)
 			);
 							
-			if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Taxonomies', 'ld_course_category' ) == 'yes') {				
+
+			//$learndash_settings_permalinks_cpt = get_option( 'learndash_settings_permalinks' );
+			/*
+			if ( !is_array( $learndash_settings_permalinks_cpt ) ) $learndash_settings_permalinks_cpt = array();
+			$learndash_settings_permalinks_cpt = wp_parse_args(
+				$learndash_settings_permalinks_cpt, 
+				array(
+					'ld_course_category' 	=>	'course-category',
+					'ld_course_tag' 		=>	'course-tag',
+					'ld_lesson_category' 	=> 	'lesson-category',
+					'ld_lesson_tag' 		=> 	'lesson-tag',
+					'ld_topic_category'		=> 	'topic-category',
+					'ld_topic_tag' 			=> 	'topic-tag'
+				)
+			);
+			*/
+			
+							
+			if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Taxonomies', 'ld_course_category' ) == 'yes' ) {				
 				$course_taxonomies['ld_course_category'] =	array(
 					'public'			=> true,
 					'hierarchical'		=> true,
@@ -851,7 +872,9 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 					'show_in_menu'		=> true,	
 					'show_admin_column' => true,
 					'query_var'         => true,
-					'show_in_rest'		=> true,
+					'show_in_rest'		=> LearnDash_REST_API::enabled(),
+					//'rest_base' 		=> $learndash_settings_permalinks_taxonomies['ld_course_category'],
+					//'rest_controller_class' => 'LD_REST_Terms_Course_Category_Controller_V1',
 					'rewrite'           => array( 'slug' => $learndash_settings_permalinks_taxonomies['ld_course_category'] ),
 					'capabilities' 		=> array(
 						'manage_terms' 		=> 'manage_categories',
@@ -884,7 +907,9 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 					'show_in_menu'		=> true,	
 					'show_admin_column' => true,
 					'query_var'         => true,
-					'show_in_rest'		=>	true,
+					'show_in_rest'		=> LearnDash_REST_API::enabled(),
+					//'rest_base' 		=> $learndash_settings_permalinks_taxonomies['ld_course_tag'],
+					//'rest_controller_class' => 'LD_REST_Terms_Course_Tag_Controller_V1',
 					'rewrite'           => array( 'slug' => $learndash_settings_permalinks_taxonomies['ld_course_tag'] ),
 					'labels'            => array(
 						'name'              => sprintf( esc_html_x( '%s Tags', 'placeholder: Course', 'learndash' ), $lcl_course ),
@@ -913,12 +938,15 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				
 			if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Lessons_Taxonomies', 'ld_lesson_category' ) == 'yes') {
 				$lesson_taxonomies['ld_lesson_category'] =	array(
-					'public'			=>	true,
-					'hierarchical'		=> 	true,
-					'show_ui'           => 	true,
-					'show_in_menu'		=> 	true,	
-					'show_admin_column' => 	true,
-					'query_var'         => 	true,
+					'public'			=> true,
+					'hierarchical'		=> true,
+					'show_ui'           => true,
+					'show_in_menu'		=> true,	
+					'show_admin_column' => true,
+					'query_var'         => true,
+					'show_in_rest'		=> LearnDash_REST_API::enabled(),
+					//'rest_base' 		=> $learndash_settings_permalinks_taxonomies['ld_lesson_category'],
+					//'rest_controller_class' => 'LD_REST_Terms_Lesson_Category_Controller_V1',
 					'rewrite'           => 	array( 'slug' => $learndash_settings_permalinks_taxonomies['ld_lesson_category'] ),
 					'capabilities' 		=> 	array(
 						'manage_terms' => 'manage_categories',
@@ -950,6 +978,9 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 					'show_in_menu'		=> true,	
 					'show_admin_column' => true,
 					'query_var'         => true,
+					'show_in_rest'		=> LearnDash_REST_API::enabled(),
+					//'rest_base' 		=> $learndash_settings_permalinks_taxonomies['ld_lesson_tag'],
+					//'rest_controller_class' => 'LD_REST_Terms_Lesson_Tag_Controller_V1',
 					'rewrite'           => array( 'slug' => $learndash_settings_permalinks_taxonomies['ld_lesson_tag'] ),
 					'labels'            => array(
 						'name'              => sprintf( esc_html_x( '%s Tags', 'placeholder: Lesson', 'learndash' ), $lcl_lesson ),
@@ -967,7 +998,6 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				);
 			}
 				
-
 			$topic_taxonomies = array();
 			if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Topics_Taxonomies', 'wp_post_category' ) == 'yes') {
 				$topic_taxonomies['category'] = 'category';
@@ -979,12 +1009,15 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				
 			if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Topics_Taxonomies', 'ld_topic_category' ) == 'yes') {
 				$topic_taxonomies['ld_topic_category'] =	array(
-					'public'			=>	true,
-					'hierarchical'		=>	true,
-					'show_ui'           => 	true,
-					'show_in_menu'		=> 	true,	
-					'show_admin_column' => 	true,
-					'query_var'         => 	true,
+					'public'			=> true,
+					'hierarchical'		=> true,
+					'show_ui'           => true,
+					'show_in_menu'		=> true,	
+					'show_admin_column' => true,
+					'query_var'         => true,
+					'show_in_rest'		=> LearnDash_REST_API::enabled(),
+					//'rest_base' 		=> $learndash_settings_permalinks_taxonomies['ld_topic_category'],
+					//'rest_controller_class' => 'LD_REST_Terms_Topic_Category_Controller_V1',
 					'rewrite'           => 	array( 'slug' => $learndash_settings_permalinks_taxonomies['ld_topic_category'] ),
 					'capabilities' 		=> 	array(
 						'manage_terms' => 'manage_categories',
@@ -1016,6 +1049,9 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 					'show_in_menu'		=> true,	
 					'show_admin_column' => true,
 					'query_var'         => true,
+					'show_in_rest'		=> LearnDash_REST_API::enabled(),
+					//'rest_base' 		=> $learndash_settings_permalinks_taxonomies['ld_topic_tag'],
+					//'rest_controller_class' => 'LD_REST_Terms_Topic_Tag_Controller_V1',
 					'rewrite'           => array( 'slug' => $learndash_settings_permalinks_taxonomies['ld_topic_tag'] ),
 					'labels'            => array(
 						'name'              => sprintf( esc_html_x( '%s Tags', 'placeholder: Topic', 'learndash' ), $lcl_topic ),
@@ -1038,10 +1074,6 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				'order' 	=>	LearnDash_Settings_Section_Lessons_Display_Order::get_setting_select_option_label( 'order' )
 			);
 			
-			if ( empty( $posts_per_page ) ) { 
-				$posts_per_page = 5;
-			}
-
 			$this->post_args = array(
 				'sfwd-courses' => array(
 					'plugin_name' => LearnDash_Custom_Label::get_label( 'course' ),
@@ -1056,7 +1088,10 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 						'capability_type' => 'course',
 						'exclude_from_search' => (LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_CPT', 'exclude_from_search' ) == 'yes') ? true : false, 
 						'capabilities' => $course_capabilities,
-						'map_meta_cap' => true
+						'map_meta_cap' => true,
+						'show_in_rest' => LearnDash_REST_API::enabled( 'sfwd-courses' ) || LearnDash_REST_API::gutenberg_enabled( 'sfwd-courses' ),
+						//'rest_base' => LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Section_Permalinks', 'courses' ),
+						'rest_controller_class' => LearnDash_REST_API::get_controller( 'sfwd-courses' ),
 					),
 					//'options_page_title' => esc_html__( 'PayPal Settings', 'learndash' ),
 					'fields' => array( 
@@ -1064,8 +1099,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'name' => sprintf( esc_html_x( '%s Materials', 'Course Materials Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
 							'type' => 'textarea',
 							'help_text' => sprintf( esc_html_x( 'Options for %s materials', 'Options for course materials', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
-							'show_in_rest' => true,
-							
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 							'rest_args' => array(
 								'schema' => array(
 									'type' => 'html'
@@ -1084,10 +1118,18 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							),
 							'default' => 'open',
 							'help_text' => esc_html__( 'Is it open to all, free join, one time purchase, or a recurring subscription?', 'learndash' ),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 							'rest_args' => array(
 								'schema' => array(
 									'type' => 'string',
+									'default' => 'open',
+									'enum' => array(
+										'open',
+										'closed',
+										'free',
+										'buynow',
+										'subscribe',
+									),
 								)
 							)
 						),
@@ -1096,26 +1138,26 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'type' => 'text',
 							'placeholder'	=> esc_html__( 'Optional', 'learndash' ),
 							'help_text' => sprintf( esc_html_x( 'Entering a URL in this field will enable the "%s" button. The button will not display if this field is left empty.', 'placeholders: "Take This Course" button label', 'learndash' ), LearnDash_Custom_Label::get_label( 'button_take_this_course' )),
-							'show_in_rest' => false
+							'show_in_rest' => LearnDash_REST_API::enabled()
 						),
 						'course_price' => array(
 							'name' => sprintf( esc_html_x( '%s Price', 'Course Price Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
 							'type' => 'text',
 							'help_text' => sprintf( esc_html_x( 'Enter %s price here. Leave empty if the %s is free.', 'Enter course price here. Leave empty if the course is free.', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ), LearnDash_Custom_Label::get_label( 'course' ) ),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'course_price_billing_cycle' => array(
 							'name' => esc_html__( 'Billing Cycle', 'learndash' ),
 							'type' => 'html',
 							'default' => $this->learndash_course_price_billing_cycle_html(),
 							'help_text' => esc_html__( 'Billing Cycle for the recurring payments in case of a subscription.', 'learndash' ),
-							'show_in_rest' => false,
+							'show_in_rest' => false, //LearnDash_REST_API::enabled(),
 						),
 						'course_access_list' => array(
 							'name' => sprintf( esc_html_x( '%s Access List', 'Course Access List Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
 							'type' => 'textarea',
 							'help_text' => esc_html__( 'This field is auto-populated with the UserIDs of those who have access to this course.', 'learndash' ),
-							'show_in_rest' => false,
+							'show_in_rest' => false, //LearnDash_REST_API::enabled(),
 						),
 						'course_lesson_orderby' => array(
 							'name' => sprintf( esc_html_x( 'Sort %s By', 'Sort Lesson By Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ),
@@ -1128,7 +1170,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							),
 							'default' => '',
 							'help_text' => sprintf( esc_html_x( 'Choose the sort order of %1$s in this %2$s.', 'Choose the sort order of lessons in this course.', 'learndash' ), LearnDash_Custom_Label::label_to_lower('lessons'), LearnDash_Custom_Label::label_to_lower('course') ),
-							'show_in_rest' => false,
+							'show_in_rest' => false, //LearnDash_REST_API::enabled(),
 						),
 						'course_lesson_order' => array(
 							'name' => sprintf( esc_html_x( 'Sort %s Direction', 'Sort Lesson Direction Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ),
@@ -1140,7 +1182,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							),
 							'default' => '',
 							'help_text' => sprintf( esc_html_x( 'Choose the sort order of %1$s in this %2$s.', 'Choose the sort order of lessons in this course.', 'learndash' ), LearnDash_Custom_Label::label_to_lower('lessons'), LearnDash_Custom_Label::label_to_lower('course' ) ),
-							'show_in_rest' => false,
+							'show_in_rest' => false, //LearnDash_REST_API::enabled(),
 						),
 						
 						'course_lesson_per_page' => array(
@@ -1152,6 +1194,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							),
 							'default' => '',
 							'help_text' => sprintf( esc_html_x( 'Choose the per page of %s in this %s.', 'Choose the per page of lessons in this course.', 'learndash' ), LearnDash_Custom_Label::label_to_lower('lessons'), LearnDash_Custom_Label::label_to_lower('course')),
+							'show_in_rest' => false,
 						),
 						'course_lesson_per_page_custom' => array( 
 							'name' => sprintf( esc_html_x( 'Custom %s Per Page', 'Custom lessons per page', 'learndash' ), LearnDash_Custom_Label::get_label('lessons') ), 
@@ -1159,6 +1202,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'min' => '0',
 							'help_text' => sprintf( esc_html_x( 'Enter %s per page value. Set to zero for no paging', 'Enter lesson per page value. Set to zero for no paging', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ),
 							'default' => 0,
+							'show_in_rest' => false,
 						),
 						
 						'course_prerequisite_enabled' => array(
@@ -1166,10 +1210,11 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'type' => 'checkbox',
 							'checked_value' => 'on',
 							'help_text' => esc_html__( 'Leave this field unchecked if prerequisite not used.', 'learndash' ),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 							'rest_args' => array(
 								'schema' => array(
-									'type' => 'integer',
+									'type' => 'boolean',
+									'default' => false,
 								)
 							)
 						),
@@ -1180,7 +1225,13 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'lazy_load'	=>	true,
 							'initial_options' => '', 
 							'default' => '',
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
+							'rest_args' => array(
+								'schema' => array(
+									'default' => array(),
+									'type' => 'array',
+								)
+							)
 						),
 						'course_prerequisite_compare' => array(
 							'name' => sprintf( esc_html_x( '%s Prerequisites Compare', 'Course Prerequisites Compare Label', 'learndash' ),LearnDash_Custom_Label::get_label( 'course' ) ), 
@@ -1191,16 +1242,16 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							),
 							'default' => 'ALL',
 							'help_text' => sprintf( esc_html_x( 'Select how to compare the selected prerequisite %s.', 'pleaceholder: Course', 'learndash' ),LearnDash_Custom_Label::label_to_lower('course')),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'course_points_enabled' => array(
 							'name' => sprintf( esc_html_x( 'Enable %s Points', 'placeholder: Course', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
 							'type' => 'checkbox',
 							'help_text' => esc_html__( 'Leave this field unchecked if points not used.', 'learndash' ),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 							'rest_args' => array(
 								'schema' => array(
-									'type' => 'integer',
+									'type' => 'boolean',
 								)
 							)
 						),
@@ -1210,7 +1261,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'step' => 'any',
 							'min' => '0',
 							'help_text' => sprintf( esc_html_x( 'Enter the number of points a user will receive for this %s.', 'placeholder: course', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'course_points_access' => array(
 							'name' => sprintf( esc_html_x( '%s Points Access', 'Course Points Access', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
@@ -1218,40 +1269,40 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'step' => 'any',
 							'min' => '0',
 							'help_text' => sprintf( esc_html_x( 'Enter the number of points a user must have to access this %s.', 'placeholder: course', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'course_disable_lesson_progression' => array(
 							'name' => sprintf( esc_html_x( 'Disable %s Progression', 'Disable Lesson Progression Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ),
 							'type' => 'checkbox',
 							'default' => 0,
 							'help_text' => sprintf( esc_html_x( 'Disable the feature that allows attempting %s only in allowed order.', 'Disable the feature that allows attempting lessons only in allowed order.', 'learndash' ), LearnDash_Custom_Label::label_to_lower('lessons') ), 
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'expire_access' => array(
 							'name' => esc_html__( 'Expire Access', 'learndash' ),
 							'type' => 'checkbox',
 							'help_text' => esc_html__( 'Leave this field unchecked if access never expires.', 'learndash' ),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'expire_access_days' => array(
 							'name' => esc_html__( 'Expire Access After (days)', 'learndash' ),
 							'type' => 'number',
 							'min' => '0',
 							'help_text' => sprintf( esc_html_x( 'Enter the number of days a user has access to this %s.', 'Enter the number of days a user has access to this course.', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'expire_access_delete_progress' => array(
 							'name' => sprintf( esc_html_x( 'Delete %1$s and %2$s Data After Expiration', 'Delete Course and Quiz Data After Expiration Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ), LearnDash_Custom_Label::get_label( 'quiz' ) ),
 							'type' => 'checkbox',
 							'help_text' => sprintf( esc_html_x( "Select this option if you want the user's %s progress to be deleted when their access expires.", 'placeholder: course', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'course_disable_content_table' => array(
 							'name' => sprintf( esc_html_x( 'Hide %s Content Table', 'Hide Course Content Table Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
 							'type' => 'checkbox',
 							'default' => 0,
 							'help_text' => sprintf( esc_html_x( 'Hide %s Content table when user is not enrolled.', 'Hide Course Content table when user is not enrolled.', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ), 
-							'show_in_rest' => true,
+							'show_in_rest' => false, //LearnDash_REST_API::enabled(),
 						),
 						
 						'certificate' => array( 
@@ -1259,7 +1310,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'type' => 'select', 
 							'help_text' => sprintf( esc_html_x( 'Select a certificate to be awarded upon %s completion (optional).', 'Select a certificate to be awarded upon course completion (optional).', 'learndash' ), LearnDash_Custom_Label::label_to_lower('course') ), 
 							'default' => '',
-							'show_in_rest' => true,
+							'show_in_rest' => false, //LearnDash_REST_API::enabled(),
 						),
 					),
 				),
@@ -1277,6 +1328,9 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 						'exclude_from_search' => (LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Lessons_CPT', 'exclude_from_search' ) == 'yes') ? true : false, 
 						'capabilities' => $course_capabilities, 
 						'map_meta_cap' => true,
+						'show_in_rest' => LearnDash_REST_API::enabled( 'sfwd-lessons' ) || LearnDash_REST_API::gutenberg_enabled( 'sfwd-lessons' ),
+						//'rest_base' => LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Section_Permalinks', 'lessons' ),
+						'rest_controller_class' => LearnDash_REST_API::get_controller( 'sfwd-lessons' ),
 					),
 					'options_page_title' => sprintf( esc_html_x( '%s Options', 'Lesson Options Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ),
 					'fields' => array(
@@ -1284,7 +1338,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'name' => sprintf( esc_html_x( '%s Materials', 'Lesson Materials Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ),
 							'type' => 'textarea',
 							'help_text' => sprintf( esc_html_x( 'Options for %s materials', 'Options for lesson materials', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 							'rest_args' => array(
 								'schema' => array(
 									'type' => 'html'
@@ -1298,29 +1352,28 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'help_text' => sprintf( esc_html_x( 'Associate this %1$s with a %2$s.', 'Associate this lesson with a course.', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ), LearnDash_Custom_Label::get_label( 'course' ) ),
 							'default' => '' , 
 							'required' => true,
-							//'initial_options' => $this->select_a_course( 'sfwd-lessons' ), // Move to lesson_display_settings
-							//'show_in_rest' => true,
+							'show_in_rest' => false, //LearnDash_REST_API::enabled(),
 						),
 						'forced_lesson_time' => array( 
 							'name' => sprintf( esc_html_x( 'Forced %s Timer', 'Forced Lesson Timer Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ), 
 							'type' => 'text', 
 							'help_text' => sprintf( esc_html_x( 'Minimum time a user has to spend on %s page before it can be marked complete. Examples: 40 (for 40 seconds), 20s, 45sec, 2m 30s, 2min 30sec, 1h 5m 10s, 1hr 5min 10sec', 'placeholder: Lesson', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ), 
 							'default' => '',
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'lesson_assignment_upload' => array( 
 							'name' => esc_html__( 'Upload Assignment', 'learndash' ), 
 							'type' => 'checkbox', 
 							'help_text' => esc_html__( 'Check this if you want to make it mandatory to upload assignment', 'learndash' ), 
 							'default' => 0,
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'auto_approve_assignment' => array( 
 							'name' => esc_html__( 'Auto Approve Assignment', 'learndash' ), 
 							'type' => 'checkbox',
 							'help_text' => esc_html__( 'Check this if you want to auto-approve the uploaded assignment', 'learndash' ), 
 							'default' => 0,
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'assignment_upload_limit_count' => array( 
 							'name' => esc_html__( 'Limit number of uploaded files', 'learndash' ), 
@@ -1328,17 +1381,16 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'placeholder' => esc_html__('Default is 1', 'learndash' ),
 							'help_text' => esc_html__( 'Enter the maximum number of assignment uploads allowed. Default is 1. Use 0 to unlimited.', 'learndash' ), 
 							'default' => '1',
-							'show_in_rest' => true,
 							'class' => 'small-text',
 							'min' => '1',
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'lesson_assignment_deletion_enabled' => array(
 							'name' => esc_html__( 'Allow Student to Delete own Assignment(s)', 'learndash' ),
 							'type' => 'checkbox',
 							'help_text' => esc_html__( 'Allow Student to Delete own Assignment(s)', 'learndash' ),
 							'default' => 0,
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						
 						'lesson_assignment_points_enabled' => array(
@@ -1346,7 +1398,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'type' => 'checkbox',
 							'help_text' => esc_html__( 'Allow this assignment to be assigned points when it is approved.', 'learndash' ),
 							'default' => 0,
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'lesson_assignment_points_amount' => array(
 							'name' => esc_html__( 'Set Number of Points for Assignment', 'learndash' ),
@@ -1354,7 +1406,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'min' => 0,
 							'help_text' => esc_html__( 'Assign the max amount of points someone can earn for this assignment.', 'learndash' ),
 							'default' => 0,
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'assignment_upload_limit_extensions' => array( 
 							'name' => esc_html__( 'Allowed File Extensions', 'learndash' ), 
@@ -1362,7 +1414,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'placeholder' => esc_html__('Example: pdf, xls, zip', 'learndash' ),
 							'help_text' => esc_html__( 'Enter comma-separated list of allowed file extensions: pdf, xls, zip or leave blank for any.', 'learndash' ), 
 							'default' => '',
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'assignment_upload_limit_size' => array( 
 							'name' => esc_html__( 'Allowed File Size', 'learndash' ), 
@@ -1370,7 +1422,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'placeholder' => sprintf( esc_html_x('Maximum upload file size: %s', 'placeholder: PHP file upload size', 'learndash'), ini_get('upload_max_filesize') ),
 							'help_text' => sprintf( esc_html_x( 'Enter maximim file upload size. Example: 100KB, 2M, 2MB, 1G. Maximum upload file size: %s', 'placeholder: PHP file upload size', 'learndash' ),  ini_get('upload_max_filesize') ),
 							'default' => '',
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						
 						'sample_lesson' => array( 
@@ -1386,14 +1438,14 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'min' => '0',
 							'help_text' => sprintf( esc_html_x( 'Make %s visible ____ days after sign-up', 'Make lesson visible ____ days after sign-up', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ),
 							'default' => 0,
-							'show_in_rest' => false,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'visible_after_specific_date' => array( 
 							'name' => sprintf( esc_html_x( 'Make %s Visible on Specific Date', 'Make Lesson Visible on Specific Date', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ),
 							'type' => 'wp_date_selector', 
 							'class' => 'learndash-datepicker-field',
 							'help_text' => sprintf( esc_html_x( 'Set the date that you would like this %s to become available.', 'Set the date that you would like this lesson to become available.','learndash' ), LearnDash_Custom_Label::label_to_lower('lesson') ), 
-							'show_in_rest' => false,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 					),
 					/* 	The Lesson default_options section has been depricated and replace with 
@@ -1447,7 +1499,9 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 						'exclude_from_search' => (LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Topics_CPT', 'exclude_from_search' ) == 'yes') ? true : false, 
 						'capabilities' => $course_capabilities, 
 						'map_meta_cap' => true,
-						//'taxonomies' => array( 'post_tag'),
+						'show_in_rest' => LearnDash_REST_API::enabled( 'sfwd-topic' ) || LearnDash_REST_API::gutenberg_enabled( 'sfwd-topic' ),
+						//'rest_base' => LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Section_Permalinks', 'topics' ),
+						'rest_controller_class' => LearnDash_REST_API::get_controller( 'sfwd-topic' ),
 					),
 					'options_page_title' => sprintf( esc_html_x( '%1$s %2$s Options', 'Lesson Topic Options Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ), LearnDash_Custom_Label::get_label( 'topic' ) ),
 					'fields' => array(
@@ -1455,7 +1509,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'name' => sprintf( esc_html_x( '%s Materials', 'Topic Materials Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'topic' ) ),
 							'type' => 'textarea',
 							'help_text' => sprintf( esc_html_x( 'Options for %s materials', 'Options for topic materials', 'learndash' ), LearnDash_Custom_Label::get_label( 'topic' ) ),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 							'rest_args' => array(
 								'schema' => array(
 									'type' => 'html'
@@ -1470,7 +1524,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'help_text' => sprintf( esc_html_x( 'Associate this %s with a %s.', 'placeholders: topic, course', 'learndash' ), LearnDash_Custom_Label::get_label( 'topic' ), LearnDash_Custom_Label::get_label( 'course' ) ), 
 							'default' => '', 
 							//'initial_options' => $this->select_a_course( 'sfwd-topic' ),	// Move to topic_display_settings
-							'show_in_rest' => false,
+							'show_in_rest' => false, //LearnDash_REST_API::enabled(),
 						),
 						'lesson' => array( 
 							'name' => sprintf( esc_html_x( 'Associated %s', 'Associated Lesson Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ), 
@@ -1479,28 +1533,28 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'help_text' => sprintf( esc_html_x( 'Associate this %1$s with a %2$s.', 'Associate this topic with a lesson.', 'learndash' ), LearnDash_Custom_Label::get_label('topic'), LearnDash_Custom_Label::get_label('lesson') ),
 							'default' => '' , 
 							//'initial_options' => $this->select_a_lesson(), // // Move to topic_display_settings
-							'show_in_rest' => false,
+							'show_in_rest' => false, //LearnDash_REST_API::enabled(),
 						),
 						'forced_lesson_time' => array( 
 							'name' => sprintf( esc_html_x( 'Forced %s Timer', 'Forced Topic Timer Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'topic' ) ), 
 							'type' => 'text', 
 							'help_text' => sprintf( esc_html_x( 'Minimum time a user has to spend on %s page before it can be marked complete. Examples: 40 (for 40 seconds), 20s, 45sec, 2m 30s, 2min 30sec, 1h 5m 10s, 1hr 5min 10sec', 'Minimum time a user has to spend on Topic page Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'topic' ) ), 
 							'default' => '',
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'lesson_assignment_upload' => array( 
 							'name' => esc_html__( 'Upload Assignment', 'learndash' ), 
 							'type' => 'checkbox', 
 							'help_text' => esc_html__( 'Check this if you want to make it mandatory to upload assignment', 'learndash' ), 
 							'default' => 0,
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'auto_approve_assignment' => array( 
 							'name' => esc_html__( 'Auto Approve Assignment', 'learndash' ), 
 							'type' => 'checkbox', 
 							'help_text' => esc_html__( 'Check this if you want to auto-approve the uploaded assignment', 'learndash' ), 
 							'default' => 0,
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'assignment_upload_limit_count' => array( 
 							'name' => esc_html__( 'Limit number of uploaded files', 'learndash' ), 
@@ -1508,7 +1562,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'placeholder' => esc_html__('Default is 1', 'learndash' ),
 							'help_text' => esc_html__( 'Enter the maximum number of assignment uploads allowed. Default is 1. Use 0 to unlimited.', 'learndash' ), 
 							'default' => '1',
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 							'class' => 'small-text',
 							'min' => '1',
 						),
@@ -1524,7 +1578,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'type' => 'checkbox',
 							'help_text' => esc_html__( 'Allow this assignment to be assigned points when it is approved.', 'learndash' ),
 							'default' => 0,
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'lesson_assignment_points_amount' => array(
 							'name' => esc_html__( 'Set Number of Points for Assignment', 'learndash' ),
@@ -1532,7 +1586,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'min' => 0,
 							'help_text' => esc_html__( 'Assign the max amount of points someone can earn for this assignment.', 'learndash' ),
 							'default' => 0,
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						
 						'assignment_upload_limit_extensions' => array( 
@@ -1541,7 +1595,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'placeholder' => esc_html__('Example: pdf,xls,zip', 'learndash' ),
 							'help_text' => esc_html__( 'Enter comma-separated list of allowed file extensions: pdf,xls,zip or leave blank for any.', 'learndash' ), 
 							'default' => '',
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'assignment_upload_limit_size' => array( 
 							'name' => esc_html__( 'Allowed File Size', 'learndash' ), 
@@ -1549,7 +1603,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'placeholder' => sprintf( esc_html_x('Maximum upload file size: %s', 'placeholder: PHP file upload size', 'learndash'), ini_get('upload_max_filesize') ),
 							'help_text' => sprintf( esc_html_x( 'Enter maximim file upload size. Example: 100KB, 2M, 2MB, 1G. Maximum upload file size: %s', 'placeholder: PHP file upload size', 'learndash' ),  ini_get('upload_max_filesize') ),
 							'default' => '',
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 
 						// 'visible_after' => array( 
@@ -1599,7 +1653,11 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 						'capability_type' => 'course', 
 						'exclude_from_search' => true, 
 						'capabilities' => $course_capabilities, 
-						'map_meta_cap' => true
+						'map_meta_cap' => true,
+						'show_in_rest' => LearnDash_REST_API::enabled( 'sfwd-quiz' ) || LearnDash_REST_API::gutenberg_enabled( 'sfwd-quiz' ),
+						//'rest_base' => LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Section_Permalinks', 'quizzes' ),
+						'rest_controller_class' => LearnDash_REST_API::get_controller( 'sfwd-quiz' ),
+						
 					),
 					'options_page_title' => sprintf( esc_html_x( '%s Settings', 'Quiz Settings Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'quiz' ) ),
 					'fields' => array(
@@ -1607,7 +1665,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'name' => sprintf( esc_html_x( '%s Materials', 'Quiz Materials Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'quiz' ) ),
 							'type' => 'textarea',
 							'help_text' => sprintf( esc_html_x( 'Options for %s materials', 'Options for quiz materials', 'learndash' ), LearnDash_Custom_Label::get_label( 'quiz' ) ),
-							'show_in_rest' => true,
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 							'rest_args' => array(
 								'schema' => array(
 									'type' => 'html'
@@ -1626,12 +1684,14 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'type' => 'text', 
 							'help_text' => esc_html__( 'Minimum score required to award a certificate, between 0 and 1 where 1 = 100%.', 'learndash' ), 
 							'default' => '0.8',
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'passingpercentage' => array( 
 							'name' => esc_html__( 'Passing Percentage', 'learndash' ), 
 							'type' => 'text', 
 							'help_text' => sprintf( esc_html_x( 'Passing percentage required to pass the %s (number only). e.g. 80 for 80%%.', 'Passing percentage required to pass the quiz (number only). e.g. 80 for 80%.', 'learndash' ), LearnDash_Custom_Label::label_to_lower('quiz') ),
 							'default' => '80',
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'course' => array( 
 							'name' => sprintf( esc_html_x( 'Associated %s', 'Associated Course Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ), 
@@ -1652,6 +1712,7 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							'type' => 'select', 
 							'help_text' => sprintf( esc_html_x( 'Optionally associate a %s with a certificate.', 'Optionally associate a quiz with a certificate.', 'learndash' ), LearnDash_Custom_Label::label_to_lower('quiz') ),
 							'default' => '',
+							'show_in_rest' => LearnDash_REST_API::enabled(),
 						),
 						'quiz_pro' => array( 
 							'name' => esc_html__( 'Associated Settings', 'learndash' ), 
@@ -1711,6 +1772,9 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 					'capability_type' => 'course', 
 					'capabilities' => $course_capabilities, 
 					'map_meta_cap' => true,
+					'show_in_rest' 			=> false, //LearnDash_REST_API::enabled(),
+					//'rest_base' 			=> LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Section_Permalinks', 'courses' ),
+					//'rest_controller_class' => 'LD_REST_Posts_Certificates_Controller_V1'
 				)
 			);
 
@@ -1749,6 +1813,13 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				$this->post_args['sfwd-quiz']['cpt_options']['show_in_nav_menus'] = false;
 			}
 			
+			if ( LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Courses_Builder', 'shared_steps' ) == 'yes' ) {
+				if ( isset( $this->post_args['sfwd-courses']['fields']['course_lesson_orderby'] ) ) 
+					unset( $this->post_args['sfwd-courses']['fields']['course_lesson_orderby'] );
+				if ( isset( $this->post_args['sfwd-courses']['fields']['course_lesson_order'] ) ) 
+					unset( $this->post_args['sfwd-courses']['fields']['course_lesson_order'] );
+			}
+
 			/**
 			 * Filter $post_args used to create the custom post types and everything
 			 * associated with them.
@@ -1909,8 +1980,6 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 					}
 				
 					$courses_registered_query_args = apply_filters( 'learndash_course_info_query_args', $courses_registered_query_args, 'registered', $user_id, $atts );
-					//error_log('courses_registered_query_args<pre>'. print_r($courses_registered_query_args, true) .'</pre>');
-				
 					if ( !empty( $courses_registered_query_args ) ) {
 						$course_registered_query = new WP_Query( $courses_registered_query_args );
 						if ( ( isset( $course_registered_query->posts ) ) && ( !empty( $course_registered_query->posts ) ) ) {
@@ -2002,8 +2071,6 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							
 							$course_progress_pager['total_items'] = $course_progress_query->found_posts;
 							$course_progress_pager['total_pages'] = $course_progress_query->max_num_pages;
-						
-							//error_log('course_registered_pager<pre>'. print_r($courses_registered_pager, true) .'</pre>');
 						}
 					} else {
 						$course_progress = array();
@@ -2064,11 +2131,13 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 											$quiz_key = $quiz_attempt['time'] .'-'. $quiz_attempt['quiz']; 
 										} else if ( $atts['quiz_orderby'] == 'title' ) {
 											$quiz_key = $post_idx .'-'. $quiz_attempt['time']; 
-										} else if ( $atts['quiz_orderby'] == 'ID' ) {
+										} else if ( $atts['quiz_orderby'] == 'id' ) {
 											$quiz_key = $quiz_attempt['quiz'] .'-'. $quiz_attempt['time'];
 										}
-										$quizzes_tmp[$quiz_key] = $quiz_attempt;
-										unset( $quizzes[$quiz_idx] ); 
+										if ( !empty( $quiz_key ) ) {
+											$quizzes_tmp[$quiz_key] = $quiz_attempt;
+											unset( $quizzes[$quiz_idx] ); 
+										}
 									}
 								}
 							}
@@ -3079,7 +3148,6 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							
 								$lessons_array = $this->select_a_lesson_or_topic( $course_id );
 								if ( !empty( $lessons_array ) ) {
-									//error_log('lessons_array<pre>'. print_r($lessons_array, true) .'</pre>');
 									// We can't merge because it will destroy the array indexs. 
 									//$post_array = array_merge( $post_array, $lessons_array );
 									foreach( $lessons_array as $lesson_id => $lesson_title ) {
@@ -3394,7 +3462,6 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 				} else {
 					$quiz_ids = learndash_course_get_steps_by_type( $course_id, 'sfwd-quiz' );
 				}
-				//error_log('quiz_ids<pre>'. print_r($quiz_ids, true) .'</pre>');
 				if ( !empty( $quiz_ids ) ) {
 					foreach( $quiz_ids as $quiz_id ) {
 						$post_array[ $quiz_id ] = get_the_title( $quiz_id );
@@ -3695,7 +3762,6 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 
 	 				$post_array = array( '0' => sprintf( esc_html_x( '-- Select a %s --', 'Select a Lesson Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ) );
 					$course_id = learndash_get_course_id( get_the_id() );
-					//error_log('course_id['. $course_id .']');
 					if ( !empty( $course_id ) ) {
 						$lessons_items = $this->select_a_lesson_or_topic( intval( $course_id ), false );
 						if ( !empty( $lessons_items ) ) {

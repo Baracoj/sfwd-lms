@@ -292,13 +292,16 @@ if ( ! class_exists( 'SFWD_CPT' ) ) {
 				);
 			}
 
-			if ( ( isset( $query['include'] ) ) && ( !empty( $query['include'] ) ) ) {
+			if ( ( isset( $query['post__in'] ) ) && ( !empty( $query['post__in'] ) ) ) {
+				if ( is_string( $query['post__in'] ) ) {
+					$query['post__in'] = explode(',', $query['post__in'] );
+				} 
+			} else if ( ( isset( $query['include'] ) ) && ( !empty( $query['include'] ) ) ) {
 				$query['post__in'] = explode(',', $query['include'] );
 				$query['post__in'] = array_map( 'trim', $query['post__in'] );
 				unset( $query['include'] );
 			}
 
-			//error_log('query<pre>'. print_r($query, true) .'</pre>');
 			$query_posts = new WP_Query( $query );
 			if ( $query_posts->have_posts() ) {
 				$posts = $query_posts->posts;
@@ -494,6 +497,7 @@ if ( ! class_exists( 'SFWD_CPT' ) ) {
 						'wrapper'         => 'div',
 						'title'           => 'h4',
 						'topic_list_type' => 'dots',
+						'post__in'		  => '',
 					), 
 					$atts 
 				) 
@@ -504,7 +508,7 @@ if ( ! class_exists( 'SFWD_CPT' ) ) {
 
 			add_shortcode( 'loop', array( $this, 'loop_shortcode' ) );
 
-			$template = "[loop post_type='$post_type' posts_per_page='$posts_per_page' meta_key='{$meta_key}' meta_value='{$meta_value}' order='$order' orderby='$orderby' taxonomy='$taxonomy' tax_field='$tax_field' tax_terms='$tax_terms' topic_list_type='" . $topic_list_type . "']"
+			$template = "[loop post_type='$post_type' posts_per_page='$posts_per_page' meta_key='{$meta_key}' meta_value='{$meta_value}' order='$order' orderby='$orderby' taxonomy='$taxonomy' tax_field='$tax_field' tax_terms='$tax_terms' post__in='". $post__in ."' topic_list_type='" . $topic_list_type . "']"
 			. "<$wrapper id=post-\$id><$title><a {learndash_completed_class} href='{the_permalink}'>{the_title}</a>{sub_title}</$title>"
 			. "</$wrapper>[/loop]";
 

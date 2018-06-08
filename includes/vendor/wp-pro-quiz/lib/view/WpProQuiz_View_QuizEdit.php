@@ -1308,6 +1308,8 @@ class WpProQuiz_View_QuizEdit extends WpProQuiz_View_View {
 		$forms = $this->forms;
 		$index = 0;
 		
+		if ( !is_array( $forms ) ) $forms = array();
+		
 		if(!count($forms))
 			$forms = array(new WpProQuiz_Model_Form(), new WpProQuiz_Model_Form());
 		else

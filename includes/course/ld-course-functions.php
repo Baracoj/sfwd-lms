@@ -33,8 +33,12 @@ function learndash_get_course_id( $id = null, $bypass_cb = false ) {
 	}
 
 	if ( empty( $id ) ) {
-		if ( ! is_single() || is_home() ) {
-			return false;
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+
+		} else {
+			if ( ! is_single() || is_home() ) {
+				return false;
+			}
 		}
 
 		$id = $post->ID;
@@ -61,8 +65,12 @@ function learndash_get_course_id( $id = null, $bypass_cb = false ) {
 			}
 		} else if ( ( isset( $_GET['course_id'] ) ) && ( !empty( $_GET['course_id'] ) ) ) {
 			return intval( $_GET['course_id'] );
+		} else if ( ( isset( $_GET['course'] ) ) && ( !empty( $_GET['course'] ) ) ) {
+			return intval( $_GET['course'] );
 		} else if ( ( isset( $_POST['course_id'] ) ) && ( !empty( $_POST['course_id'] ) ) ) {
 			return intval( $_POST['course_id'] );
+		} else if ( ( isset( $_POST['course'] ) ) && ( !empty( $_POST['course'] ) ) ) {
+			return intval( $_POST['course'] );
 		} else if ( ( isset( $_GET['post'] ) ) && ( !empty( $_GET['post'] ) ) ) {
 			if ( get_post_type( intval( $_GET['post'] ) ) == 'sfwd-courses' ) {
 				return intval( $_GET['post'] );
@@ -1900,7 +1908,7 @@ add_filter('sfwd-courses_display_options', function( $options, $location ) {
 }, 1, 2);
 
 function learndash_update_course_users_groups( $user_id, $course_id, $access_list, $remove ) {
-	if ( ( !empty( $user_id ) ) && ( !empty( $course_id ) ) ) {
+	if ( ( !empty( $user_id ) ) && ( !empty( $course_id ) ) && ( $remove !== true ) ) {
 		
 		$course_groups = learndash_get_course_groups( $course_id, true );
 		if ( !empty( $course_groups ) ) {
@@ -2240,9 +2248,13 @@ function learndash_get_page_by_path( $slug = '', $post_type = '' ) {
 function learndash_get_course_lessons_per_page( $course_id = 0 ) {
 	$course_lessons_per_page = 0;
 	
+	$lessons_options = learndash_get_option( 'sfwd-lessons' );
+	if ( isset( $lessons_options['posts_per_page'] ) ) {
+		$course_lessons_per_page = intval( $lessons_options['posts_per_page'] );
+	}
+	
 	if ( !empty( $course_id ) ) {
 		$course_settings = learndash_get_setting( intval( $course_id ) );
-		$lessons_options = learndash_get_option( 'sfwd-lessons' );
 		
 		if ( ( isset( $course_settings['course_lesson_per_page'] ) ) && ( $course_settings['course_lesson_per_page'] == 'CUSTOM' ) && ( isset( $course_settings['course_lesson_per_page_custom'] ) ) ) {
 			$course_lessons_per_page = intval( $course_settings['course_lesson_per_page_custom'] );
@@ -2316,3 +2328,42 @@ function learndash_course_lessons_list_pager( $query_result = null, $pager_conte
 }
 add_action( 'learndash_course_lessons_list_pager', 'learndash_course_lessons_list_pager', 10, 2 );
 
+
+/**
+ * Utility function to get the Course Lessons order. 
+ * The course lessons order can be set in the course or globally defined in 
+ * the lesson options. This function will check all logic and return the 
+ * correct setting.
+ *
+ * @param $course_id int the course_id to get the per_page value from
+ * @return $course_lessons_order int will be the calculated lessons per page or zero
+ *
+ * @since 2.5.4
+ */
+function learndash_get_course_lessons_order( $course_id = 0 ) {
+	$course_lessons_args = array( 'order' => '', 'orderby' => '' );
+	
+	if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'enabled' ) == 'yes' ) {	
+		$course_lessons_args['orderby'] = 'post__in';
+		return $course_lessons_args;
+		
+	} else {
+		$lessons_options = learndash_get_option( 'sfwd-lessons' );
+		if ( ( isset( $lessons_options['order'] ) ) && ( !empty( $lessons_options['order'] ) ) ) 
+			$course_lessons_args['order'] = $lessons_options['order'];
+
+		if ( ( isset( $lessons_options['orderby'] ) ) && ( !empty( $lessons_options['orderby'] ) ) ) 
+			$course_lessons_args['orderby'] = $lessons_options['orderby'];
+	}
+
+	if ( !empty( $course_id ) ) {
+		$course_settings = learndash_get_setting( $course_id );
+		if ( ( isset( $course_settings['course_lesson_order'] ) ) && ( !empty( $course_settings['course_lesson_order'] ) ) ) 
+			$course_lessons_args['order'] = $course_settings['course_lesson_order'];
+
+		if ( ( isset( $course_settings['course_lesson_orderby'] ) ) && ( !empty( $course_settings['course_lesson_orderby'] ) ) ) 
+			$course_lessons_args['orderby'] = $course_settings['course_lesson_orderby'];
+	}	
+	
+	return $course_lessons_order;
+}

@@ -492,7 +492,10 @@ class WpProQuiz_Controller_Question extends WpProQuiz_Controller_Controller {
 
 			$answerType = new WpProQuiz_Model_AnswerTypes( $v );
 			
-			if ( $answerType->isCorrect() ) {
+			if ( ( $post['answerType'] == 'matrix_sort_answer' ) || ( $post['answerType'] == 'sort_answer' ) ) {
+				$points += $answerType->getPoints();
+				$maxPoints = max( $maxPoints, $answerType->getPoints() );
+			} else if ( $answerType->isCorrect() ) {
 				$points += $answerType->getPoints();
 				$maxPoints = max( $maxPoints, $answerType->getPoints() );
 			}

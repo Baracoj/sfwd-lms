@@ -32,7 +32,9 @@ function ld_course_list( $attr ) {
 		'post_type' => 'sfwd-courses', 
 		'post_status' => 'publish', 
 		'order' => 'DESC', 
-		'orderby' => 'ID', 
+		'orderby' => 'ID',
+		 
+		'user_id' => false,
 		'mycourses' => null, 
 		'post__in'	=> null,
 
@@ -65,7 +67,6 @@ function ld_course_list( $attr ) {
 		'show_thumbnail' => 'true',
 		'show_content' => 'true',
 
-		'post__in' => '',
 		'author__in' => '', 
 		'col' => '',
 		'progress_bar' => 'false',
@@ -128,6 +129,8 @@ function ld_course_list( $attr ) {
 	} else {
 		$atts['mycourses'] = null;
 	}
+	if ( $atts['post__in'] === '' )
+		$atts['post__in'] = null;
 
 	//if ( isset( $atts['num'] ) )
 	//	$atts['num'] = intval( $atts['num'] );
@@ -150,6 +153,40 @@ function ld_course_list( $attr ) {
 
 	$atts = apply_filters( 'ld_course_list_shortcode_attr_values', $atts, $attr );
 	
+	if ( is_user_logged_in() ) {
+	
+		if ( ( isset( $atts['user_id'] ) ) && ( $atts['user_id'] === false ) ) {
+			$atts['user_id'] = get_current_user_id();
+		} else if ( ( isset( $atts['user_id'] ) ) && ( $atts['user_id'] !== false ) ) {
+			if ( learndash_is_admin_user() ) {
+				// Good leave the user_id in place.
+			} else if ( learndash_is_group_leader_user( get_current_user_id() ) ) {
+				$groups = learndash_get_administrators_group_ids( get_current_user_id() );
+				if ( !empty( $groups ) ) {
+					$user_courses = array();
+					foreach ( $groups as $group_id ) {
+						if ( learndash_is_user_in_group( $atts['user_id'], $group_id ) ) {
+							$group_courses = learndash_group_enrolled_courses( $group_id );
+							if ( !empty( $group_courses ) ) {
+								$user_courses = array_merge( $user_courses, $group_courses );
+							}
+						}
+					}
+					if ( !empty( $user_courses ) ) {
+						$atts['post__in'] = $user_courses;
+					}
+				} else {
+					$atts['user_id'] = get_current_user_id();
+				}
+			} else {
+				$atts['user_id'] = get_current_user_id();
+			}
+		}
+	} else {
+		$atts['user_id'] = false;
+		$atts['mycourses'] = null;
+	}	
+		
 	extract( $atts );
 	
 	global $post;
@@ -189,12 +226,12 @@ function ld_course_list( $attr ) {
 	*/
 	
 	if ( ( ! empty( $meta_key ) ) && ( ! empty( $meta_value ) ) ) {
-		if ( $meta_key == 'course_id' ) {
-			if ( empty( $course_id ) ) {
-				$course_id = $meta_value;
-				$atts['course_id'] = $meta_value;
-			} 
-		} else {
+		//if ( $meta_key == 'course_id' ) {
+		//	if ( empty( $course_id ) ) {
+		//		$course_id = $meta_value;
+		//		$atts['course_id'] = $meta_value;
+		//	} 
+		//} else {
 	
 			$meta_query = array(
 				'key' => $meta_key,
@@ -207,7 +244,7 @@ function ld_course_list( $attr ) {
 			$meta_query['compare'] = $meta_compare;
 
 			$filter['meta_query'][] = $meta_query;
-		}
+		//}
 	}	
 	
 	if ( ( !empty( $course_id ) ) && ( is_null( $post__in ) ) ) {
@@ -623,14 +660,16 @@ function ld_course_list( $attr ) {
 	// Logic to determine the exact post ids to query. This will help drive the category selectors below and prevent extra queries. 
 	
 	$shortcode_course_id = null;
-	if ( $mycourses == 'enrolled' ) {
-		$filter['post__in'] = learndash_user_get_enrolled_courses( get_current_user_id() );
-		if ( empty( $filter['post__in'] ) ) return;
+	if ( is_null( $post__in ) ) {
+		if ( $mycourses == 'enrolled' ) {
+			$filter['post__in'] = learndash_user_get_enrolled_courses( $atts['user_id'] );
+			if ( empty( $filter['post__in'] ) ) return;
 		
-	} else if ( $mycourses == 'not-enrolled' ) {
-		$filter['post__not_in'] = learndash_user_get_enrolled_courses( get_current_user_id() );
-		if ( empty( $filter['post__not_in'] ) ) unset( $filter['post__not_in'] );
-	} 
+		} else if ( $mycourses == 'not-enrolled' ) {
+			$filter['post__not_in'] = learndash_user_get_enrolled_courses( $atts['user_id'] );
+			if ( empty( $filter['post__not_in'] ) ) unset( $filter['post__not_in'] );
+		} 
+	}
 	
 	$filter = apply_filters('learndash_ld_course_list_query_args', $filter, $atts );
 	
@@ -879,11 +918,6 @@ function ld_course_list( $attr ) {
 			echo apply_filters( 'ld_'. $post_type_slug .'_categorydropdown', $ld_categorydropdown, $atts, $filter );
 		}
 	}
-		
-	$col = intval($col);
-	if (!empty($col)) {
-		$row_item_count = 0;
-	}
 	
 	$filter_json = htmlspecialchars( json_encode( $atts ) );
 	$filter_md5 = md5( $filter_json ); 
@@ -893,7 +927,7 @@ function ld_course_list( $attr ) {
 	if ( $include_outer_wrapper == 'true' ) {
 		?><div id="ld-course-list-content-<?php echo $filter_md5 ?>" class="ld-course-list-content" data-shortcode-atts="<?php echo $filter_json; ?>"><?php
 	}
-	?><div class="ld-course-list-items"><?php
+	?><div class="ld-course-list-items row"><?php
 	
 	while ( $loop->have_posts() ) {
 		$loop->the_post();
@@ -905,13 +939,6 @@ function ld_course_list( $attr ) {
 
 		
 		//if ( ( is_null( $mycourses ) ) || ( $mycourses === false ) || ( ( $mycourses == 'enrolled' ) && ( sfwd_lms_has_access( get_the_ID() ) ) ) || ( ( $mycourses == 'not-enrolled' ) && ( !sfwd_lms_has_access( get_the_ID() ) ) ) ) {
-			if ( !empty( $col ) ) {
-				$row_item_count += 1;
-
-				if ( $row_item_count == 1 ) {
-					?><div class="row"><?php
-				}
-			}
 			
 			if ( empty( $atts['course_id'] ) ) {
 				$course_id = $course_id = learndash_get_course_id( get_the_ID());
@@ -926,15 +953,6 @@ function ld_course_list( $attr ) {
 					'course_id'	=> $course_id
 				) 
 			);
-
-			if ( !empty( $col ) ) {
-				// make sure to close the div if the current loop iteration count is equal with the 
-				// $col value OR it's the last item in the loop
-				if ( $row_item_count >= $col || $loop->current_post + 1 == $loop->post_count ) {
-					?></div><?php
-					$row_item_count = 0;
-				}
-			}
 		//}
 	}
 	?></div><?php
@@ -1004,7 +1022,7 @@ function ld_lesson_list( $attr = array() ) {
 	
 	// If we have a course_id. Then we set the orderby to match the items within the course. 
 	if ( ( isset( $attr['course_id'] ) ) && ( !empty( $attr['course_id'] ) ) ) {
-		if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'enabled' ) == 'yes' ) {
+		if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'shared_steps' ) == 'yes' ) {
 			if ( !isset( $attr['order'] ) ) $attr['order'] = 'ASC';
 			if ( !isset( $attr['orderby'] ) ) $attr['orderby'] = 'post__in';
 		
@@ -1043,7 +1061,7 @@ function ld_quiz_list( $attr = array() ) {
 	
 	// If we have a course_id. Then we set the orderby to match the items within the course. 
 	if ( ( isset( $attr['course_id'] ) ) && ( !empty( $attr['course_id'] ) ) ) {
-		if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'enabled' ) == 'yes' ) {
+		if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'shared_steps' ) == 'yes' ) {
 			if ( !isset( $attr['order'] ) ) $attr['order'] = 'ASC';
 			if ( !isset( $attr['orderby'] ) ) $attr['orderby'] = 'post__in';
 		
@@ -1082,7 +1100,7 @@ function ld_topic_list( $attr = array() ) {
 	
 	// If we have a course_id. Then we set the orderby to match the items within the course. 
 	if ( ( isset( $attr['course_id'] ) ) && ( !empty( $attr['course_id'] ) ) ) {
-		if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'enabled' ) == 'yes' ) {
+		if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'shared_steps' ) == 'yes' ) {
 			if ( !isset( $attr['order'] ) ) $attr['order'] = 'ASC';
 			if ( !isset( $attr['orderby'] ) ) $attr['orderby'] = 'post__in';
 		

@@ -403,7 +403,6 @@ if (!class_exists('LearnDash_Translations' ) ) {
 			if ( !in_array('en_US', $wp_languages ) ) {
 				$wp_languages = array_merge( array( 'en_US' ), $wp_languages );
 			}
-			error_log('wp_languages<pre>'. print_r($wp_languages, true) .'</pre>');
 				
 
 			// Taken from options-general.php. 

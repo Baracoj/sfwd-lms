@@ -1,20 +1,20 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-if ( !class_exists( 'LDLMS_Course_Steps' ) ) {	
+if ( ! class_exists( 'LDLMS_Course_Steps' ) ) {
 	class LDLMS_Course_Steps {
 
 		private $course_id = 0;
 		private $steps_loaded = false;
 		protected $steps = array();
 		protected $steps_post_types = array( 'sfwd-lessons', 'sfwd-topic', 'sfwd-quiz' );
-		
+	
 		function __construct( $course_id = 0 ) {
-			if ( !empty( $course_id ) ) {
+			if ( ! empty( $course_id ) ) {
 				$this->course_id = absint( $course_id );
-			} 
+			}
 		}
-				
+
 		function load_steps() {
 				if ( !$this->steps_loaded ) {
 				$this->steps_loaded = true;
@@ -331,6 +331,8 @@ if ( !class_exists( 'LDLMS_Course_Steps' ) ) {
 			
 			if ( isset( $this->steps[$steps_type] ) ) {
 				return $this->steps[$steps_type];
+			} else if ( $steps_type = 'all' ) {
+				return $this->steps;
 			}
 			
 			return array();

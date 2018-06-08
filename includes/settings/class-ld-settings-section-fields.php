@@ -89,9 +89,14 @@ if ( !class_exists( 'LearnDash_Settings_Section_Fields' ) ) {
 					<div class="sfwd_option_div">
 						<?php call_user_func( $field['callback'], $field['args'] ); ?>
 					</div>
-					<div id="<?php echo $field['args']['id'] ?>_tip" class="sfwd_help_text_div" style="display: none;">
-						<label class="sfwd_help_text"><?php echo $field['args']['help_text'] ?></label>
-					</div>
+					<?php if ( ( isset( $field['args']['help_text'] ) ) && ( !empty( $field['args']['help_text'] ) ) ) {
+						?>
+						<div id="<?php echo $field['args']['id'] ?>_tip" class="sfwd_help_text_div" style="display: none;">
+							<label class="sfwd_help_text"><?php echo $field['args']['help_text'] ?></label>
+						</div>
+						<?php
+						}
+					?>
 				</span>
 				<p class="ld-clear"></p>
 			</div>

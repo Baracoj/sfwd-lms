@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WP-Pro-Quiz 0.28\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/wp-pro-quiz\n"
-"POT-Creation-Date: 2018-03-29 06:39-0500\n"
+"POT-Creation-Date: 2018-05-25 06:20-0500\n"
 "PO-Revision-Date: 2018-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -170,7 +170,7 @@ msgstr ""
 #: lib/controller/WpProQuiz_Controller_Question.php:279
 #: lib/controller/WpProQuiz_Controller_Question.php:294
 #: lib/controller/WpProQuiz_Controller_Question.php:367
-#: lib/controller/WpProQuiz_Controller_Question.php:530
+#: lib/controller/WpProQuiz_Controller_Question.php:533
 #: lib/controller/WpProQuiz_Controller_Quiz.php:48
 #: lib/controller/WpProQuiz_Controller_Quiz.php:52
 #: lib/controller/WpProQuiz_Controller_Quiz.php:382
@@ -479,7 +479,7 @@ msgstr ""
 #: lib/view/WpProQuiz_View_AdminToplist.php:38
 #: lib/view/WpProQuiz_View_AdminToplist.php:57
 #: lib/view/WpProQuiz_View_QuestionOverall.php:30
-#: lib/view/WpProQuiz_View_QuizEdit.php:1401
+#: lib/view/WpProQuiz_View_QuizEdit.php:1403
 msgid "Type"
 msgstr ""
 
@@ -547,7 +547,7 @@ msgstr ""
 #: lib/view/WpProQuiz_View_GobalSettings.php:170
 #: lib/view/WpProQuiz_View_GobalSettings.php:203
 #: lib/view/WpProQuiz_View_QuestionOverall.php:68
-#: lib/view/WpProQuiz_View_QuizEdit.php:1448
+#: lib/view/WpProQuiz_View_QuizEdit.php:1450
 #: lib/view/WpProQuiz_View_QuizOverall.php:80
 #: lib/view/WpProQuiz_View_StatisticsAjax.php:47
 #: lib/view/WpProQuiz_View_StatisticsAjax.php:762
@@ -1164,7 +1164,7 @@ msgstr ""
 #: lib/view/WpProQuiz_View_QuizEdit.php:1236
 #: lib/view/WpProQuiz_View_QuizEdit.php:1237
 #: lib/view/WpProQuiz_View_QuizEdit.php:1238
-#: lib/view/WpProQuiz_View_QuizEdit.php:1341
+#: lib/view/WpProQuiz_View_QuizEdit.php:1343
 msgid "Activate"
 msgstr ""
 
@@ -1613,7 +1613,7 @@ msgstr ""
 #: lib/view/WpProQuiz_View_QuestionEdit.php:392
 #: lib/view/WpProQuiz_View_QuestionEdit.php:434
 #: lib/view/WpProQuiz_View_QuestionOverall.php:72
-#: lib/view/WpProQuiz_View_QuizEdit.php:1449
+#: lib/view/WpProQuiz_View_QuizEdit.php:1451
 msgid "Move"
 msgstr ""
 
@@ -1694,9 +1694,9 @@ msgstr ""
 #: lib/view/WpProQuiz_View_QuizEdit.php:1265
 #: lib/view/WpProQuiz_View_QuizEdit.php:1273
 #: lib/view/WpProQuiz_View_QuizEdit.php:1281
-#: lib/view/WpProQuiz_View_QuizEdit.php:1364
-#: lib/view/WpProQuiz_View_QuizEdit.php:1376
-#: lib/view/WpProQuiz_View_QuizEdit.php:1383
+#: lib/view/WpProQuiz_View_QuizEdit.php:1366
+#: lib/view/WpProQuiz_View_QuizEdit.php:1378
+#: lib/view/WpProQuiz_View_QuizEdit.php:1385
 msgid "Demo"
 msgstr ""
 
@@ -2532,112 +2532,112 @@ msgstr ""
 msgid "(0 = All on one page)"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1318
+#: lib/view/WpProQuiz_View_QuizEdit.php:1320
 #: lib/view/WpProQuiz_View_Statistics.php:41
 #: lib/view/WpProQuiz_View_Statistics.php:364
 #: lib/view/WpProQuiz_View_StatisticsAjax.php:651
 msgid "Custom fields"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1322
+#: lib/view/WpProQuiz_View_QuizEdit.php:1324
 msgid ""
 "You can create custom fields, e.g. to request the name or the e-mail address "
 "of the users."
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1325
+#: lib/view/WpProQuiz_View_QuizEdit.php:1327
 msgid "The statistic function have to be enabled."
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1332
-#: lib/view/WpProQuiz_View_QuizEdit.php:1337
+#: lib/view/WpProQuiz_View_QuizEdit.php:1334
+#: lib/view/WpProQuiz_View_QuizEdit.php:1339
 msgid "Custom fields enable"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1344
+#: lib/view/WpProQuiz_View_QuizEdit.php:1346
 msgid "If you enable this option, custom fields are enabled."
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1351
-#: lib/view/WpProQuiz_View_QuizEdit.php:1356
+#: lib/view/WpProQuiz_View_QuizEdit.php:1353
+#: lib/view/WpProQuiz_View_QuizEdit.php:1358
 msgid "Display position"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1358
+#: lib/view/WpProQuiz_View_QuizEdit.php:1360
 msgid "Where should the fileds be displayed:"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1361
+#: lib/view/WpProQuiz_View_QuizEdit.php:1363
 #, php-format
 msgctxt "On the quiz startpage"
 msgid "On the %s startpage"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1373
+#: lib/view/WpProQuiz_View_QuizEdit.php:1375
 #, php-format
 msgctxt "At the end of the quiz (before the quiz result)"
 msgid "At the end of the %s (before the %s result)"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1400
+#: lib/view/WpProQuiz_View_QuizEdit.php:1402
 msgid "Field name"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1402
+#: lib/view/WpProQuiz_View_QuizEdit.php:1404
 msgid "Required?"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1422
+#: lib/view/WpProQuiz_View_QuizEdit.php:1424
 msgid "Text"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1423
+#: lib/view/WpProQuiz_View_QuizEdit.php:1425
 msgid "Textarea"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1424
+#: lib/view/WpProQuiz_View_QuizEdit.php:1426
 msgid "Checkbox"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1425
+#: lib/view/WpProQuiz_View_QuizEdit.php:1427
 msgid "Drop-Down menu"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1426
+#: lib/view/WpProQuiz_View_QuizEdit.php:1428
 msgid "Radio"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1427
+#: lib/view/WpProQuiz_View_QuizEdit.php:1429
 msgid "Number"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1428
+#: lib/view/WpProQuiz_View_QuizEdit.php:1430
 msgid "Email"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1429
+#: lib/view/WpProQuiz_View_QuizEdit.php:1431
 msgid "Yes/No"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1430
+#: lib/view/WpProQuiz_View_QuizEdit.php:1432
 #: lib/view/WpProQuiz_View_Statistics.php:323
 #: lib/view/WpProQuiz_View_StatisticsAjax.php:27
 msgid "Date"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1433
+#: lib/view/WpProQuiz_View_QuizEdit.php:1435
 msgid "Edit list"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1436
+#: lib/view/WpProQuiz_View_QuizEdit.php:1438
 msgid "One entry per line"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1441
+#: lib/view/WpProQuiz_View_QuizEdit.php:1443
 msgid "OK"
 msgstr ""
 
-#: lib/view/WpProQuiz_View_QuizEdit.php:1460
+#: lib/view/WpProQuiz_View_QuizEdit.php:1462
 msgid "Add field"
 msgstr ""
 

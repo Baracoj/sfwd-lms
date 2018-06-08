@@ -1718,7 +1718,7 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 								<div style="display: none;" class="wpProQuiz_correct">
 									<?php if ( $question->isShowPointsInBox() && $question->isAnswerPointsActivated() ) { ?>
 										<div>
-											<span style="float: left;"><?php 
+											<span class="wpProQuiz_response_correct_label" style="float: left;"><?php 
 	  											echo SFWD_LMS::get_template( 
 	  												'learndash_quiz_messages', 
 	  												array(
@@ -1728,7 +1728,7 @@ class WpProQuiz_View_FrontQuiz extends WpProQuiz_View_View {
 	  												)
 	  											);
 											?></span>
-											<span style="float: right;"><?php echo $question->getPoints() . ' / ' . $question->getPoints(); ?><?php 
+											<span class="wpProQuiz_response_correct_points_label" style="float: right;"><?php echo $question->getPoints() . ' / ' . $question->getPoints(); ?> <?php 
 	  											echo SFWD_LMS::get_template( 
 	  												'learndash_quiz_messages', 
 	  												array(

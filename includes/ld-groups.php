@@ -179,19 +179,22 @@ function learndash_groups_post_content() {
 	}
 
 	$args = array(
-		'labels'              => $labels,
-		'description'         => esc_html__( 'Holds LearnDash user Groups', 'learndash' ),
-		'public'              => false,
-		'menu_position'       => 10,
-		'show_in_menu'        => true,
-		'show_in_nav_menus'   => false,
-		'supports'            => array( 'title', 'editor'), //, 'custom-fields', 'author'
-		'has_archive'         => false,
-		'exclude_from_search' => true,
-		'publicly_queryable'  => false,
-		'show_ui'             => true,
-		'capabilities'        => $capabilities,
-		'map_meta_cap'        => true,
+		'labels'              	=> $labels,
+		'description'         	=> esc_html__( 'Holds LearnDash user Groups', 'learndash' ),
+		'public'              	=> false,
+		'menu_position'       	=> 10,
+		'show_in_menu'        	=> true,
+		'show_in_nav_menus'   	=> false,
+		'supports'            	=> array( 'title', 'editor' ), //, 'custom-fields', 'author'
+		'has_archive'         	=> false,
+		'exclude_from_search' 	=> true,
+		'publicly_queryable'  	=> false,
+		'show_ui'             	=> true,
+		'capabilities'        	=> $capabilities,
+		'map_meta_cap'        	=> true,
+		'show_in_rest' 			=> LearnDash_REST_API::enabled( 'groups' ) || LearnDash_REST_API::gutenberg_enabled( 'groups' ),
+		//'rest_base' 			=> LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Section_Permalinks', 'courses' ),
+		'rest_controller_class' => LearnDash_REST_API::get_controller( 'groups' ),
 	);
 
 	/**
@@ -202,8 +205,19 @@ function learndash_groups_post_content() {
 	$args = apply_filters( 'learndash_post_args_groups', $args );
 	$args = apply_filters( 'learndash-cpt-options', $args, 'groups' );
 	
+	/**
+	 * Filter via the common 'learndash_post_args' used for most all other 
+	 * post_types in LearnDash
+	 *
+	 * @since 2.5.8
+	 */
+	// Removed. The world is not ready for this filter. 
+	//$post_args = array( 'groups' => $args );
+	//$post_args = apply_filters( 'learndash_post_args', $post_args );
+	//if ( isset( $post_args['groups'] ) ) 
+	//	$args = $post_args['groups'];
+	
 	register_post_type( 'groups', $args );
-
 }
 
 add_action( 'init', 'learndash_groups_post_content' );

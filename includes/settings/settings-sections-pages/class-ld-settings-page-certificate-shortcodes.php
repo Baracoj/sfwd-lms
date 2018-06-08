@@ -43,7 +43,7 @@ if ( ( class_exists( 'LearnDash_Settings_Page' ) ) && ( !class_exists( 'LearnDas
 									<br>Example: <b>[quizinfo show="percentage"]</b> shows the percentage score of the user in the %s.', 'placeholder: quiz', 'learndash' ) ), LearnDash_Custom_Label::label_to_lower( 'quiz' ) ) . '<br><br></li>
 								<li><b>FORMAT</b>: ' . wp_kses_post( __( 'This can be used to change the timestamp format. Default: "F j, Y, g:i a" shows as <i>March 10, 2001, 5:16 pm</i>. <br>Example: <b>[quizinfo show="timestamp" format="Y-m-d H:i:s"]</b> will show as <i>2001-03-10 17:16:18</i>', 'learndash' ) ) . '</li>
 								</ul>
-								<p>' . wp_kses_post( __( 'See <a target="_blank" href="http://php.net/manual/en/function.date.php">the full list of available date formating strings  here.</a>', 	'learndash' ) ) . '</p><br />
+								<p>' . wp_kses_post( __( 'See <a target="_blank" href="http://php.net/manual/en/function.date.php">the full list of available date formatting strings here.</a>', 	'learndash' ) ) . '</p><br />
 								
 								<p  class="ld-shortcode-header">[courseinfo]</p>
 								<p>'. esc_html__( 'This shortcode displays course related information on the certificate. This shortcode can use the following parameters:', 'learndash' ) . '</p>
@@ -70,7 +70,7 @@ if ( ( class_exists( 'LearnDash_Settings_Page' ) ) && ( !class_exists( 'LearnDas
 										<br>Example: <b>[courseinfo show="cumulative_score"]</b> shows average points scored across all quizzes on the course.', 'placeholders: quizzes, course, quizzes, course', 'learndash' ) ), LearnDash_Custom_Label::label_to_lower( 'quizzes' ), LearnDash_Custom_Label::label_to_lower( 'course' ), LearnDash_Custom_Label::label_to_lower( 'quizzes' ), LearnDash_Custom_Label::label_to_lower( 'course' )) . '<br><br></li>
 										<li><b>FORMAT</b>: ' . wp_kses_post( __( 'This can be used to change the date format. Default: "F j, Y, g:i a" shows as <i>March 10, 2001, 5:16 pm</i>. <br>Example: <b>[courseinfo show="completed_on" format="Y-m-d H:i:s"]</b> will show as <i>2001-03-10 17:16:18</i>', 'learndash' ) ) . '</li>
 									</ul>
-								<p>' . wp_kses_post( __( 'See <a target="_blank" href="http://php.net/manual/en/function.date.php">the full list of available date formating strings  here.</a>',      'learndash' ) ) . '</p>';
+								<p>' . wp_kses_post( __( 'See <a target="_blank" href="http://php.net/manual/en/function.date.php">the full list of available date formatting strings here.</a>',      'learndash' ) ) . '</p>';
 						?>
 						</div>
 					</div>

@@ -24,6 +24,22 @@ function learndash_admin_head() {
 add_action( 'admin_head', 'learndash_admin_head' );
 
 
+/**
+ * Add the LearnDash post type to the admin body class
+ *
+ * @since 2.5.8
+ */
+function learndash_admin_body_class( $class = '' ) {
+	global $learndash_post_types;
+	
+	$screen = get_current_screen();
+	if ( in_array( $screen->id, $learndash_post_types ) ) {
+		$class .= ' learndash-post-type ' . $screen->post_type;
+	}
+	
+	return $class;
+}
+add_filter( 'admin_body_class', 'learndash_admin_body_class' );
 
 /**
  * Hide top level menu when there are no submenus

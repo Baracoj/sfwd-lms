@@ -997,8 +997,6 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 							} else {
 								delete_post_meta( $post_id, 'course_points' );
 							}
-							//error_log('in '. __FUNCTION__ );
-							//error_log('options<pre>'. print_r($options, true) .'</pre>');
 						} 
 						else if ( ( $k == 'sfwd-lessons' ) && ( isset( $options[$k.'_visible_after_specific_date'] ) ) ) {
 							$date = $options[$k .'_visible_after_specific_date'];
@@ -1032,8 +1030,6 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 						// LEARNDASH-261: We need to reset the reference to the post meta ‘quiz_pro_id’ when the quiz is saved
 						// in case the ‘Associated Settings’ selector is updated. 
 						else if ( ( $k == 'sfwd-quiz' ) && ( isset( $options[$k.'_quiz_pro'] ) ) ) {
-							//error_log('['. $k .'] options<pre>'. print_r($options, true) .'</pre>');
-							
 							$quiz_pro_id = intval( $options['sfwd-quiz_quiz_pro'] );
 														
 							global $wpdb;
@@ -1263,7 +1259,6 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 				break;
 			
 			case 'wp_date_selector':
-				//error_log('value<pre>'. print_r($value, true) .'</pre>');
 				if ( !empty( $value ) ) {
 					if ( !is_numeric( $value ) ) {
 						$value = learndash_get_timestamp_from_date_string( $value );
@@ -1439,7 +1434,6 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 			 * @param  null|string  $location $this->locations array indexs
 			 */			
 			$current_options = apply_filters( "{$this->prefix}display_options", $this->get_current_options( array(), $location, $defaults ), $location );
-			//error_log('prefix['. $this->prefix .'] current_options<pre>'. print_r($current_options, true) .'</pre>');
 
 			/**
 			 * Filter display settings
@@ -1451,7 +1445,6 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 			 * @param  array 		$current_options
 			 */
 			$settings = apply_filters( "{$this->prefix}display_settings", $this->setting_options( $location, $defaults ), $location, $current_options );
-			//error_log('prefix['. $this->prefix .'] settings<pre>'. print_r($settings, true) .'</pre>');
 
 			$location_settings[ $prefix ]['current_options'] = $current_options;
 			$location_settings[ $prefix ]['settings']        = $settings;

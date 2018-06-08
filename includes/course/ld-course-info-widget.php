@@ -213,8 +213,8 @@ class LearnDash_Course_Info_Widget extends WP_Widget {
 			<p>
 				<label for="<?php echo $this->get_field_id( 'registered_order' ); ?>"><?php echo esc_html__( 'Registered order:', 'learndash' ); ?></label>
 				<select class="widefat" id="<?php echo $this->get_field_id( 'registered_order' ); ?>" name="<?php echo $this->get_field_name( 'registered_order' ); ?>">
-					<option value=""><?php echo esc_html__('ASC (default) - lowest to highest values', 'learndash') ?></option>
-					<option value="DESC"><?php echo esc_html__('DESC - highest to lowest values', 'learndash') ?></option>
+					<option value="" <?php selected( $registered_order, '' ); ?>><?php echo esc_html__('ASC (default) - lowest to highest values', 'learndash') ?></option>
+					<option value="DESC" <?php selected( $registered_order, 'DESC' ); ?>><?php echo esc_html__('DESC - highest to lowest values', 'learndash') ?></option>
 				</select>
 			</p>
 			
@@ -236,8 +236,8 @@ class LearnDash_Course_Info_Widget extends WP_Widget {
 			<p>
 				<label for="<?php echo $this->get_field_id( 'progress_order' ); ?>"><?php echo esc_html__( 'Progress order:', 'learndash' ); ?></label>
 				<select class="widefat" id="<?php echo $this->get_field_id( 'progress_order' ); ?>" name="<?php echo $this->get_field_name( 'progress_order' ); ?>">
-					<option value=""><?php echo esc_html__('ASC (default) - lowest to highest values', 'learndash') ?></option>
-					<option value="DESC"><?php echo esc_html__('DESC - highest to lowest values', 'learndash') ?></option>
+					<option value="" <?php selected( $progress_order, '' ); ?>><?php echo esc_html__('ASC (default) - lowest to highest values', 'learndash') ?></option>
+					<option value="DESC" <?php selected( $progress_order, 'DESC' ); ?>><?php echo esc_html__('DESC - highest to lowest values', 'learndash') ?></option>
 				</select>
 			</p>
 
@@ -259,8 +259,8 @@ class LearnDash_Course_Info_Widget extends WP_Widget {
 			<p>
 				<label for="<?php echo $this->get_field_id( 'quiz_order' ); ?>"><?php echo sprintf( esc_html_x( '%s order:', 'placeholder: quizzes', 'learndash' ), LearnDash_Custom_Label::get_label( 'Quizzes' ) ); ?></label>
 				<select class="widefat" id="<?php echo $this->get_field_id( 'quiz_order' ); ?>" name="<?php echo $this->get_field_name( 'quiz_order' ); ?>">
-					<option value=""  <?php selected( $quiz_order, '' ); ?>><?php echo esc_html__('DESC (default) - highest to lowest values', 'learndash') ?></option>
-					<option value="ASC"  <?php selected( $quiz_order, 'ASC' ); ?>><?php echo esc_html__('ASC - lowest to highest values', 'learndash') ?></option>
+					<option value="" <?php selected( $quiz_order, '' ); ?>><?php echo esc_html__('DESC (default) - highest to lowest values', 'learndash') ?></option>
+					<option value="ASC" <?php selected( $quiz_order, 'ASC' ); ?>><?php echo esc_html__('ASC - lowest to highest values', 'learndash') ?></option>
 				</select>
 			</p>
 		<?php
@@ -825,7 +825,9 @@ function learndash_profile( $atts ) {
 		'order' 				=> 'DESC', 
 		'orderby' 				=> 'ID', 
 		'course_points_user' 	=> 'yes',
-		'expand_all'			=> false
+		'expand_all'			=> false,
+		'profile_link'			=> 'yes',
+		'show_quizzes'			=> 'yes',
 	);
 	$atts = wp_parse_args( $atts, $defaults );
 
@@ -847,7 +849,18 @@ function learndash_profile( $atts ) {
 		$atts['nopaging'] = true;
 	}
 
-	$atts = apply_filters('learndash_profile_shortcode_atts', $atts);
+	if ( ( strtolower( $atts['profile_link'] ) == 'yes' ) || ( $atts['profile_link'] == 'true' ) || ( $atts['profile_link'] == '1' ) )
+		$atts['profile_link'] = true;
+	else
+		$atts['profile_link'] = false;
+
+
+	if ( ( strtolower( $atts['show_quizzes'] ) == 'yes' ) || ( $atts['show_quizzes'] == 'true' ) || ( $atts['show_quizzes'] == '1' ) )
+		$atts['show_quizzes'] = true;
+	else
+		$atts['show_quizzes'] = false;
+	
+	$atts = apply_filters('learndash_profile_shortcode_atts', $atts );
 
 	if ( empty( $atts['user_id'] ) ) return;
 
@@ -882,9 +895,6 @@ function learndash_profile( $atts ) {
 	if ( ( isset( $atts['per_page'] ) ) && ( intval( $atts['per_page'] ) > 0 ) ) {
 		$atts['per_page'] = intval( $atts['per_page'] );
 			
-		//$paged = get_query_var( 'page', 1 );
-		//error_log('paged['. $paged .']');
-		
 		if ( ( isset( $_GET['ld-profile-page'] ) ) && ( !empty( $_GET['ld-profile-page'] ) ) ) {
 			$profile_pager['paged'] = intval( $_GET['ld-profile-page'] );
 		} else {

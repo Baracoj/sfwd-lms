@@ -474,7 +474,7 @@ function learndash_get_lesson_list( $id = null, $atts = array() ) {
 	
 	$lessons_args = array_merge( $lessons_args, $atts );
 	
-	if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'enabled' ) == 'yes' ) {	
+	if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'shared_steps' ) == 'yes' ) {	
 		$ld_course_steps_object = LDLMS_Factory_Post::course_steps( $course_id );
 		$ld_course_steps_object->load_steps();
 		$course_steps = $ld_course_steps_object->get_steps('t');

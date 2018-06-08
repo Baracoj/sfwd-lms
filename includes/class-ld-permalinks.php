@@ -145,11 +145,6 @@ if ( !class_exists( 'LearnDash_Permalinks' ) ) {
 		function post_type_link( $post_link = '', $post = null, $leavename  = false, $sample = false ) {
 			global $pagenow;
 			
-//			error_log('in '. __FUNCTION__ );
-//			error_log('post_link['. $post_link .']');
-//			error_log('leavename['. $leavename .']');
-//			error_log('sample['. $sample .']');
-			
 			if ( ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Section_Permalinks', 'nested_urls' ) == 'yes' ) && ( in_array( $post->post_type, array( 'sfwd-lessons', 'sfwd-topic', 'sfwd-quiz' ) ) ) ) {
 				
 				// If we are viewing one of the list tables we only effect the link if the course_id URL param is set
