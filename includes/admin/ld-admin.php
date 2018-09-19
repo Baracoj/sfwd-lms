@@ -71,7 +71,11 @@ function learndash_load_admin_resources() {
 	global $learndash_post_types, $learndash_pages;;
 	global $learndash_assets_loaded;
 
-	if ( in_array( @$_GET['page'], $learndash_pages ) || in_array( @$_GET['post_type'], $learndash_post_types ) || $pagenow == 'post.php' && in_array( $post->post_type, $learndash_post_types ) ) {
+	if ( 
+		( ( isset( $_GET['page'] ) ) && ( in_array( $_GET['page'], $learndash_pages ) ) )
+		|| ( ( isset( $_GET['post_type'] ) ) && ( in_array( $_GET['post_type'], $learndash_post_types ) ) ) 
+		|| ( ( $pagenow == 'post.php' ) && ( in_array( $post->post_type, $learndash_post_types ) ) ) 
+		) {
 		wp_enqueue_style( 
 			'learndash_style', 
 			LEARNDASH_LMS_PLUGIN_URL . 'assets/css/style'. ( ( defined( 'LEARNDASH_SCRIPT_DEBUG' ) && ( LEARNDASH_SCRIPT_DEBUG === true ) ) ? '' : '.min') .'.css',
@@ -708,7 +712,7 @@ function restrict_listings_by_course( $post_type, $location = '') {
 			echo "<option value=''>". sprintf( esc_html_x( 'Show All %s', 'Show All Courses Option Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'courses' ) ).'</option>';
 
 			foreach ( $query_posts_course->posts as $p ) {
-				echo '<option value='. $p->ID, ( @$_GET['course_id'] == $p->ID ? ' selected="selected"' : '').'>' . $p->post_title .'</option>';
+				echo '<option value='. $p->ID, ( ( ( isset( $_GET['course_id'] ) ) && ( intval( $_GET['course_id'] ) == intval( $p->ID ) ) ) ? ' selected="selected"' : '' ) .'>' . $p->post_title .'</option>';
 			}
 			echo '</select>';
 		
@@ -1296,13 +1300,13 @@ function learndash_patent_course_and_lesson_id_save( $post_id ) {
 
 	if ( 'sfwd-lessons' == $_POST['post_type'] || 'sfwd-quiz' == $_POST['post_type'] || 'sfwd-topic' == $_POST['post_type'] ) {
 		if ( isset( $_POST[ $_POST['post_type'].'_course'] ) ) {
-			update_post_meta( $post_id, 'course_id', @$_POST[ $_POST['post_type'].'_course'] );
+			update_post_meta( $post_id, 'course_id', (int)$_POST[ $_POST['post_type'].'_course'] );
 		}
 	}
 
 	if ( 'sfwd-topic' == $_POST['post_type'] || 'sfwd-quiz' == $_POST['post_type'] ) {
 		if ( isset( $_POST[ $_POST['post_type'].'_lesson'] ) ) {
-			update_post_meta( $post_id, 'lesson_id', @$_POST[ $_POST['post_type'].'_lesson'] );
+			update_post_meta( $post_id, 'lesson_id', (int)$_POST[ $_POST['post_type'].'_lesson'] );
 		}
 	}
 
@@ -1310,7 +1314,7 @@ function learndash_patent_course_and_lesson_id_save( $post_id ) {
 		global $wpdb;
 
 		if ( isset( $_POST[ $_POST['post_type'].'_course'] ) ) {
-			$course_id = get_post_meta( $post_id, 'course_id', true );
+			$course_id = (int)get_post_meta( $post_id, 'course_id', true );
 		}
 
 		if ( ! empty( $course_id ) ) {
@@ -1321,7 +1325,7 @@ function learndash_patent_course_and_lesson_id_save( $post_id ) {
 					$post_course_id = learndash_get_setting( $post_with_lesson, 'course' );
 
 					if ( $post_course_id != $course_id ) {
-						learndash_update_setting( $post_with_lesson, 'course', $course_id );
+						learndash_update_setting( $post_with_lesson, 'course', (int)$course_id );
 
 						$quizzes_under_lesson_topic = $wpdb->get_col( $wpdb->prepare( 
 						"SELECT post_id FROM ". $wpdb->postmeta ." WHERE meta_key = %s AND meta_value = %d", 'lesson_id',  $posts_with_lesson ) );
@@ -1329,7 +1333,7 @@ function learndash_patent_course_and_lesson_id_save( $post_id ) {
 							foreach ( $quizzes_under_lesson_topic as $quiz_post_id ) {
 								$quiz_course_id = learndash_get_setting( $quiz_post_id, 'course' );
 								if ( $course_id != $quiz_course_id ) {
-									learndash_update_setting( $quiz_course_id, 'course', $course_id );
+									learndash_update_setting( $quiz_course_id, 'course', (int)$course_id );
 								}
 							}
 						}
@@ -1619,22 +1623,28 @@ add_filter( "manage_category_custom_column", 'learndash_manage_category_custom_c
 function learndash_delete_all_data() {
 	global $wpdb, $learndash_post_types, $learndash_taxonomies, $learndash_db_tables;
 	
-	// USER META SETTINGS
-	//////////////////////////////
-	
-	$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key='_sfwd-course_progress'" );
-	$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key='_sfwd-quizzes'" );
-	
-	$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key LIKE 'completed_%'" );
-	$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key LIKE 'course_%_access_from'" );
-	$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key LIKE 'course_completed_%'" );
-	$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key LIKE 'learndash_course_expired_%'" );
-	$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key LIKE 'learndash_group_users_%'" );
-	$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key LIKE 'learndash_group_leaders_%'" );
-	
-	$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key = 'ld-upgraded-user-meta-courses'" );
-	$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key = 'ld-upgraded-user-meta-quizzes'" );
-	$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key = 'course_points'" );
+	/**
+	 * Under Multisite we don't even want to remove user data. This is because users and usermeta
+	 * is shared. Removing the LD user data could result in lost information for other sites. 
+	 */
+	if ( ! is_multisite() ) {
+		// USER META SETTINGS
+		//////////////////////////////
+		
+		$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key='_sfwd-course_progress'" );
+		$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key='_sfwd-quizzes'" );
+		
+		$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key LIKE 'completed_%'" );
+		$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key LIKE 'course_%_access_from'" );
+		$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key LIKE 'course_completed_%'" );
+		$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key LIKE 'learndash_course_expired_%'" );
+		$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key LIKE 'learndash_group_users_%'" );
+		$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key LIKE 'learndash_group_leaders_%'" );
+		
+		$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key = 'ld-upgraded-user-meta-courses'" );
+		$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key = 'ld-upgraded-user-meta-quizzes'" );
+		$wpdb->query( 'DELETE FROM '. $wpdb->usermeta ." WHERE meta_key = 'course_points'" );
+	}
 
 	// CUSTOM OPTIONS
 	//////////////////////////////
@@ -1763,7 +1773,6 @@ function learndash_delete_all_data() {
 
 	$ld_template_dir = $url_link_arr['basedir'] . '/template';
 	learndash_recursive_rmdir( $ld_template_dir );
-
 }
 
 

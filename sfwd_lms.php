@@ -3,7 +3,7 @@
  * Plugin Name: LearnDash LMS
  * Plugin URI: http://www.learndash.com
  * Description: LearnDash LMS Plugin - Turn your WordPress site into a learning management system.
- * Version: 2.5.8.2
+ * Version: 2.5.9
  * Author: LearnDash
  * Author URI: http://www.learndash.com
  * Text Domain: learndash
@@ -17,7 +17,7 @@
 /**
  * LearnDash Version Constant
  */
-define( 'LEARNDASH_VERSION', '2.5.8' );
+define( 'LEARNDASH_VERSION', '2.5.9' );
 define( 'LEARNDASH_SETTINGS_DB_VERSION', '2.5' );
 define( 'LEARNDASH_SETTINGS_TRIGGER_UPGRADE_VERSION', '2.5' );
 define( 'LEARNDASH_LMS_TEXT_DOMAIN', 'learndash' );
@@ -37,7 +37,6 @@ if ( ! defined( 'LEARNDASH_LMS_PLUGIN_URL' ) ) {
 }
 
 if ( ! defined( 'LEARNDASH_LMS_PLUGIN_KEY' ) ) {
-
 	$current_plugin_dir = LEARNDASH_LMS_PLUGIN_DIR;
 	$current_plugin_dir = basename( $current_plugin_dir ) . '/' . basename( __FILE__ );
 	define( 'LEARNDASH_LMS_PLUGIN_KEY', $current_plugin_dir );
@@ -45,6 +44,10 @@ if ( ! defined( 'LEARNDASH_LMS_PLUGIN_KEY' ) ) {
 
 if ( ! defined( 'LEARNDASH_TRANSIENTS_DISABLED' ) ) {
 	define( 'LEARNDASH_TRANSIENTS_DISABLED', false );
+}
+
+if ( ! defined( 'LEARNDASH_DEBUG' ) ) {
+	define( 'LEARNDASH_DEBUG', false );
 }
 
 // If the WordPress 'SCRIPT_DEBUG' is set then we also set our 'LEARNDASH_SCRIPT_DEBUG' so we are serving non-minified scripts.
@@ -65,7 +68,7 @@ if ( ! defined( 'LEARNDASH_SCRIPT_VERSION_TOKEN' ) ) {
 	}
 }
 
-// Added to support REST API 
+// Added to support REST API.
 // @since 2.5.8.
 if ( ! defined( 'LEARNDASH_REST_API_ENABLED' ) ) {
 	define( 'LEARNDASH_REST_API_ENABLED', false );
@@ -286,6 +289,11 @@ require_once dirname( __FILE__ ) . '/includes/class-ld-permalinks.php';
  * GDPR
  */
 require_once dirname( __FILE__ ) . '/includes/class-ld-gdpr.php';
+
+/**
+ * Core Updater
+ */
+require_once dirname( __FILE__ ) . '/includes/ld-autoupdate.php';
 
 /**
  * Addon Updater API

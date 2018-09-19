@@ -997,6 +997,11 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 							} else {
 								delete_post_meta( $post_id, 'course_points' );
 							}
+
+							if ( isset( $options['sfwd-courses_course_access_list'] ) ) {
+								$options['sfwd-courses_course_access_list'] = learndash_convert_course_access_list( $options['sfwd-courses_course_access_list'] );
+								update_post_meta( $post_id, 'course_access_list', $options['sfwd-courses_course_access_list'] );
+							}
 						} 
 						else if ( ( $k == 'sfwd-lessons' ) && ( isset( $options[$k.'_visible_after_specific_date'] ) ) ) {
 							$date = $options[$k .'_visible_after_specific_date'];

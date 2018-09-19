@@ -1,6 +1,18 @@
 <?php
+/**
+ * LearnDash Gutenberg Posts Controller.
+ *
+ * @package LearnDash
+ * @since 2.5.9
+ */
 
-if ( ! class_exists( 'LD_REST_Posts_Gutenberg_Controller' ) ) {
+ if ( ! class_exists( 'LD_REST_Posts_Gutenberg_Controller' ) ) {
+	/**
+	 * LearnDash Gutenberg Posts Controller.
+	 *
+	 * @package LearnDash
+	 * @since 2.5.9
+	 */
 	class LD_REST_Posts_Gutenberg_Controller extends WP_REST_Posts_Controller {
 
 		public function __construct( $post_type = '' ) {

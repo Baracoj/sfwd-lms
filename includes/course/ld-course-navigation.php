@@ -450,12 +450,15 @@ function learndash_get_lesson_list( $id = null, $atts = array() ) {
 	global $wpdb;
 
 	$lessons = sfwd_lms_get_post_options( 'sfwd-lessons' );
-	$course_options = get_post_meta( $course_id, '_sfwd-courses', true );
-	$course_orderby = @$course_options['sfwd-courses_course_lesson_orderby'];
-	$course_order = @$course_options['sfwd-courses_course_lesson_order'];
+	//$course_options = get_post_meta( $course_id, '_sfwd-courses', true );
+	//$course_orderby = @$course_options['sfwd-courses_course_lesson_orderby'];
+	//$course_order = @$course_options['sfwd-courses_course_lesson_order'];	
+	//$orderby = ( empty( $course_orderby) ) ? $lessons['orderby'] : $course_orderby;
+	//$order = ( empty( $course_order) ) ? $lessons['order'] : $course_order;
 
-	$orderby = ( empty( $course_orderby) ) ? $lessons['orderby'] : $course_orderby;
-	$order = ( empty( $course_order) ) ? $lessons['order'] : $course_order;
+	$course_lessons_args = learndash_get_course_lessons_order( $course_id );
+	$orderby = ( isset( $course_lessons_args[ 'orderby' ] ) ) ? $course_lessons_args[ 'orderby' ] : 'title';
+	$order = ( isset( $course_lessons_args[ 'order' ] ) ) ? $course_lessons_args[ 'order' ] : 'ASC';
 
 	switch ( $orderby ) {
 		case 'title': $orderby = 'title'; break;
@@ -537,12 +540,16 @@ function learndash_get_topic_list( $for_lesson_id = null, $course_id = null ) {
 
 			if ( !empty( $course_id ) ) {
 
-				$course_options = get_post_meta( $course_id, '_sfwd-courses', true );
-				$course_orderby = @$course_options['sfwd-courses_course_lesson_orderby'];
-				$course_order = @$course_options['sfwd-courses_course_lesson_order'];
+				//$course_options = get_post_meta( $course_id, '_sfwd-courses', true );
+				//$course_orderby = @$course_options['sfwd-courses_course_lesson_orderby'];
+				//$course_order = @$course_options['sfwd-courses_course_lesson_order'];
 
-				$orderby = ( empty( $course_orderby ) ) ? $lessons_options['orderby'] : $course_orderby;
-				$order = ( empty( $course_order ) ) ? $lessons_options['order'] : $course_order;
+				//$orderby = ( empty( $course_orderby ) ) ? $lessons_options['orderby'] : $course_orderby;
+				//$order = ( empty( $course_order ) ) ? $lessons_options['order'] : $course_order;
+
+				$course_lessons_args = learndash_get_course_lessons_order( $course_id );
+				$orderby = ( isset( $course_lessons_args[ 'orderby' ] ) ) ? $course_lessons_args[ 'orderby' ] : 'title';
+				$order = ( isset( $course_lessons_args[ 'order' ] ) ) ? $course_lessons_args[ 'order' ] : 'ASC';
 			}
 		} else {
 			$orderby = 'name';

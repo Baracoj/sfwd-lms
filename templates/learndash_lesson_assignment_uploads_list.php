@@ -36,7 +36,15 @@ if ( ( isset( $course_step_post ) ) && ( $course_step_post instanceof WP_Post ) 
 							<a href='<?php echo esc_attr( get_post_meta( $assignment->ID, 'file_link', true ) ); ?>' target="_blank"><?php esc_html_e( 'Download', 'learndash' ) ?> <?php echo get_post_meta( $assignment->ID, 'file_name', true ); ?></a><br />
 							<span class="learndash_uploaded_assignment_points"><?php echo learndash_assignment_points_awarded( $assignment->ID ); ?></span>
 						</td>
-						<td class="ld-assignment-comments-col"><a href='<?php echo esc_attr( get_permalink( $assignment->ID ) ); ?>'><?php esc_html_e( 'Comments', 'learndash' ); ?></a></td>
+						<td class="ld-assignment-comments-col">
+						<?php
+							if ( apply_filters( 'comments_open', $assignment->comment_status, $assignment->ID ) ) {
+								?>
+								<a href='<?php echo esc_attr( get_permalink( $assignment->ID ) ); ?>'><?php esc_html_e( 'Comments', 'learndash' ); ?></a>
+								<?php
+							}
+							?>
+						</td>
 					</tr>
 				<?php } ?>
 			</table>

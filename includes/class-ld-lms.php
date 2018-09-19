@@ -1721,16 +1721,6 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 							//'initial_options' => ( array( 0 => esc_html__( '-- Select Settings --', 'learndash' ) ) + LD_QuizPro::get_quiz_list() ), // Move to quiz_display_settings
 							'default' => '',
 						),
-						/*
-						'quiz_pro_html' => array(
-							'name' => sprintf( esc_html_x( '%s Options', 'Quiz Options Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'quiz' ) ),
-							'type' => 'html',
-							'help_text' => '',
-							'label' => 'none',
-							'save' => false,
-							'default' => LD_QuizPro::edithtml()
-						),
-						*/
 					),
 					'default_options' => array()
 				),
@@ -2550,7 +2540,9 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 		 * @since 2.1.0
 		 */
 		function course_export_init() {
-			error_reporting( 0 );
+			if ( ( ! defined( 'LEARNDASH_DEBUG' ) ) || ( LEARNDASH_DEBUG !== true ) ) {
+				error_reporting( 0 );
+			}
 
 			if ( ! empty( $_REQUEST['courses_export_submit'] ) && ! empty( $_REQUEST['nonce-sfwd'] ) ) {
 				set_time_limit( 0 );
@@ -2626,7 +2618,9 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 		 * @since 2.1.0
 		 */
 		function quiz_export_init() {
-			error_reporting( 0 );
+			if ( ( ! defined( 'LEARNDASH_DEBUG' ) ) || ( LEARNDASH_DEBUG !== true ) ) {
+				error_reporting( 0 );
+			}
 			
 			global $wpdb;
 			$current_user = wp_get_current_user();
@@ -4255,7 +4249,29 @@ if ( ! class_exists( 'SFWD_LMS' ) ) {
 			return $actions;
 		}
 
-		// End of functions
+		/**
+		 * Function to dynamically control the 'the_content' filtering for this post_type instance.
+		 * This is needed for example when using the 'the_content' filters manually and do not want the
+		 * normal filters recursively applied.
+		 *
+		 * @since 2.5.9
+		 *
+		 * @param boolean $filter_check True if the_content filter is to be enabled.
+		 * @param array   $post_types Limit change to specific instance post types. default is all. 
+		 */
+		static public function content_filter_control( $filter_check = true, $post_types = array() ) {
+			
+			if ( empty( $post_types ) ) {
+				$post_types = array_keys( SFWD_CPT_Instance::$instances );
+			}
+			foreach( SFWD_CPT_Instance::$instances as $post_type => $instance ) {
+				if ( in_array( $post_type, $post_types ) ) {
+					$instance->content_filter_control( $filter_check );
+				}
+			}
+		}
+
+		// End of functions.
 	}
 }
 

@@ -8,7 +8,7 @@ if ( ( class_exists( 'LearnDash_Shortcodes_Section' ) ) && ( !class_exists( 'Lea
 			$this->shortcodes_section_key 			= 	'course_complete';
 			$this->shortcodes_section_title 		= 	sprintf( esc_html_x( '%s Complete', 'placeholder: Course', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) );
 			$this->shortcodes_section_type			=	2;
-			$this->shortcodes_section_description	=	sprintf( esc_html_x( 'This shortcode shows the content if the user has completed the %s. The shortcode can be used on <strong>any</strong> page or widget area.', 'placeholders: course', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'course' ) );
+			$this->shortcodes_section_description	=	sprintf( esc_html_x( 'This shortcode shows the content if the user has completed the %s. The shortcode can be used on any page or widget area.', 'placeholders: course', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'course' ) );
 			
 			parent::__construct(); 
 		}

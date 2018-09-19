@@ -846,3 +846,24 @@ form#sfwd-mark-complete p.ld-video-delay-message span.time-countdown {
 	background-color: #CCC;
 	padding: 0 2px;
 }
+
+
+/* [user_groups] shortcode styles. See template/user_group_shortcode.php for details. */
+.learndash-user-groups {
+
+}
+
+.learndash-user-groups .learndash-user-groups-section {
+	clear: both;
+}
+
+.learndash-user-groups .learndash-user-groups-section .learndash-user-groups-header,
+.learndash-user-groups .learndash-user-groups-section .learndash-user-groups-item-title {
+	clear: both;
+	font-weight: bold;
+}
+
+.learndash-user-groups .learndash-user-groups-section ul.learndash-user-groups-items {
+	list-style: none;
+	margin-left: 15px;
+}

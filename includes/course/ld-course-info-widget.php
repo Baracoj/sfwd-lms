@@ -836,7 +836,13 @@ function learndash_profile( $atts ) {
 	else
 		$atts['expand_all'] = false;
 
-	if ( $atts['per_page'] === false ) {
+	
+	if ( ( strtolower($atts['course_points_user'] ) == 'yes' ) || ( $atts['course_points_user'] == 'true' ) || ( $atts['course_points_user'] == '1' ))
+		$atts['course_points_user'] = 'yes';
+	else
+		$atts['course_points_user'] = false;
+
+		if ( $atts['per_page'] === false ) {
 		$atts['per_page'] = $atts['quiz_num'] = LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Section_General_Per_Page', 'per_page' );
 	} else {
 		$atts['per_page'] = intval( $atts['per_page'] );
@@ -908,7 +914,7 @@ function learndash_profile( $atts ) {
 	}
 	
 	$learndash_shortcode_used = true;
-
+	
 	return SFWD_LMS::get_template( 
 		'profile', 
 		array(

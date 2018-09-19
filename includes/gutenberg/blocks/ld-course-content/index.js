@@ -1,9 +1,18 @@
 /**
- * Block dependencies
+ * LearnDash Block ld-course-content
+ * 
+ * @since 2.5.9
+ * @package LearnDash
  */
-import classnames from 'classnames';
-//import icon from './icon';
-import './style.scss';
+
+/**
+ * LearnDash block functions
+ */
+import {
+	ldlms_get_custom_label,
+	ldlms_get_post_edit_meta,
+	ldlms_get_per_page,
+} from '../ldlms.js';
 
 /**
  * Internal block libraries
@@ -11,84 +20,103 @@ import './style.scss';
 const { __, _x, sprintf } = wp.i18n;
 const { 
 	registerBlockType, 
-	//InnerBlocks,
-    InspectorControls,
- } = wp.blocks;
- const {
-//     Toolbar,
-//     Button,
-     Tooltip,
-     PanelBody,
-     PanelRow,
-	 RangeControl,
-	 FormToggle,
-	 SelectControl,
-	 ToggleControl,
-	 TextControl
- } = wp.components;
+} = wp.blocks;
+ 
+const {
+	InspectorControls,
+} = wp.editor;
+ 
+const {
+	ServerSideRender,
+	PanelBody,
+	ToggleControl,
+	TextControl
+} = wp.components;
 
 registerBlockType(
     'learndash/ld-course-content',
     {
-        title: __( 'LearnDash Course Content', 'learndash' ),
-        description: __( 'LearnDash Course Content Block.', 'learndash' ),
-        //icon: icon,
+		title: sprintf(_x('LearnDash %s Content', 'placeholder: Course', 'learndash'), ldlms_get_custom_label('course')),		
+		description: sprintf(_x('This block displays the %1$s Content table.', 'placeholders: Course', 'learndash'), ldlms_get_custom_label('course') ),
+		icon: 'desktop',
         category: 'widgets',
         attributes: {
             course_id: {
-                type: 'number',
+				type: 'string',
+				default: '',
             },
             per_page: {
-                type: 'number',
-            },
+				type: 'string',
+				default: '',
+			},
+			preview_show: {
+				type: 'boolean',
+				default: 1
+			},
+			meta: {
+				type: 'object',
+			}
         },
         edit: props => {
-			const { attributes: { course_id, per_page },
-            	isSelected, className, setAttributes } = props;
+			const { attributes: { course_id, per_page, preview_show },
+            	className, setAttributes } = props;
 			
-            return [
-				
-                isSelected && (
-                    <InspectorControls>
-                        <PanelBody
-                          title={ __( 'Settings', 'learndash' ) }
-                        >
-		                  <PanelRow>
-							<TextControl
-								label={ sprintf( _x( '%s ID', 'Course ID', 'learndash' ), ldlms_settings['settings']['custom_labels']['course'] || 'course' ) }
-								help={ sprintf( _x( '%s ID (required)', 'learndash' ), ldlms_settings['settings']['custom_labels']['course'] || 'course' ) }
-								value={ course_id || '' }
-								onChange={ course_id => setAttributes( { course_id } ) }
-							/>
-		                  </PanelRow>
-                            <PanelRow>
-								<TextControl
-							  		label={ sprintf( _x( '%s per page', 'placeholder: Lessons', 'learndash' ), ldlms_settings['settings']['custom_labels']['lessons'] || 'Lessons' ) }
-									value={ per_page || '' }
-									type={ 'number' }
-									onChange={ per_page => setAttributes( { per_page } ) }
-								/>
-                            </PanelRow>
-                        </PanelBody>
-                    </InspectorControls>
-                ),
-				<div className={ className }>
-				{ __( '[course_content] shortcode output shown here', 'learndash' ) }
-				</div>
-            ];
-        },
+			const inspectorControls = (
+				<InspectorControls>
+					<PanelBody
+						title={ __( 'Settings', 'learndash' ) }
+					>
+						<TextControl
+							label={sprintf(_x('%s ID', 'Course ID', 'learndash'), ldlms_get_custom_label('course') ) }
+							help={sprintf(_x('Enter single %1$s ID. Leave blank if used within a %2$s.', 'placeholders: course, course', 'learndash'), ldlms_get_custom_label('course'), ldlms_get_custom_label('course') ) } 
+							value={ course_id || '' }
+							onChange={ course_id => setAttributes( { course_id } ) }
+						/>
+						<TextControl
+							label={sprintf(_x('%s per page', 'placeholder: Lessons', 'learndash'), ldlms_get_custom_label('lessons') ) }
+							help={sprintf(_x('Leave empty for default (%d) or 0 to show all items.', 'placeholder: default per page', 'learndash'), ldlms_get_per_page( 'per_page' ) ) }  
+							value={ per_page || '' }
+							type={ 'number' }
+							onChange={ per_page => setAttributes( { per_page } ) }
+						/>
+					</PanelBody>
+					<PanelBody
+						title={__('Preview', 'learndash')}
+						initialOpen={false}
+					>
+						<ToggleControl
+							label={__('Show Preview', 'learndash')}
+							checked={!!preview_show}
+							onChange={preview_show => setAttributes({ preview_show })}
+						/>
+					</PanelBody>
+				</InspectorControls>
+			);
+
+			function do_serverside_render( attributes ) {
+				if ( attributes.preview_show == true ) {
+					// We add the meta so the server knowns what is being edited.
+					attributes.meta = ldlms_get_post_edit_meta();
+					
+					return <ServerSideRender
+						block="learndash/ld-course-content"
+						attributes={attributes}
+					/>
+						
+				} else {
+					return __('[course_content] shortcode output shown here', 'learndash');
+				}
+			}
+
+			return [
+				inspectorControls,
+				do_serverside_render(props.attributes)
+			];
+		},
 		
         save: props => {
-			//const { attributes: { course_id },
-        	//	className, setAttributes } = props;
-			
-			//return (
-				//<div
-                //className={ className }
-				//>
-				//<InnerBlocks.Content />
-				//</div>
-			//);
-		}
+			// Delete meta from props to prevent it being saved.
+			delete (props.attributes.meta);
+		},
 	},
 );

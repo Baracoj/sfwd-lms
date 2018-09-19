@@ -233,8 +233,9 @@ if (!class_exists('Learndash_Admin_Metabox_Course_Builder' ) ) {
 
 		function build_selector_query( $args = array() ) {
 			$per_page = LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'per_page' );
-			if ( empty( $per_page ) ) 
+			if ( empty( $per_page ) ) {
 				$per_page = 10;
+			}
 			
 			$defaults = array(
 				'post_status'		=>	array( 'publish' ),
@@ -246,30 +247,82 @@ if (!class_exists('Learndash_Admin_Metabox_Course_Builder' ) ) {
 
 			$args = wp_parse_args( $args, $defaults );
 			
-			// If we are not sharing steps then we limit the query results to only show items associated with the course or items
-			// not associated with any course. 
-			if ( LearnDash_Settings_Section::get_section_setting('LearnDash_Settings_Courses_Builder', 'shared_steps' ) !== 'yes' ) {
-				if ( !isset( $args['meta_query'] ) ) $args['meta_query'] = array();
-				
-				$args['meta_query'][] = array(
+			/**
+			 * If we are not sharing steps then we limit the query results to only show items associated with the course or items
+			 * not associated with any course.
+			 */
+			if ( LearnDash_Settings_Section::get_section_setting( 'LearnDash_Settings_Courses_Builder', 'shared_steps' ) !== 'yes' ) {
+				$m_include_ids = array();
+				$m_args = array();
+
+				if ( isset( $args['post_type'] ) ) {
+					$m_args['post_type'] = $args['post_type'];
+				}
+				if ( isset( $args['post_status'] ) ) {
+					$m_args['post_status'] = $args['post_status'];
+				} else {
+					$m_args['post_status'] = array( 'publis' );
+				}
+				$m_args['fields'] = 'ids';
+
+				$m_args['meta_query'] = array();
+
+				/**
+				 * Allow externals to control inclusion of orphaned steps.
+				 * Orphaned steps are those not attached to a course.
+				 *
+				 * @since 2.5.9
+				 *
+				 * @param boolean true The default value is true to include orphaned steps.
+				 * @param array $args The current query args array.
+				 *
+				 * @return the external filters should return:
+				 *  true  - Yes include orphaned steps.
+				 *  false - No do not inclide orphaned steps.
+				 */
+				$include_orphaned_steps = apply_filters( 'learndash_course_builder_include_orphaned_steps', true, $args );
+
+				// First get all the items related to the course ID or if course_id is present but zero.
+				$m_args['meta_query'] = array(
 					'relation' => 'OR',
 					array(
 						'key'     => 'course_id',
 						'value'   => $this->course_id,
 						'compare' => '=',
-						'type'	  => 'NUMERIC'
 					),
-					array(
+				);
+
+				if ( true === $include_orphaned_steps ) {
+					$m_args['meta_query'][] = array(
 						'key'     => 'course_id',
 						'value'   => 0,
 						'compare' => '=',
-						'type'	  => 'NUMERIC'
-					),
-					array(
-						'key'     => 'course_id',
-						'compare' => 'NOT EXISTS',
-					)
-				);
+					);
+				}
+
+				$m_post_type_query = new WP_Query( $m_args );
+				if ( ( property_exists( $m_post_type_query, 'posts' ) ) && ( ! empty( $m_post_type_query->posts ) ) ) {
+					$m_include_ids = array_merge( $m_include_ids, $m_post_type_query->posts );
+				}
+
+				if ( true === $include_orphaned_steps ) {
+					$m_args['meta_query'] = array(
+						array(
+							'key'     => 'course_id',
+							'compare' => 'NOT EXISTS',
+						),
+					);
+					$m_post_type_query = new WP_Query( $m_args );
+					if ( ( property_exists( $m_post_type_query, 'posts' ) ) && ( ! empty( $m_post_type_query->posts ) ) ) {
+						$m_include_ids = array_merge( $m_include_ids, $m_post_type_query->posts );
+					}
+				}
+
+				if ( !empty( $m_include_ids ) ) {
+					$args['post__in'] = $m_include_ids;
+				} else {
+					$args['post__in'] = array( 0 );
+				}
 			}
 			return apply_filters('learndash_course_builder_selector_args', $args );
 		}
@@ -692,6 +745,13 @@ if (!class_exists('Learndash_Admin_Metabox_Course_Builder' ) ) {
 									}
 									update_post_meta( $new_step_id, '_sfwd-quiz', $quiz_meta_values );
 								}
+							}
+
+							learndash_update_setting( $new_step_id, 'course', '0' );
+							update_post_meta( $new_step_id, 'course_id', '0' );
+							if ( in_array( $step_set['post_type'], array( 'sfwd-topic', 'sfwd-quiz' ) ) ) {
+								learndash_update_setting( $new_step_id, 'lesson', '0' );
+								update_post_meta( $new_step_id, 'lesson_id', '0' );
 							}
 						}	
 					}

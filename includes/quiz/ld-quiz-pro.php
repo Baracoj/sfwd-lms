@@ -693,24 +693,6 @@ class LD_QuizPro {
 	 * @param  string $msg Debugging message
 	 */
 	function debug( $msg ) {
-		$original_log_errors = ini_get( 'log_errors' );
-		$original_error_log  = ini_get( 'error_log' );
-		ini_set( 'log_errors', true );
-		ini_set( 'error_log', dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'debug.log' );
-
-		global $processing_id;
-
-		if ( empty( $processing_id ) ) {
-			$processing_id = time();
-		}
-
-		if ( isset( $_GET['debug'] ) || ! empty( $this->debug ) ) {
-			error_log( "[$processing_id] " . print_r( $msg, true ) );
-		}
-		//Comment This line to stop logging debug messages.
-
-		ini_set( 'log_errors', $original_log_errors );
-		ini_set( 'error_log', $original_error_log );
 	}
 
 
@@ -781,12 +763,29 @@ class LD_QuizPro {
 		}		
 
 		$course_id = 0;
+		$lesson_id = 0;
+		$topic_id = 0;
 		
 		if ( ( isset( $quizdata['course'] ) ) && ( $quizdata['course'] instanceof WP_Post ) ) {
 			$course_post = $quizdata['course'];
 			unset( $quizdata['course'] );
 			$quizdata['course'] = intval($course_post->ID);
 			$course_id = $quizdata['course'];
+		}
+		if ( ( isset( $quizdata['lesson'] ) ) && ( $quizdata['lesson'] instanceof WP_Post ) ) {
+			$lesson_post = $quizdata['lesson'];
+			unset( $quizdata['lesson'] );
+			$quizdata['lesson'] = intval($lesson_post->ID);
+			$lesson_id = $quizdata['lesson'];
+		}
+		if ( ( isset( $quizdata['topic'] ) ) && ( $quizdata['topic'] instanceof WP_Post ) ) {
+			$topic_post = $quizdata['topic'];
+			unset( $quizdata['topic'] );
+			$quizdata['topic'] = intval($topic_post->ID);
+			$topic_id = $quizdata['topic'];
+		}
+
+		if ( ( isset( $quizdata['course'] ) ) && ( ! empty( $quizdata['course'] ) ) ) {
 			$quizdata['steps_completed'] = learndash_course_get_completed_steps($user->ID, $quizdata['course']);
 
 			// Update the Course if this quiz has.
@@ -837,9 +836,6 @@ class LD_QuizPro {
 	 */
 	function wp_pro_quiz_completed( $statistic_ref_id = 0) {
 		
-		$this->debug( $_POST );
-		$this->debug( $_SERVER );
-
 		$quiz_id   = isset( $_POST['quizId'] ) ? intval( $_POST['quizId'] ) : null;
 		$score     = isset( $_POST['results']['comp']['correctQuestions'] ) ? $_POST['results']['comp']['correctQuestions'] : null;
 		$points    = isset( $_POST['results']['comp']['points'] ) ? $_POST['results']['comp']['points'] : null;
@@ -872,8 +868,6 @@ class LD_QuizPro {
 				);
 			}
 		}
-
-		$this->debug( $questions );
 
 		if ( empty( $result) ) {
 			$total_points = 0;
@@ -937,22 +931,6 @@ class LD_QuizPro {
 		$pass = ( $result >= $passingpercentage) ? 1 : 0;
 		$quiz = get_post( $ld_quiz_id );
 
-		$this->debug(
-			array(
-				'quiz' 				=> 	$ld_quiz_id,
-				'quiz_title' 		=> 	$quiz->post_title,
-				'score' 			=> 	$score,
-				'count' 			=> 	$questions_count,
-				'pass' 				=> 	$pass,
-				'rank' 				=> 	'-',
-				'time' 				=> 	time(),
-				'pro_quizid' 		=> 	$quiz_id,
-				'course'			=>	$courseid,
-				'lesson'			=>	$lessonid,
-				'topic'				=>	$topicid,
-			)
-		);
-
 		$quizdata = array(
 			'quiz' 					=> 	$ld_quiz_id,
 			'score' 				=> 	$score,
@@ -984,8 +962,6 @@ class LD_QuizPro {
 		if ( $graded ) {
 			$quizdata['graded'] = $graded;
 		}
-
-		$this->debug( $quizdata );
 
 		$usermeta[] = $quizdata;
 
@@ -1045,7 +1021,6 @@ class LD_QuizPro {
 	 */
 	function get_ld_quiz_id( $pro_quizid ) {
 		$quizzes = SFWD_SlickQuiz::get_all_quizzes();
-		//$this->debug( $quizzes);
 
 		foreach ( $quizzes as $quiz ) {
 			$quizmeta = get_post_meta( $quiz->ID, '_sfwd-quiz', true );
@@ -1236,17 +1211,24 @@ class LD_QuizPro {
 			//To fix issues with plugins using get_current_screen
 
 			$quizId = 0;
-
+			$post_id = 0;
 			if ( ! empty( $_GET['post'] ) ) {
-				$quizId = intval( learndash_get_setting( $_GET['post'], 'quiz_pro', true ) );
+				$post_id = intval( $_GET['post'] );
+				$quizId = intval( learndash_get_setting( $post_id, 'quiz_pro', true ) );
 
 				/**
 				 * Filter whether advance quiz is disabled or not
 				 *
 				 * @param  bool
 				 */
-				if ( apply_filters( 'learndash_disable_advance_quiz', false, get_post( $_GET['post'] ) ) ) {
+				if ( apply_filters( 'learndash_disable_advance_quiz', false, $post_id ) ) {
 					return '';
+				}
+			} else {
+				global $post;
+				if ( ( is_a( $post, 'WP_Post' ) ) && ( $post->post_type == 'sfwd-quiz' ) ) {
+					//error_log('post<pre>'. print_r($post, true) .'</pre>');
+					$post_id = $post->ID;
 				}
 			}
 
@@ -1256,7 +1238,8 @@ class LD_QuizPro {
 			$pro_quiz->route( array(
 				'action' => 'addEdit',
 				'quizId' => $quizId,
-				'post_id' => @$_GET['post'] ),
+				'post_id' => $post_id,
+			),
 				$_post
 			);
 			$return = ob_get_clean();
@@ -1470,3 +1453,90 @@ class LD_QuizPro {
 }
 
 new LD_QuizPro();
+
+/**
+ * LearnDash return all global Quizzes.
+ *
+ * This function will query and return all global.
+ * A GLOBAL Quizzes is:
+ * 1. Quizzes not associated with a Course.
+ *
+ * @since 2.6
+ *
+ * @param boolean $bypass_transient Force By Pass of transient caching.
+ * @return array Quiz ids.
+ */
+function learndash_get_non_course_qizzes( $bypass_transient = false ) {
+	global $wpdb;
+
+	$global_quiz_ids = array();
+
+	$transient_key = 'learndash_global_quiz_ids';
+	if ( ! $bypass_transient ) {
+		$global_quiz_ids_transient = learndash_get_valid_transient( $transient_key );
+	} else {
+		$global_quiz_ids_transient = false;
+	}
+
+	if ( false === $global_quiz_ids_transient ) {
+
+		$global_quiz_ids_query_str = "SELECT posts.ID FROM {$wpdb->posts} as posts 
+			LEFT JOIN {$wpdb->postmeta} as postmeta1 ON posts.ID = postmeta1.post_id AND postmeta1.meta_key LIKE 'ld_course%'
+			LEFT JOIN {$wpdb->postmeta} as postmeta2 ON posts.ID = postmeta2.post_id AND postmeta2.meta_key = 'course_id'
+			WHERE posts.post_type = 'sfwd-quiz' 
+				AND ( postmeta1.post_id IS NULL AND postmeta2.post_id IS NULL )";
+
+		$global_quiz_ids = $wpdb->get_col( $global_quiz_ids_query_str );
+		set_transient( $transient_key, $global_quiz_ids, MINUTE_IN_SECONDS );
+	} else {
+		$global_quiz_ids = $global_quiz_ids_transient;
+	}
+
+	return $global_quiz_ids;
+}
+
+/**
+ * LearnDash return all open Quizzes.
+ *
+ * This function will query and return all open Quizzes.
+ * An OPEN Quiz is:
+ * 1. Not associated with a Course.
+ * 2. The Quiz settiing "Only registered users are allowed to start the quiz" is NOT set.
+ *
+ * @since 2.6
+ *
+ * @param boolean $bypass_transient Force By Pass of transient caching.
+ * @return array Quiz ids.
+ */
+function learndash_get_open_quizzes( $bypass_transient = false ) {
+	global $wpdb;
+
+	$open_quiz_ids = array();
+
+	$transient_key = 'learndash_global_quiz_ids';
+	if ( ! $bypass_transient ) {
+		$open_quiz_ids_transient = learndash_get_valid_transient( $transient_key );
+	} else {
+		$open_quiz_ids_transient = false;
+	}
+
+	if ( false === $open_quiz_ids_transient ) {
+
+		$global_quiz_ids = learndash_get_non_course_qizzes();
+		if ( ! empty( $global_quiz_ids ) ) {
+			$open_quiz_ids_query_str = "SELECT posts.ID FROM {$wpdb->posts} as posts 
+				LEFT JOIN {$wpdb->postmeta} as postmeta1 ON posts.ID = postmeta1.post_id AND postmeta1.meta_key = 'quiz_pro_id'
+				LEFT JOIN {$wpdb->prefix}wp_pro_quiz_master as quiz_master ON postmeta1.meta_value = quiz_master.id 
+				WHERE posts.post_type = 'sfwd-quiz' 
+					AND posts.ID IN (" . implode( ',', $global_quiz_ids) . ")
+					AND quiz_master.start_only_registered_user = 0";
+
+			$open_quiz_ids = $wpdb->get_col( $open_quiz_ids_query_str );
+			set_transient( $transient_key, $open_quiz_ids, MINUTE_IN_SECONDS );
+		}
+	} else {
+		$open_quiz_ids = $open_quiz_ids_transient;
+	}
+
+	return $open_quiz_ids;
+}

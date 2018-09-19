@@ -896,25 +896,35 @@ jQuery(document).ready(function($) {
 			jQuery( '.ld-course-builder-edit-title-cancel', title_el ).show();
 
 			jQuery( title_el ).on( 'click', '.ld-course-builder-edit-title-ok', function( event_confirm ) {
+				handle_title_save(event_confirm);
+			});
+
+			jQuery( title_el ).on('keypress', ':focus', function (event_confirm) {
+				if (event_confirm.keyCode == 13) {
+					handle_title_save(event_confirm);
+				}
+			});
+
+			function handle_title_save(event_confirm) {
 				event_confirm.stopImmediatePropagation();
 
-				var parent_el = jQuery( event_confirm.currentTarget ).parents('.ld-course-builder-item');
-			
-				jQuery( parent_el ).removeClass( 'ld-course-builder-title-edit' );
-				var title_new = jQuery( '.ld-course-builder-title-text input', title_el ).val();
+				var parent_el = jQuery(event_confirm.currentTarget).parents('.ld-course-builder-item');
 
-				jQuery( '.ld-course-builder-title-text input', title_el ).remove();
-				jQuery( '.ld-course-builder-edit-title-ok', title_el ).hide();
-				jQuery( '.ld-course-builder-edit-title-cancel', title_el ).hide();
+				jQuery(parent_el).removeClass('ld-course-builder-title-edit');
+				var title_new = jQuery('.ld-course-builder-title-text input', title_el).val();
+
+				jQuery('.ld-course-builder-title-text input', title_el).remove();
+				jQuery('.ld-course-builder-edit-title-ok', title_el).hide();
+				jQuery('.ld-course-builder-edit-title-cancel', title_el).hide();
 
 				// Re-show the actions menu
-				jQuery( '.ld-course-builder-actions', parent_el ).show();
+				jQuery('.ld-course-builder-actions', parent_el).show();
 
-				if ( ( title_new != '' ) && ( title_new != title_org ) ) {
-					jQuery( '.ld-course-builder-title-text', title_el ).html(title_new);
-				
-					var parent_el = jQuery( title_el ).parents('.ld-course-builder-item');
-					if ( typeof parent_el !== 'undefined') {
+				if ((title_new != '') && (title_new != title_org)) {
+					jQuery('.ld-course-builder-title-text', title_el).html(title_new);
+
+					var parent_el = jQuery(title_el).parents('.ld-course-builder-item');
+					if (typeof parent_el !== 'undefined') {
 						var step_id = jQuery(parent_el).data('ld-id');
 						var step_type = jQuery(parent_el).data('ld-type');
 
@@ -933,25 +943,25 @@ jQuery(document).ready(function($) {
 							dataType: "json",
 							cache: false,
 							data: post_data,
-							error: function(jqXHR, textStatus, errorThrown ) {
+							error: function (jqXHR, textStatus, errorThrown) {
 								//console.log('init: error HTTP Status['+jqXHR.status+'] '+errorThrown);
 							},
-							success: function(reply_data) {
-								if ( ( typeof reply_data['status'] !== 'undefined' ) && ( reply_data['status'] === true ) ) {
-									var selector_item = jQuery( '#learndash_course_builder_box_wrap .learndash_selectors li#ld-post-'+step_id );
-									jQuery( '.ld-course-builder-title-text', selector_item ).html( title_new );
-								
+							success: function (reply_data) {
+								if ((typeof reply_data['status'] !== 'undefined') && (reply_data['status'] === true)) {
+									var selector_item = jQuery('#learndash_course_builder_box_wrap .learndash_selectors li#ld-post-' + step_id);
+									jQuery('.ld-course-builder-title-text', selector_item).html(title_new);
+
 									//var builder_item = jQuery( '#learndash_course_builder_box_wrap .learndash_builder_items div#ld-course-builder-lesson-item-'+step_id );
-									var builder_item = jQuery( '#learndash_course_builder_box_wrap .learndash_builder_items #ld-post-'+step_id );
-									jQuery( '.ld-course-builder-title-text', builder_item ).first().html( title_new );
+									var builder_item = jQuery('#learndash_course_builder_box_wrap .learndash_builder_items #ld-post-' + step_id);
+									jQuery('.ld-course-builder-title-text', builder_item).first().html(title_new);
 								}
 							}
 						});
 					}
 				} else {
-					jQuery( '.ld-course-builder-title-text', title_el ).html( title_org );
+					jQuery('.ld-course-builder-title-text', title_el).html(title_org);
 				}
-			});
+			}
 
 			jQuery( title_el ).on( 'click', '.ld-course-builder-edit-title-cancel', function( event_cancel ) {
 				event_cancel.stopImmediatePropagation();

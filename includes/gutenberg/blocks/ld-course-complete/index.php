@@ -1,14 +1,37 @@
 <?php
+/**
+ * Handles all server side logic for the ld-course-complete Gutenberg Block. This block is functionally the same
+ * as the ld_course_complete shortcode used within LearnDash.
+ *
+ * @package LearnDash
+ * @since 2.5.9
+ */
 
-add_filter( 'the_content', function( $content = '' ) {
-	if ( ( is_admin() ) && ( isset( $_REQUEST['post'] ) ) && ( !empty( $_REQUEST['post'] ) ) && ( isset( $_REQUEST['action'] ) ) && ( $_REQUEST['action'] == 'edit' ) ) {
-		return $content;
+if ( ( class_exists( 'LearnDash_Gutenberg_Block' ) ) && ( ! class_exists( 'LearnDash_Gutenberg_Block_Course_Complete' ) ) ) {
+	/**
+	 * Class for handling LearnDash Course Complete Block
+	 */
+	class LearnDash_Gutenberg_Block_Course_Complete extends LearnDash_Gutenberg_Block {
+
+		/**
+		 * Object constructor
+		 */
+		public function __construct() {
+			$this->shortcode_slug = 'course_complete';
+			$this->block_slug = 'ld-course-complete';
+			$this->block_attributes = array(
+				'course_id' => array(
+					'type' => 'string',
+				),
+				'user_id' => array(
+					'type' => 'string',
+				),
+			);
+
+			$this->self_closing = false;
+
+			$this->init();
+		}
 	}
-	
-	if ( !empty( $content ) ) {
-		$content = learndash_convert_block_markers_shortcode( $content, 'learndash/ld-course-complete', 'course_complete', false );
-	}
-	
-	return $content;
-	
-}, 5 ); // BEFORE do_shortcode() and do_blocks().
+}
+new LearnDash_Gutenberg_Block_Course_Complete();

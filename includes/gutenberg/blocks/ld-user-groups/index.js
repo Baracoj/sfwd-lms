@@ -1,9 +1,9 @@
 /**
- * Block dependencies
+ * LearnDash Block ld-user-groups
+ * 
+ * @since 2.5.9
+ * @package LearnDash
  */
-import classnames from 'classnames';
-//import icon from './icon';
-import './style.scss';
 
 /**
  * Internal block libraries
@@ -11,70 +11,104 @@ import './style.scss';
 const { __, _x, sprintf } = wp.i18n;
 const { 
 	registerBlockType, 
-	//InnerBlocks,
+} = wp.blocks;
+ 
+const {
     InspectorControls,
- } = wp.blocks;
+} = wp.editor;
+ 
  const {
-//     Toolbar,
-//     Button,
-     Tooltip,
-     PanelBody,
-     PanelRow,
-     FormToggle,
-	 TextControl
+    ServerSideRender,
+    Tooltip,
+    PanelBody,
+    PanelRow,
+    RangeControl,
+    FormToggle,
+    SelectControl,
+    ToggleControl,
+    TextControl
  } = wp.components;
 
 registerBlockType(
     'learndash/ld-user-groups',
     {
         title: __( 'User Groups', 'learndash' ),
-        description: __( 'This shortcode displays the list of groups users are assigned to as users or leaders.', 'learndash' ),
-        //icon: icon,
+        description: __( 'This block displays the list of groups users are assigned to as users or leaders.', 'learndash' ),
+        icon: 'desktop',
         category: 'widgets',
         attributes: {
-            userID: {
+            user_id: {
                 type: 'string',
+                default: ''
             },
+            preview_show: {
+                type: 'boolean',
+                default: 1
+            },
+            preview_user_id: {
+                type: 'string',
+
+            }
         },
-        edit: props => {
-			const { attributes: { user_id },
-            	isSelected, className, setAttributes } = props;
+        edit: function (props) {
+            const { attributes: { user_id, preview_user_id, preview_show },
+                setAttributes } = props;
 			
+            const inspectorControls = (
+                <InspectorControls>
+                    <PanelBody
+                        title={ __( 'Settings', 'learndash' ) }
+                    >
+                        <TextControl
+                            label={ __( 'User ID', 'learndash' ) }
+                            help={__('Enter specific User ID. Leave blank for current User.', 'learndash')}
+                            value={ user_id || '' }
+                            onChange={ user_id => setAttributes( { user_id } ) }
+                        />
+                    </PanelBody>
+                    <PanelBody
+                        title={__('Preview', 'learndash')}
+                        initialOpen={false}
+                    >
+                        <ToggleControl
+                            label={__('Show Preview', 'learndash')}
+                            checked={!!preview_show}
+                            onChange={preview_show => setAttributes({ preview_show })}
+                        />
+                        <TextControl
+                            label={__('User ID', 'learndash')}
+                            help={__('Enter a User ID to test preview', 'learndash')}
+                            value={preview_user_id || ''}
+                            type={'number'}
+                            onChange={preview_user_id => setAttributes({ preview_user_id })}
+                        />
+                    </PanelBody>
+                </InspectorControls>
+            );
+
+            function do_serverside_render(attributes) {
+                if (attributes.preview_show == true) {
+                    return <ServerSideRender
+                        block="learndash/ld-user-groups"
+                        attributes={attributes}
+                    />
+                } else {
+                    return __('[user_groups] output shown here', 'learndash');
+                }
+            }
+
             return [
-				
-                isSelected && (
-                    <InspectorControls>
-                        <PanelBody
-                          title={ __( 'Settings', 'learndash' ) }
-                        >
-							<PanelRow>
-								<TextControl
-									label={ __( 'User ID', 'learndash' ) }
-									help={ __( 'User ID help text', 'learndash' ) }
-									value={ user_id || '' }
-									onChange={ user_id => setAttributes( { user_id } ) }
-								/>
-	                          </PanelRow>
-                        </PanelBody>
-                    </InspectorControls>
-                ),
-				<div className={ className }>
-				{ __( '[user_groups] output shown here', 'learndash' ) }
-				</div>
+                inspectorControls,
+                do_serverside_render(props.attributes)
             ];
         },
 		
         save: props => {
-			//const { attributes: { courseID },
-        	//	className, setAttributes } = props;
-			
-			//return (
-				//<div
-                //className={ className }
-				//>
-			//	<InnerBlocks.Content />
-				//</div>
-			//);
+            // Delete preview_user_id from props to prevent it being saved.
+            delete (props.attributes.preview_user_id);
+
+            // Delete preview_user_id from props to prevent it being saved.
+            delete (props.attributes.preview_user_id);
 		}
 	},
 );

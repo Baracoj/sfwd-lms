@@ -175,20 +175,18 @@ function learndash_user_get_enrolled_courses( $user_id = 0, $course_query_args =
 			if ( ! empty( $course_ids ) ) {
 				$course_ids = array_unique( $course_ids );
 
-				if ( ! empty( $course_query_args ) ) {
-					$defaults = array(
-						'post_type' => 'sfwd-courses',
-						'fields'    => 'ids',
-						'nopaging'  => true,
-					);
+				$defaults = array(
+					'post_type' => 'sfwd-courses',
+					'fields'    => 'ids',
+					'nopaging'  => true,
+				);
 
-					$course_query_args             = wp_parse_args( $course_query_args, $defaults );
-					$course_query_args['post__in'] = $course_ids;
+				$course_query_args = wp_parse_args( $course_query_args, $defaults );
+				$course_query_args['post__in'] = $course_ids;
 
-					$course_query = new WP_Query( $course_query_args );
-					if ( property_exists( $course_query, 'posts' ) ) {
-						$course_ids = $course_query->posts;
-					}
+				$course_query = new WP_Query( $course_query_args );
+				if ( property_exists( $course_query, 'posts' ) ) {
+					$course_ids = $course_query->posts;
 				}
 			}
 		}
@@ -703,47 +701,58 @@ function learndash_course_item_to_activity_sync( $user_id = 0, $course_id = 0, $
  */
 function learndash_get_user_course_access_list( $user_id = 0 ) {
 	global $wpdb;
+	$user_course_ids = array();
 
 	$user_id = intval( $user_id );
 	if ( ! empty( $user_id ) ) {
-		// OR the access list is not empty.
-		$not_like = " postmeta.meta_value NOT REGEXP '\"sfwd-courses_course_access_list\";s:0:\"\";' ";
+		$element = Learndash_Admin_Settings_Data_Upgrades::get_instance();
+		$data_settings_courses = $element->get_data_settings( 'course-access-lists' );
+		if ( version_compare( $data_settings_courses['version'], LEARNDASH_SETTINGS_TRIGGER_UPGRADE_VERSION, '>=') ) {
 
-		// OR the user ID is found in the access list. Note this pattern is four options
-		// 1. The user ID is the only entry.
-		// 1a. The single entry could be an int
-		// 1b. Ot the single entry could be an string
-		// 2. The user ID is at the front of the list as in "sfwd-courses_course_access_list";*:"X,*";
-		// 3. The user ID is in middle "sfwd-courses_course_access_list";*:"*,X,*";
-		// 4. The user ID is at the end "sfwd-courses_course_access_list";*:"*,X";.
-		$is_like = " 
-			postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";i:" . $user_id . ";s:34:\"sfwd-courses_course_lesson_orderby\"' 
-			OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";i:" . $user_id . ";s:40:\"sfwd-courses_course_prerequisite_compare\"' 
-			OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";i:" . $user_id . ";s:35:\"sfwd-courses_course_lesson_per_page\"' 
-		
-			OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"" . $user_id . "\";s:34:\"sfwd-courses_course_lesson_orderby\"' 
-			OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"" . $user_id . "\";s:40:\"sfwd-courses_course_prerequisite_compare\"' 
-			OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"" . $user_id . "\";s:35:\"sfwd-courses_course_lesson_per_page\"' 
+			$is_like = " postmeta.meta_value = '". $user_id ."'
+				OR postmeta.meta_value REGEXP '^". $user_id .",' 
+				OR postmeta.meta_value REGEXP ',". $user_id .",' 
+				OR postmeta.meta_value REGEXP  ',". $user_id ."$'";
 
-			OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"" . $user_id . ",(.*)\";s:34:\"sfwd-courses_course_lesson_orderby\"' 
-			OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"" . $user_id . ",(.*)\";s:40:\"sfwd-courses_course_prerequisite_compare\"' 
-			OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"" . $user_id . ",(.*)\";s:35:\"sfwd-courses_course_lesson_per_page\"' 
+			$sql_str = "SELECT post_id FROM ". $wpdb->prefix ."postmeta as postmeta INNER JOIN ". $wpdb->prefix ."posts as posts ON posts.ID = postmeta.post_id WHERE posts.post_status='publish' AND posts.post_type='sfwd-courses' AND postmeta.meta_key='course_access_list' AND (". $is_like .")";
+		} else {
+			// OR the access list is not empty.
+			$not_like = " postmeta.meta_value NOT REGEXP '\"sfwd-courses_course_access_list\";s:0:\"\";' ";
 
-			OR postmeta.meta_value REGEXP  's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*)," . $user_id . ",(.*)\";s:34:\"sfwd-courses_course_lesson_orderby\"' 
-			OR postmeta.meta_value REGEXP  's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*)," . $user_id . ",(.*)\";s:40:\"sfwd-courses_course_prerequisite_compare\"' 
-			OR postmeta.meta_value REGEXP  's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*)," . $user_id . ",(.*)\";s:35:\"sfwd-courses_course_lesson_per_page\"' 
+			// OR the user ID is found in the access list. Note this pattern is four options
+			// 1. The user ID is the only entry.
+			// 1a. The single entry could be an int
+			// 1b. Ot the single entry could be an string
+			// 2. The user ID is at the front of the list as in "sfwd-courses_course_access_list";*:"X,*";
+			// 3. The user ID is in middle "sfwd-courses_course_access_list";*:"*,X,*";
+			// 4. The user ID is at the end "sfwd-courses_course_access_list";*:"*,X";.
+			$is_like = " 
+				postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";i:" . $user_id . ";s:34:\"sfwd-courses_course_lesson_orderby\"' 
+				OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";i:" . $user_id . ";s:40:\"sfwd-courses_course_prerequisite_compare\"' 
+				OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";i:" . $user_id . ";s:35:\"sfwd-courses_course_lesson_per_page\"' 
+			
+				OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"" . $user_id . "\";s:34:\"sfwd-courses_course_lesson_orderby\"' 
+				OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"" . $user_id . "\";s:40:\"sfwd-courses_course_prerequisite_compare\"' 
+				OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"" . $user_id . "\";s:35:\"sfwd-courses_course_lesson_per_page\"' 
 
-			OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*)," . $user_id . "\";s:34:\"sfwd-courses_course_lesson_orderby\"'
-			OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*)," . $user_id . "\";s:40:\"sfwd-courses_course_prerequisite_compare\"'
-			OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*)," . $user_id . "\";s:35:\"sfwd-courses_course_lesson_per_page\"'
-			";
+				OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"" . $user_id . ",(.*)\";s:34:\"sfwd-courses_course_lesson_orderby\"' 
+				OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"" . $user_id . ",(.*)\";s:40:\"sfwd-courses_course_prerequisite_compare\"' 
+				OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"" . $user_id . ",(.*)\";s:35:\"sfwd-courses_course_lesson_per_page\"' 
 
-		$sql_str = 'SELECT post_id FROM ' . $wpdb->postmeta . ' as postmeta INNER JOIN ' . $wpdb->posts . " as posts ON posts.ID = postmeta.post_id WHERE posts.post_status='publish' AND posts.post_type='sfwd-courses' AND postmeta.meta_key='_sfwd-courses' AND ( " . $not_like . ' AND (' . $is_like . '))';
+				OR postmeta.meta_value REGEXP  's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*)," . $user_id . ",(.*)\";s:34:\"sfwd-courses_course_lesson_orderby\"' 
+				OR postmeta.meta_value REGEXP  's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*)," . $user_id . ",(.*)\";s:40:\"sfwd-courses_course_prerequisite_compare\"' 
+				OR postmeta.meta_value REGEXP  's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*)," . $user_id . ",(.*)\";s:35:\"sfwd-courses_course_lesson_per_page\"' 
+
+				OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*)," . $user_id . "\";s:34:\"sfwd-courses_course_lesson_orderby\"'
+				OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*)," . $user_id . "\";s:40:\"sfwd-courses_course_prerequisite_compare\"'
+				OR postmeta.meta_value REGEXP 's:31:\"sfwd-courses_course_access_list\";s:(.*):\"(.*)," . $user_id . "\";s:35:\"sfwd-courses_course_lesson_per_page\"'
+				";
+
+			$sql_str = 'SELECT post_id FROM ' . $wpdb->postmeta . ' as postmeta INNER JOIN ' . $wpdb->posts . " as posts ON posts.ID = postmeta.post_id WHERE posts.post_status='publish' AND posts.post_type='sfwd-courses' AND postmeta.meta_key='_sfwd-courses' AND ( " . $not_like . ' AND (' . $is_like . '))';	
+		}
 		$user_course_ids = $wpdb->get_col( $sql_str );
-		return $user_course_ids;
-	}
-
-	return array();
+	}	
+	return $user_course_ids;
 }
 
 /**

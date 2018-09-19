@@ -991,10 +991,14 @@ function learndash_process_mark_complete( $user_id = null, $postid = null, $only
 function learndash_update_completion( $user_id = null, $postid = null ) {
 	if ( empty( $postid ) ) {
 		global $post;
-		$postid = $post->ID;
+		if ( ( $post ) && ( is_a( $post, 'WP_Post' ) ) ) {
+			$postid = $post->ID;
+		}
 	}
 
-	learndash_process_mark_complete( $user_id, $postid, true );
+	if ( ! empty( $postid ) ) {
+		learndash_process_mark_complete( $user_id, $postid, true );
+	}
 }
 
 
@@ -1887,12 +1891,22 @@ function learndash_course_progress_widget( $atts ) {
  *
  * @since 2.1.0
  *
+ * @since 2.5.9
+ * @param integer $course_id Course ID to check.
+ *
  * @return bool
  */
-function learndash_lesson_progression_enabled() {
-	$id   = learndash_get_course_id();
-	$meta = get_post_meta( $id, '_sfwd-courses' );
-	return empty( $meta[0]['sfwd-courses_course_disable_lesson_progression'] );
+function learndash_lesson_progression_enabled( $course_id = 0 ) {
+	$course_id = intval( $course_id );
+
+	if ( empty( $course_id ) ) {
+		$course_id = learndash_get_course_id();
+	}
+
+	if ( ! empty( $course_id ) ) {
+		$setting = learndash_get_setting( $course_id, 'course_disable_lesson_progression' );
+		return empty( $setting );
+	}
 }
 
 

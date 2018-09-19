@@ -19,6 +19,8 @@ if ( ! class_exists( 'SFWD_CPT_Instance' ) ) {
 
 		public static $instances = array();
 
+		public $filter_content = true;
+
 		/**
 		 * Sets up properties for CPT to be used in plugins
 		 *
@@ -43,6 +45,11 @@ if ( ! class_exists( 'SFWD_CPT_Instance' ) ) {
 
 			if ( empty( $post_type ) ) {
 				$post_type = sanitize_file_name( strtolower( strtr( $slug_name, ' ', '_' ) ) );
+			}
+
+			$this->template_redirect = true;
+			if ( isset( $args['template_redirect'] ) ) {
+				$this->template_redirect = $args['template_redirect'];
 			}
 
 			SFWD_CPT_Instance::$instances[ $post_type ] =& $this;
@@ -156,8 +163,7 @@ if ( ! class_exists( 'SFWD_CPT_Instance' ) ) {
 
 			if ( ! is_admin() ) {
 				add_action( 'pre_get_posts', array( $this, 'pre_posts' ) );
-
-				if ( isset( $template_redirect ) && ( true === $template_redirect ) ) {
+				if ( isset( $this->template_redirect ) && ( true === $this->template_redirect ) ) {
 					add_action( 'template_redirect', array( $this, 'template_redirect_access' ) );
 					add_filter( 'the_content', array( $this, 'template_content' ), 1000 );
 				}
@@ -165,7 +171,18 @@ if ( ! class_exists( 'SFWD_CPT_Instance' ) ) {
 
 		} // end __construct()
 
-
+		/**
+		 * Function to dynamically control the 'the_content' filtering for this post_type instance.
+		 * This is needed for example when using the 'the_content' filters manually and do not want the
+		 * normal filters recursively applied.
+		 *
+		 * @since 2.5.9
+		 *
+		 * @param boolean $filter_check True if the_content filter is to be enabled.
+		 */
+		public function content_filter_control( $filter_check = true ) {
+			$this->filter_content = $filter_check;
+		}
 
 		/**
 		 * Get Archive content
@@ -203,6 +220,11 @@ if ( ! class_exists( 'SFWD_CPT_Instance' ) ) {
 		 */
 		public function template_content( $content ) {
 			global $wp;
+
+			if ( true !== $this->filter_content ) {
+				return $content;
+			}
+
 			$post         = get_post( get_the_id() );
 			$current_user = wp_get_current_user();
 			$post_type    = '';
@@ -238,6 +260,9 @@ if ( ! class_exists( 'SFWD_CPT_Instance' ) ) {
 				$has_access                 = sfwd_lms_has_access( $course_id, $user_id );
 
 				$course_meta = get_post_meta( $course_id, '_sfwd-courses', true );
+				if ( ( ! $course_meta ) || ( ! is_array( $course_meta ) ) ) {
+					$course_meta = array();
+				}
 				if ( ! isset( $course_meta['sfwd-courses_course_disable_content_table'] ) ) {
 					$course_meta['sfwd-courses_course_disable_content_table'] = false;
 				}

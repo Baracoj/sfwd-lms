@@ -218,6 +218,8 @@ function learndash_update_setting( $post, $setting, $value ) {
 				update_post_meta( $post->ID, 'lesson_id', $value );
 			else
 				delete_post_meta( $post->ID, 'lesson_id' );
+		} else if ( $setting == 'course_access_list' ) {
+			update_post_meta( $post->ID, 'course_access_list', $value );
 		}
 
 		$return = update_post_meta( $post->ID, '_'.$post->post_type, $meta );
@@ -301,7 +303,7 @@ function learndash_payment_buttons( $course ) {
 
 	$user_id = get_current_user_id();
 
-	if ( $course->post_type != 'sfwd-courses' ) {
+	if ( ( ! $course ) || ( ! is_a( $course, 'WP_Post' ) ) || ( $course->post_type != 'sfwd-courses' ) ) {
 		return '';
 	}
 
@@ -491,14 +493,15 @@ function learndash_payment_buttons_shortcode( $attr ) {
 	$learndash_shortcode_used = true;
 
 	$shortcode_atts = shortcode_atts( array( 'course_id' => 0 ), $attr );
-
-	extract( $shortcode_atts );
-
-	if ( empty( $course_id ) ) {
-		return '';
-	} else {
-		return learndash_payment_buttons( $course_id );
+	if ( empty( $shortcode_atts['course_id'] ) ) {
+		$course_id = learndash_get_course_id();
+		if ( empty( $course_id ) ) {
+			return '';
+		}
+		$shortcode_atts['course_id'] = intval( $course_id );
 	}
+
+	return learndash_payment_buttons( $shortcode_atts['course_id'] );
 }
 
 add_shortcode( 'learndash_payment_buttons', 'learndash_payment_buttons_shortcode' );
@@ -623,28 +626,6 @@ function learndash_remove_comments( $comments, $array ) {
 	return array();
 }
 
-
-/**
- * Include auto updater file and instantiate nss_plugin_updater_sfwd_lms class
- *
- * @since 2.1.0
- */
-function nss_plugin_updater_activate_sfwd_lms() {
-	
-	//if(!class_exists('nss_plugin_updater'))
-	require_once ( dirname( __FILE__ ).'/ld-autoupdate.php' );
-
-	$nss_plugin_updater_plugin_remote_path = 'http://support.learndash.com/';
-	$nss_plugin_updater_plugin_slug = basename( dirname( dirname( __FILE__ ) ) ) . '/sfwd_lms.php';
-
-	new nss_plugin_updater_sfwd_lms( $nss_plugin_updater_plugin_remote_path, $nss_plugin_updater_plugin_slug );
-}
-
-// Load the auto-update class
-add_action( 'init', 'nss_plugin_updater_activate_sfwd_lms' );
-
-
-
 if ( ! function_exists( 'ld_debug' ) ) {
 
 	/**
@@ -653,25 +634,7 @@ if ( ! function_exists( 'ld_debug' ) ) {
 	 * @param  int|str|arr|obj|bool 	$msg 	data to log
 	 */
 	function ld_debug( $msg ) {
-		$original_log_errors = ini_get( 'log_errors' );
-		$original_error_log = ini_get( 'error_log' );
-		ini_set( 'log_errors', true );
-		ini_set( 'error_log', dirname( dirname( __FILE__ ) ).DIRECTORY_SEPARATOR.'debug.log' );
-
-		global $processing_id;
-
-		if ( empty( $processing_id ) ) {
-			$processing_id	= time();
-		}
-
-		if ( isset( $_GET['debug'] ) ) {
-			error_log( "[ $processing_id] ".print_r( $msg, true ) ); //Comment This line to stop logging debug messages.
-		}
-
-		ini_set( 'log_errors', $original_log_errors );
-		ini_set( 'error_log', $original_error_log );
 	}
-
 }
 
 
@@ -972,27 +935,34 @@ function learndash_check_convert_settings_to_single( $post_id = 0, $prefix = '' 
 }
 
 // Used when saving a single setting. This will then trigger an update to the array setting
-function learndash_setting_update_post_meta( $meta_id = 0, $object_id = '', $meta_key = '', $meta_value = '' ) {
-	global $learndash_post_types;
-	
-	if ( ( !empty( $meta_key ) ) && ( substr( $meta_key, 0, strlen( '_ld_setting_' ) ) == '_ld_setting_' ) ) {
-		$object_post_type = get_post_type( $object_id );
-		if ( ( !empty( $object_post_type ) ) && ( in_array( $object_post_type, $learndash_post_types ) ) ) {
-			$settings = get_post_meta( $object_id, '_'. $object_post_type, true );
-			$meta_key = substr_replace( $meta_key, $object_post_type.'_', 0, strlen('_ld_setting_') );
-			if ( ( isset( $settings[$meta_key] ) ) && ( $settings[$meta_key] != $meta_value ) ) {
-				$settings[$meta_key] = $meta_value;
-				
-				remove_action( 'update_post_meta', 'learndash_setting_update_post_meta', 20, 4 );
-				update_post_meta( $object_id, '_'. $object_post_type, $settings );
-				add_action( 'update_post_meta', 'learndash_setting_update_post_meta', 20, 4 );
+function learndash_update_post_meta( $meta_id = 0, $object_id = '', $meta_key = '', $meta_value = '' ) {
+	static $in_process = false;
+
+	if ( $in_process === true ) return;
+
+	$object_post_type = get_post_type( $object_id );	
+	if ( $object_post_type === 'sfwd-courses' ) {
+		if ( $meta_key === '_sfwd-courses' ) {
+			if ( isset( $meta_value['sfwd-courses_course_access_list'] ) ) {
+				//remove_action( 'update_post_meta', 'learndash_update_post_meta' );
+				$in_process = true;
+				update_post_meta( $object_id, 'course_access_list', $meta_value['sfwd-courses_course_access_list'] );
+				$in_process = false;
+				//add_action( 'update_post_meta', 'learndash_update_post_meta' );
 			}
+		} else if ( in_array( $meta_key, array( 'course_access_list' ) ) ) {
+			$settings = get_post_meta( $object_id, '_'. $object_post_type, true );
+			$settings['sfwd-courses_'. $meta_key] = $meta_value;
+			
+			//remove_action( 'update_post_meta', 'learndash_update_post_meta' );
+			$in_process = true;
+			update_post_meta( $object_id, '_'. $object_post_type, $settings );
+			$in_process = false;
+			//add_action( 'update_post_meta', 'learndash_update_post_meta' );
 		}
-	} else if ( in_array( substr( $meta_key, 1 ), $learndash_post_types ) )  {
-		learndash_convert_settings_to_single( $object_id, $meta_value, substr( $meta_key, 1 ) );
 	}
 }
-//add_action( 'update_post_meta', 'learndash_setting_update_post_meta', 20, 4 );
+add_action( 'update_post_meta', 'learndash_update_post_meta', 20, 4 );
 
 
 /**

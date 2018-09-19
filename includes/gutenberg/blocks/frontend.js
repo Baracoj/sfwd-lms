@@ -1,1 +1,1 @@
-console.log( 'Frontend Block JS' );
+// Nothing to see here for now. 

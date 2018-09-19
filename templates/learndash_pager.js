@@ -1,11 +1,10 @@
 // Course Registered
 jQuery(document).ready(function() {
-	if ( jQuery( '#ld_course_info_mycourses_list .ld-course-registered-pager-container a' ).length ) {
-		jQuery( '#ld_course_info_mycourses_list' ).on( 'click', '.ld-course-registered-pager-container a', ld_course_registered_pager_handler );
+	if (jQuery( '.ld_course_info .ld_course_info_mycourses_list .ld-course-registered-pager-container a' ).length ) {
+		jQuery( '.ld_course_info .ld_course_info_mycourses_list' ).on( 'click', '.ld-course-registered-pager-container a', ld_course_registered_pager_handler );
 		
 		function ld_course_registered_pager_handler( e ) {
 			e.preventDefault();
-			
 			var paged = jQuery( e.currentTarget ).data('paged');
 			
 			var parent_div = jQuery( e.currentTarget ).parents('.ld_course_info' );
@@ -34,11 +33,17 @@ jQuery(document).ready(function() {
 				success: function( reply_data ) {
 					if ( typeof reply_data !== 'undefined') {
 						if ( typeof reply_data['content'] !== 'undefined' ) {
-							jQuery( '#ld_course_info_mycourses_list .ld-courseregistered-content-container' ).html( reply_data['content'] );
+							jQuery('.ld_course_info_mycourses_list .ld-courseregistered-content-container', parent_div ).html( reply_data['content'] );
 						}
 						
 						if ( typeof reply_data['pager'] !== 'undefined' ) {
-							jQuery( '#ld_course_info_mycourses_list .ld-course-registered-pager-container' ).html( reply_data['pager'] );
+							jQuery('.ld_course_info_mycourses_list .ld-course-registered-pager-container', parent_div ).html( reply_data['pager'] );
+
+							/**
+							 * Send out a triggered event for externals to process.
+							 * @since 2.5.9
+							 */
+							jQuery(window).trigger('learndash_pager_content_changed', { parent_div: parent_div });
 						}
 					}
 				}
@@ -49,8 +54,8 @@ jQuery(document).ready(function() {
 
 // Course Progress
 jQuery(document).ready(function() {
-	if ( jQuery( '#course_progress_details .ld-course-progress-pager-container a' ).length ) {
-		jQuery( '#course_progress_details' ).on( 'click', '.ld-course-progress-pager-container a', ld_course_content_pager_handler );
+	if (jQuery( '.ld_course_info .course_progress_details .ld-course-progress-pager-container a' ).length ) {
+		jQuery( '.ld_course_info .course_progress_details' ).on( 'click', '.ld-course-progress-pager-container a', ld_course_content_pager_handler );
 		
 		function ld_course_content_pager_handler( e ) {
 			e.preventDefault();
@@ -83,11 +88,17 @@ jQuery(document).ready(function() {
 				success: function( reply_data ) {
 					if ( typeof reply_data !== 'undefined') {
 						if ( typeof reply_data['content'] !== 'undefined' ) {
-							jQuery('#course_progress_details .ld-course-progress-content-container').html( reply_data['content'] );
+							jQuery('.course_progress_details .ld-course-progress-content-container', parent_div).html( reply_data['content'] );
 						}
 						
 						if ( typeof reply_data['pager'] !== 'undefined' ) {
-							jQuery('#course_progress_details .ld-course-progress-pager-container').html( reply_data['pager'] );
+							jQuery('.course_progress_details .ld-course-progress-pager-container', parent_div).html( reply_data['pager'] );
+
+							/**
+							 * Send out a triggered event for externals to process.
+							 * @since 2.5.9
+							 */
+							jQuery(window).trigger('learndash_pager_content_changed', { parent_div: parent_div });
 						}
 					}
 				}
@@ -100,8 +111,8 @@ jQuery(document).ready(function() {
 // Quiz Progress
 jQuery(document).ready(function() {
 	
-	if ( jQuery( '#quiz_progress_details .ld-quiz-progress-pager-container a' ).length ) {
-		jQuery( '#quiz_progress_details' ).on( 'click', '.ld-quiz-progress-pager-container a', ld_quiz_content_pager_handler );
+	if (jQuery( '.ld_course_info .ld-quiz-progress-pager-container a' ).length ) {
+		jQuery( '.ld_course_info .quiz_progress_details' ).on( 'click', '.ld-quiz-progress-pager-container a', ld_quiz_content_pager_handler );
 		
 		function ld_quiz_content_pager_handler( e ) {
 			e.preventDefault();
@@ -134,11 +145,17 @@ jQuery(document).ready(function() {
 				success: function( reply_data ) {
 					if ( typeof reply_data !== 'undefined') {
 						if ( typeof reply_data['content'] !== 'undefined' ) {
-							jQuery('#quiz_progress_details .ld-quiz-progress-content-container').html( reply_data['content'] );
+							jQuery('#quiz_progress_details .ld-quiz-progress-content-container', parent_div).html( reply_data['content'] );
 						}
 						
 						if ( typeof reply_data['pager'] !== 'undefined' ) {
-							jQuery('#quiz_progress_details .ld-quiz-progress-pager-container').html( reply_data['pager'] );
+							jQuery('#quiz_progress_details .ld-quiz-progress-pager-container', parent_div).html( reply_data['pager'] );
+
+							/**
+							 * Send out a triggered event for externals to process.
+							 * @since 2.5.9
+							 */
+							jQuery(window).trigger('learndash_pager_content_changed', { parent_div: parent_div });
 						}
 					}
 				}
@@ -186,6 +203,11 @@ jQuery(document).ready(function() {
 					if ( typeof reply_data !== 'undefined') {
 						if ( typeof reply_data['content'] !== 'undefined' ) {
 							jQuery( parent_div ).html( reply_data['content'] );
+							/**
+							 * Send out a triggered event for externals to process.
+							 * @since 2.5.9
+							 */
+							jQuery(window).trigger('learndash_pager_content_changed', { parent_div: parent_div } );
 						}
 					}
 				}
@@ -231,9 +253,14 @@ jQuery(document).ready(function() {
 				},
 				success: function( reply_data ) {
 					if ( typeof reply_data !== 'undefined') {
-						//console.log('reply_data[%o]', reply_data);
 						if ( ( typeof reply_data['content'] !== 'undefined' ) && ( reply_data['content'].length ) ) {
 							jQuery( parent_div ).html( reply_data['content'] );
+
+							/**
+							 * Send out a triggered event for externals to process.
+							 * @since 2.5.9
+							 */
+							jQuery(window).trigger('learndash_pager_content_changed', { parent_div: parent_div });
 						}
 					}
 				}
@@ -281,9 +308,14 @@ jQuery(document).ready(function() {
 				},
 				success: function( reply_data ) {
 					if ( typeof reply_data !== 'undefined') {
-						//console.log('reply_data[%o]', reply_data);
 						if ( ( typeof reply_data['content'] !== 'undefined' ) && ( reply_data['content'].length ) ) {
 							jQuery( parent_div ).html( reply_data['content'] );
+
+							/**
+							 * Send out a triggered event for externals to process.
+							 * @since 2.5.9
+							 */
+							jQuery(window).trigger('learndash_pager_content_changed', { parent_div: parent_div });
 						}
 					}
 				}
@@ -291,3 +323,31 @@ jQuery(document).ready(function() {
 		}	
 	}
 });
+
+/**
+ * Example event trigger handler when the page AJAX finishes and the 
+ * new content is move in place. 
+ * 
+ * Within the args object is an element 'parent_div' to reference the 
+ * outer parent div of the paged element. The args object may contain 
+ * other elements in the future.
+ * 
+ * The folowing code is an example if scolling to the top of the parent
+ * div IF it ia above the top of the current viewport.
+ */
+/*
+jQuery(window).on('learndash_pager_content_changed', function (e, args) {
+	if ( typeof args['parent_div'] !== 'undefined') {
+
+		var win = jQuery(window);
+		var winScrollPosition = win.scrollTop();
+		var objOffsetTop = jQuery(args['parent_div']).offset().top;
+
+		if (winScrollPosition > objOffsetTop) {
+			win.animate({ scrollTop: objOffsetTop }, "fast");
+		}
+
+		//jQuery(window).trigger('resize');
+	}	
+});
+*/

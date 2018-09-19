@@ -1,9 +1,19 @@
 /**
- * Block dependencies
+ * LearnDash Block ld-course-notstarted
+ * 
+ * @since 2.5.9
+ * @package LearnDash
  */
-import classnames from 'classnames';
-//import icon from './icon';
-import './style.scss';
+
+/**
+ * LearnDash block functions
+ */
+import {
+    ldlms_get_post_edit_meta,
+    ldlms_get_custom_label,
+    ldlms_get_integer_value
+} from '../ldlms.js';
+
 
 /**
  * Internal block libraries
@@ -11,80 +21,94 @@ import './style.scss';
 const { __, _x, sprintf } = wp.i18n;
 const { 
 	registerBlockType, 
-	InnerBlocks,
-    InspectorControls,
- } = wp.blocks;
+} = wp.blocks;
+
  const {
-//     Toolbar,
-//     Button,
-     Tooltip,
+    InnerBlocks,
+    InspectorControls,
+ } = wp.editor;
+ 
+ const {
      PanelBody,
-     PanelRow,
-     FormToggle,
 	 TextControl
  } = wp.components;
 
 registerBlockType(
     'learndash/ld-course-notstarted',
     {
-        title: sprintf( _x( 'LearnDash %s Not Started', 'LearnDash Course Complete', 'learndash' ), ldlms_settings['settings']['custom_labels']['course'] || 'course' ),
-        description: sprintf( _x( 'LearnDash %s Not Started Block', 'LearnDash Course Not Started Block', 'learndash' ), ldlms_settings['settings']['custom_labels']['course'] || 'course' ),
-        //icon: icon,
+        title: sprintf(_x('LearnDash %s Not Started', 'placeholder: Course', 'learndash'), ldlms_get_custom_label('course') ),
+        description: sprintf(_x('This block shows the content if the user is enrolled into the %s but not yet started.', 'placeholders: course', 'learndash'), ldlms_get_custom_label('course') ),
+        icon: 'desktop',
         category: 'widgets',
         attributes: {
             course_id: {
                 type: 'string',
+                default: '',
             },
             user_id: {
                 type: 'string',
+                default: '',
             },
         },
         edit: props => {
-			const { attributes: { course_id, user_id },
-            	isSelected, className, setAttributes } = props;
-			
+            const { attributes: { course_id, user_id }, className, setAttributes } = props;
+
+            const inspectorControls = (
+                <InspectorControls>
+                    <PanelBody
+                        title={__('Settings', 'learndash')}
+                    >
+                        <TextControl
+                            label={sprintf(_x('%s ID', 'placeholder: Course', 'learndash'), ldlms_get_custom_label('course') ) }
+                            help={sprintf(_x('Enter single %1$s ID. Leave blank if used within a %2$s.', 'placeholders: course, course', 'learndash'), ldlms_get_custom_label('course'), ldlms_get_custom_label('course') ) }
+                            value={course_id || ''}
+                            onChange={course_id => setAttributes({ course_id })}
+                        />
+
+                        <TextControl
+                            label={__('User ID', 'learndash')}
+                            help={__('Enter specific User ID. Leave blank for current User.', 'learndash')}
+                            value={user_id || ''}
+                            onChange={user_id => setAttributes({ user_id })}
+                        />
+                    </PanelBody>
+                </InspectorControls>
+            );
+
+            let ld_block_error_message = '';
+            let preview_course_id = ldlms_get_integer_value(course_id);
+
+            if (preview_course_id === 0) {
+                preview_course_id = ldlms_get_post_edit_meta('course_id');
+                preview_course_id = ldlms_get_integer_value(preview_course_id);
+
+                if (preview_course_id == 0) {
+                    ld_block_error_message = sprintf(_x('%1$s ID is required when not used within a %2$s.', 'placeholders: Course, Course', 'learndash'), ldlms_get_custom_label('course'), ldlms_get_custom_label('course'));
+                }
+            }
+
+            if (ld_block_error_message.length) {
+                ld_block_error_message = (<span className="learndash-block-error-message">{ld_block_error_message}</span>);
+            }
+
+            const outputBlock = (
+                <div className={className}>
+                    <div className="learndash-block-inner">
+                        {ld_block_error_message}
+                        <InnerBlocks />
+                    </div>
+                </div>
+            );
+
             return [
-				
-                isSelected && (
-                    <InspectorControls>
-                        <PanelBody
-                          title={ __( 'Settings', 'learndash' ) }
-                        >
-                            <PanelRow>
-								<TextControl
-									label={ sprintf( _x( '%s ID', 'Course ID', 'learndash' ), ldlms_settings['settings']['custom_labels']['course'] || 'course' ) }
-									help={ sprintf( _x( '%s ID (required)', 'learndash' ), ldlms_settings['settings']['custom_labels']['course'] || 'course' ) }
-									value={ course_id || '' }
-									onChange={ course_id => setAttributes( { course_id } ) }
-								/>
-                            </PanelRow>
-							<PanelRow>
-								<TextControl
-									label={ __( 'User ID', 'learndash' ) }
-									help={ __( 'User ID help text', 'learndash' ) }
-									value={ user_id || '' }
-									onChange={ user_id => setAttributes( { user_id } ) }
-								/>
-	                          </PanelRow>
-                        </PanelBody>
-                    </InspectorControls>
-                ),
-				<div className={ className }>
-				<InnerBlocks />
-				</div>
+                inspectorControls,
+                outputBlock
             ];
         },
-		
+
         save: props => {
-			//const { attributes: { courseID },
-        	//	className, setAttributes } = props;
-			
-			return (
-				//<div
-                //className={ className }
-				//>
+            return (
 				<InnerBlocks.Content />
-				//</div>
 			);
 		}
 	},
